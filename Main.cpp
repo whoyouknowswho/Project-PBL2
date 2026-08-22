@@ -8,4 +8,5 @@ int main()
     cin >> a >> b;
     cout << a + b << endl;
     cout << "Hello World" << endl;
+    cout << "This is a C++20 project" << endl;
 }
