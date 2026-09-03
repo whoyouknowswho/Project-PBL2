@@ -1,0 +1,4 @@
+KH02|Tran Thi Binh|0912345678|Nu|50
+KH03|To Dong Hai|0934967814|Nam|210
+KH04|To Dong Thoan |0905554790|Nam|10
+KH01|Le Van Tai|07e9ei39723|Nam|0

@@ -1,0 +1,24 @@
+BasedOnStyle: Google
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+
+# Không cho dồn hàm, if/else, namespace lên 1 dòng
+AllowShortFunctionsOnASingleLine: None
+AllowShortBlocksOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# Căn chỉnh dấu &, * sát vào kiểu dữ liệu: string& str thay vì string &str
+PointerAlignment: Left
+
+# Định dạng constructor initializer list mỗi thuộc tính 1 dòng rõ ràng
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerIndentWidth: 4
+
+# Dấu mở ngoặc nhọn '{' đặt ở cuối dòng
+BreakBeforeBraces: Attach
+
+# Tách khoảng trắng quanh toán tử logic, gán
+SpaceBeforeAssignmentOperators: true
