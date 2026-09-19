@@ -18,7 +18,7 @@ private:
     string id;
     string name;
     double basePrice;
-    double isAvailable;
+    bool isAvailable;
     string description;
 };
 
