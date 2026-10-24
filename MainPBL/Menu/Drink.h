@@ -1,23 +1,29 @@
-#ifndef Drink_H
-#define Drink_H
-#include <bits/stdc++.h>
+#ifndef DRINK_H
+#define DRINK_H
+
+#include "MENUITEM.h"
+
 using namespace std;
 
-class Drink {
-public:
-    Drink();
-    Drink(const string& name, const string& cupSize, double price, bool hasIce, bool isCarbonated);
-    string getName() const;
-    string getCupSize() const;
-    double getPrice() const;
-    bool hasIce() const;
-    bool isCarbonated() const;
-
+class Drink : public MenuItem {
 private:
     string cupSize;
-    double price;
-    bool hasice;
-    bool iscarbonated;
+    bool hasIceValue = false;
+
+public:
+    Drink();
+    Drink(const string& id, const string& name, double price, int stock,
+          const string& cupSize, bool hasIce);
+
+    string getCupSize() const;
+    bool hasIce() const;
+
+    string getType() const override;
+    string displayDetails() const override;
+    void printSpecificDetails() const override;
+    string createSaleName() const override;
+    void updateDetails() override;
+    string toFile() const override;
 };
 
 #endif

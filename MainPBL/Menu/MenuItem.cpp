@@ -4,22 +4,53 @@
 
 using namespace std;
 
-MenuItem::MenuItem() : id(""), name(""), basePrice(0.0), isAvailable(true), description("") {
+MenuItem::MenuItem() : id(""), name(""), basePrice(0), stock(0), isAvailable(false) {
 }
 
-MenuItem::MenuItem(const string& name, double price)
-    : id(""), name(name), basePrice(price), isAvailable(true), description("") {
+MenuItem::MenuItem(const string& id, const string& name, double price, int stock)
+    : id(id), name(name), basePrice(price), stock(stock), isAvailable(false) {
+}
+
+MenuItem::~MenuItem() {
+    delete this;
+}
+
+const string& MenuItem::getId() const {
+    return id;
+}
+
+string MenuItem::getName() const {
+    return name;
 }
 
 double MenuItem::getPrice() const {
     return basePrice;
 }
 
-double MenuItem::updatePrice(double newPrice) {
-    if (newPrice >= 0) {
-        basePrice = newPrice;
+int MenuItem::getStock() const {
+    return stock;
+}
+
+void MenuItem::updateBasicInfo(const string& newName, double newPrice, int newStock) {
+    name = newName;
+    basePrice = newPrice;
+    stock = newStock;
+}
+
+bool MenuItem::decreaseStock(int quantity) {
+    if (quantity <= 0 || quantity > stock)
+        return false;
+    stock -= quantity;
+    return true;
+}
+
+void MenuItem::increaseStock(int quantity) {
+    if (quantity > 0) {
+        stock += quantity;
     }
-    return basePrice;
+}
+void MenuItem::updatePrice(double newPrice) {
+    basePrice = newPrice;
 }
 
 void MenuItem::setAvailable(bool status) {
@@ -31,8 +62,6 @@ bool MenuItem::getAvailable() const {
 }
 
 void MenuItem::displayInfo() const {
-    cout << "Name: " << name << endl;
-    cout << "Price: $" << basePrice << endl;
-    cout << "Available: " << (isAvailable ? "Yes" : "No") << endl;
-    cout << "Description: " << description << endl;
+    cout << "ID: " << id << ", Name: " << name << ", Price: " << basePrice << ", Stock: " << stock
+         << ", Available: " << (isAvailable ? "Yes" : "No") << endl;
 }
