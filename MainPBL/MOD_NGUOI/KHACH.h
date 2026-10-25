@@ -7,8 +7,8 @@ private:
     int diem = 0;
     string vip;
     void updatevip();
+
 public:
-    KHACH();
     KHACH(string, string, string, string, int);
     int getdiem() const;
     const string& getvip() const;
