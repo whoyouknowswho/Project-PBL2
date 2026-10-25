@@ -1,20 +1,23 @@
 #ifndef NUOCUONG_H
 #define NUOCUONG_H
 #include "Mon.h"
+
+using namespace std;
 class NuocUong : public Mon {
-    std::string sizeLy;
+    string sizeLy;
     bool coDa = false;
 
    public:
     NuocUong() = default;
-    NuocUong(std::string, std::string, double, int, std::string, bool);
-    const std::string& getSizeLy() const;
+    NuocUong(string maMon, string tenMon, double giaMon, int soLuongTon,
+             string kichCo, bool themDa);
+    const string& getSizeLy() const;
     bool getCoDa() const;
-    std::string getLoai() const override;
-    std::string hienThiChiTiet() const override;
+    string getLoai() const override;
+    string hienThiChiTiet() const override;
     void inChiTietRieng() const override;
-    std::string taoTenKhiBan() const override;
+    string taoTenKhiBan() const override;
     void capNhatChiTiet() override;
-    std::string toFile() const override;
+    string toFile() const override;
 };
 #endif

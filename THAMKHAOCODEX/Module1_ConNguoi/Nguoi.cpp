@@ -1,23 +1,29 @@
 #include "Nguoi.h"
 
-#include <utility>
-Nguoi::Nguoi(std::string m, std::string t, std::string s, std::string g)
-    : ma(std::move(m)), ten(std::move(t)), soDienThoai(std::move(s)), gioiTinh(std::move(g)) {
+using namespace std;
+
+Nguoi::Nguoi(string maNguoi, string hoTen, string dienThoai, string gioiTinhMoi)
+    : ma(maNguoi), ten(hoTen), soDienThoai(dienThoai), gioiTinh(gioiTinhMoi) {
 }
-const std::string& Nguoi::getMa() const {
+
+const string& Nguoi::getMa() const {
     return ma;
 }
-const std::string& Nguoi::getTen() const {
+
+const string& Nguoi::getTen() const {
     return ten;
 }
-const std::string& Nguoi::getSoDienThoai() const {
+
+const string& Nguoi::getSoDienThoai() const {
     return soDienThoai;
 }
-const std::string& Nguoi::getGioiTinh() const {
+
+const string& Nguoi::getGioiTinh() const {
     return gioiTinh;
 }
-void Nguoi::capNhatThongTin(const std::string& t, const std::string& s, const std::string& g) {
-    ten = t;
-    soDienThoai = s;
-    gioiTinh = g;
+
+void Nguoi::capNhatThongTin(const string& hoTen, const string& dienThoai, const string& gioiTinhMoi) {
+    ten = hoTen;
+    soDienThoai = dienThoai;
+    gioiTinh = gioiTinhMoi;
 }

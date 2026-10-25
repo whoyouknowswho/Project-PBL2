@@ -1,120 +1,83 @@
 #include "QuanLy.h"
+#include "../Module5_GiaoDien/GiaoDien.h"
 
 #include <algorithm>
 #include <cctype>
 #include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <map>
 #include <sstream>
+#include <utility>
 
 #include "../Module2_ThucDon/MonAn.h"
 #include "../Module2_ThucDon/NuocUong.h"
 
+using namespace std;
+
+
+using namespace GiaoDien;
+
 namespace {
-const std::string XANH = "\033[32m", DO = "\033[31m", LAM = "\033[36m", VANG = "\033[33m",
-                  RESET = "\033[0m";
-std::vector<std::string> tach(const std::string& s, char d = '|') {
-    std::vector<std::string> v;
-    std::stringstream ss(s);
-    std::string x;
-    while (std::getline(ss, x, d))
-        v.push_back(x);
-    return v;
+vector<string> tach(const string& chuoi, char dauPhanCach = '|') {
+    vector<string> cacTruong;
+    stringstream luongChuoi(chuoi);
+    string truong;
+    while (getline(luongChuoi, truong, dauPhanCach))
+        cacTruong.push_back(truong);
+    return cacTruong;
 }
-std::string nhapChuoi(const std::string& tb, bool choRong = false) {
-    while (true) {
-        std::cout << tb;
-        std::string s;
-        std::getline(std::cin, s);
-        if (choRong || !s.empty())
-            return s;
-        std::cout << DO << "Khong duoc de trong!\n" << RESET;
+
+string chuThuong(string s) {
+    for (size_t i = 0; i < s.size(); i++) {
+        s[i] = static_cast<char>(tolower(static_cast<unsigned char>(s[i])));
     }
-}
-int nhapInt(const std::string& tb, int min = 0, int max = 1000000000) {
-    while (true) {
-        std::cout << tb;
-        int x;
-        if (std::cin >> x && x >= min && x <= max) {
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            return x;
-        }
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << DO << "Vui long nhap so hop le!\n" << RESET;
-    }
-}
-double nhapDouble(const std::string& tb, double min = 0) {
-    while (true) {
-        std::cout << tb;
-        double x;
-        if (std::cin >> x && x >= min) {
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            return x;
-        }
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << DO << "Vui long nhap so hop le!\n" << RESET;
-    }
-}
-bool xacNhan(const std::string& tb) {
-    std::string s = nhapChuoi(tb + " (y/n): ");
-    return s == "y" || s == "Y";
-}
-void dungManHinh() {
-    std::cout << VANG << "\nNhan Enter de quay lai menu..." << RESET;
-    std::cin.get();
-}
-// ANSI: xoa toan bo noi dung cu va dua con tro ve goc tren ben trai.
-void xoaManHinh() {
-    std::cout << "\033[2J\033[H" << std::flush;
-}
-void tieuDe(const std::string& s) {
-    xoaManHinh();
-    std::cout << LAM << "\n+==================================================================+\n| "
-              << std::left << std::setw(64) << s
-              << " |\n+==================================================================+\n"
-              << RESET;
-}
-std::string chuThuong(std::string s) {
-    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });
     return s;
 }
-// Cat chuoi neu qua dai, sau do can le khi chua chen ma mau ANSI.
-std::string canTrai(std::string s, int doRong) {
-    if (static_cast<int>(s.size()) > doRong) s = s.substr(0, doRong - 3) + "...";
-    return s + std::string(doRong - static_cast<int>(s.size()), ' ');
+
+// Cac ham so sanh dung de sap xep thuc don.
+bool soSanhTen(const Mon* monThuNhat, const Mon* monThuHai) {
+    return chuThuong(monThuNhat->getTen()) < chuThuong(monThuHai->getTen());
 }
-std::string canPhai(std::string s, int doRong) {
-    if (static_cast<int>(s.size()) > doRong) s = s.substr(0, doRong);
-    return std::string(doRong - static_cast<int>(s.size()), ' ') + s;
+
+bool soSanhGiaTang(const Mon* monThuNhat, const Mon* monThuHai) {
+    return monThuNhat->getGia() < monThuHai->getGia();
 }
-std::string canGiua(std::string s, int doRong) {
-    if (static_cast<int>(s.size()) > doRong) s = s.substr(0, doRong);
-    int trai = (doRong - static_cast<int>(s.size())) / 2;
-    return std::string(trai, ' ') + s +
-           std::string(doRong - trai - static_cast<int>(s.size()), ' ');
+
+bool soSanhGiaGiam(const Mon* monThuNhat, const Mon* monThuHai) {
+    return monThuNhat->getGia() > monThuHai->getGia();
 }
+
+struct ThongKeMon {
+    string tenMon;
+    int soLuong = 0;
+};
+
+struct MonDaTruKho {
+    Mon* mon;
+    int soLuong;
+};
+
 }  // namespace
 
-KhachHang* QuanLy::timKhach(const std::string& m) {
-    for (auto& x : dsKhachHang)
-        if (x.getMa() == m)
-            return &x;
+KhachHang* QuanLy::timKhach(const string& maCanTim) {
+    for (KhachHang& khachHang : dsKhachHang)
+        if (khachHang.getMa() == maCanTim)
+            return &khachHang;
     return nullptr;
 }
-NhanVien* QuanLy::timNhanVien(const std::string& m) {
-    for (auto& x : dsNhanVien)
-        if (x.getMa() == m)
-            return &x;
+
+NhanVien* QuanLy::timNhanVien(const string& maCanTim) {
+    for (NhanVien& nhanVien : dsNhanVien)
+        if (nhanVien.getMa() == maCanTim)
+            return &nhanVien;
     return nullptr;
 }
-Mon* QuanLy::timMon(const std::string& m) {
-    for (auto& x : dsMon)
-        if (x->getMa() == m)
-            return x.get();
+
+Mon* QuanLy::timMon(const string& maCanTim) {
+    for (unique_ptr<Mon>& mon : dsMon)
+        if (mon->getMa() == maCanTim)
+            return mon.get();
     return nullptr;
 }
 
@@ -123,351 +86,333 @@ void QuanLy::docDuLieu() {
     dsNhanVien.clear();
     dsMon.clear();
     dsHoaDon.clear();
-    std::string line;
-    std::ifstream f("DuLieu/menu.txt");
-    while (std::getline(f, line))
+    string dongDuLieu;
+    ifstream tepDuLieu("DuLieu/menu.txt");
+    while (getline(tepDuLieu, dongDuLieu))
         try {
-            auto p = tach(line);
-            if (p.size() < 7)
+            vector<string> cacTruong = tach(dongDuLieu);
+            if (cacTruong.size() < 7)
                 continue;
-            if (p[0] == "MONAN")
-                dsMon.push_back(std::make_unique<MonAn>(p[1], p[2], std::stod(p[3]),
-                                                        std::stoi(p[4]), std::stoi(p[5]),
-                                                        std::stoi(p[6])));
-            else if (p[0] == "NUOC")
-                dsMon.push_back(std::make_unique<NuocUong>(p[1], p[2], std::stod(p[3]),
-                                                           std::stoi(p[4]), p[5], std::stoi(p[6])));
+            if (cacTruong[0] == "MONAN")
+                dsMon.push_back(make_unique<MonAn>(cacTruong[1], cacTruong[2], stod(cacTruong[3]),
+                                                        stoi(cacTruong[4]), stoi(cacTruong[5]),
+                                                        stoi(cacTruong[6])));
+            else if (cacTruong[0] == "NUOC")
+                dsMon.push_back(make_unique<NuocUong>(cacTruong[1], cacTruong[2], stod(cacTruong[3]),
+                                                           stoi(cacTruong[4]), cacTruong[5], stoi(cacTruong[6])));
         } catch (...) {
-            std::cout << DO << "Bo qua mot dong loi trong menu.txt\n" << RESET;
+            cout << DO << "Bo qua mot dong loi trong menu.txt\n" << RESET;
         }
-    f.close();
-    f.open("DuLieu/khachhang.txt");
-    while (std::getline(f, line))
+    tepDuLieu.close();
+    tepDuLieu.open("DuLieu/khachhang.txt");
+    while (getline(tepDuLieu, dongDuLieu))
         try {
-            auto p = tach(line);
-            if (p.size() >= 5)
-                dsKhachHang.emplace_back(p[0], p[1], p[2], p[3], std::stoi(p[4]));
-        } catch (...) {
-        }
-    f.close();
-    f.open("DuLieu/nhanvien.txt");
-    while (std::getline(f, line))
-        try {
-            auto p = tach(line);
-            if (p.size() >= 7)
-                dsNhanVien.emplace_back(p[0], p[1], p[2], p[3], p[4], std::stod(p[5]),
-                                        std::stod(p[6]));
+            vector<string> cacTruong = tach(dongDuLieu);
+            if (cacTruong.size() >= 5)
+                dsKhachHang.push_back(KhachHang(cacTruong[0], cacTruong[1], cacTruong[2], cacTruong[3], stoi(cacTruong[4])));
         } catch (...) {
         }
-    f.close();
-    f.open("DuLieu/hoadon.txt");
-    while (std::getline(f, line))
+    tepDuLieu.close();
+    tepDuLieu.open("DuLieu/nhanvien.txt");
+    while (getline(tepDuLieu, dongDuLieu))
         try {
-            HoaDon h = HoaDon::fromFile(line);
-            if (!h.getMa().empty())
-                dsHoaDon.push_back(h);
+            vector<string> cacTruong = tach(dongDuLieu);
+            if (cacTruong.size() >= 7)
+                dsNhanVien.push_back(NhanVien(cacTruong[0], cacTruong[1], cacTruong[2], cacTruong[3], cacTruong[4], stod(cacTruong[5]),
+                                        stod(cacTruong[6])));
+        } catch (...) {
+        }
+    tepDuLieu.close();
+    tepDuLieu.open("DuLieu/hoadon.txt");
+    while (getline(tepDuLieu, dongDuLieu))
+        try {
+            HoaDon hoaDon = HoaDon::fromFile(dongDuLieu);
+            if (!hoaDon.getMa().empty())
+                dsHoaDon.push_back(hoaDon);
         } catch (...) {
         }
 }
+
 void QuanLy::ghiDuLieu() const {
     // Dinh dang: cac truong cach nhau boi |; chi tiet hoa don cach nhau boi ; va ,
-    std::ofstream f("DuLieu/menu.txt");
-    for (const auto& x : dsMon)
-        f << x->toFile() << '\n';
-    f.close();
-    f.open("DuLieu/khachhang.txt");
-    for (const auto& x : dsKhachHang)
-        f << x.toFile() << '\n';
-    f.close();
-    f.open("DuLieu/nhanvien.txt");
-    for (const auto& x : dsNhanVien)
-        f << x.toFile() << '\n';
-    f.close();
-    f.open("DuLieu/hoadon.txt");
-    for (const auto& x : dsHoaDon)
-        f << x.toFile() << '\n';
+    ofstream tepDuLieu("DuLieu/menu.txt");
+    for (const unique_ptr<Mon>& x : dsMon)
+        tepDuLieu << x->toFile() << '\n';
+    tepDuLieu.close();
+    tepDuLieu.open("DuLieu/khachhang.txt");
+    for (const KhachHang& x : dsKhachHang)
+        tepDuLieu << x.toFile() << '\n';
+    tepDuLieu.close();
+    tepDuLieu.open("DuLieu/nhanvien.txt");
+    for (const NhanVien& x : dsNhanVien)
+        tepDuLieu << x.toFile() << '\n';
+    tepDuLieu.close();
+    tepDuLieu.open("DuLieu/hoadon.txt");
+    for (const HoaDon& x : dsHoaDon)
+        tepDuLieu << x.toFile() << '\n';
 }
 
 void QuanLy::hienThiKhachHang() const {
-    tieuDe("DANH SACH KHACH HANG");
-    std::cout << std::left << std::setw(10) << "Ma" << std::setw(24) << "Ho ten" << std::setw(15)
-              << "SDT" << std::setw(12) << "Gioi tinh" << std::setw(10) << "Diem" << "Hang VIP\n"
-              << std::string(82, '-') << '\n';
-    for (const auto& x : dsKhachHang)
-        x.hienThiThongTin();
-    if (dsKhachHang.empty())
-        std::cout << "(Danh sach trong)\n";
+    GiaoDien::hienThiKhachHang(dsKhachHang);
 }
+
 void QuanLy::hienThiNhanVien() const {
-    tieuDe("DANH SACH NHAN VIEN");
-    std::cout << std::left << std::setw(10) << "Ma" << std::setw(22) << "Ho ten" << std::setw(15)
-              << "SDT" << std::setw(12) << "Gioi tinh" << std::setw(16) << "Chuc vu" << std::right
-              << std::setw(12) << "Tong luong\n"
-              << std::string(87, '-') << '\n';
-    for (const auto& x : dsNhanVien)
-        x.hienThiThongTin();
-    if (dsNhanVien.empty())
-        std::cout << "(Danh sach trong)\n";
+    GiaoDien::hienThiNhanVien(dsNhanVien);
 }
+
 void QuanLy::hienThiThucDon(int loc, int sapXep, bool chiConHang) const {
-    std::vector<const Mon*> danhSach;
-    for (const auto& mon : dsMon) {
+    vector<const Mon*> danhSach;
+    for (const unique_ptr<Mon>& mon : dsMon) {
         bool dungLoai = loc == 0 || (loc == 1 && mon->getLoai() == "Mon an") ||
                         (loc == 2 && mon->getLoai() == "Nuoc uong");
         if (dungLoai && (!chiConHang || mon->getTonKho() > 0))
             danhSach.push_back(mon.get());
     }
-    if (sapXep == 1)
-        std::sort(danhSach.begin(), danhSach.end(), [](const Mon* a, const Mon* b) {
-            return chuThuong(a->getTen()) < chuThuong(b->getTen());
-        });
-    else if (sapXep == 2 || sapXep == 3)
-        std::sort(danhSach.begin(), danhSach.end(), [sapXep](const Mon* a, const Mon* b) {
-            return sapXep == 2 ? a->getGia() < b->getGia() : a->getGia() > b->getGia();
-        });
-
-    auto dinhDangGia = [](double gia) {
-        std::string s = std::to_string(static_cast<long long>(gia));
-        for (int i = static_cast<int>(s.size()) - 3; i > 0; i -= 3) s.insert(i, ".");
-        return s + " VND";
-    };
-    auto inBang = [&](const std::vector<const Mon*>& trang, const std::string& loai) {
-        bool monAn = loai == "Mon an";
-        int soLuong = static_cast<int>(std::count_if(danhSach.begin(), danhSach.end(),
-                            [&](const Mon* x) { return x->getLoai() == loai; }));
-        if (soLuong == 0) return;
-        std::string tenBang = "DANH SACH THUC DON - " + std::string(monAn ? "MON AN" : "NUOC UONG");
-        int doRongBang = 79;
-        int leTrai = std::max(0, (doRongBang - static_cast<int>(tenBang.size())) / 2);
-        std::cout << "\n\033[1;36m" << std::string(leTrai, ' ') << tenBang << "\033[0m\n";
-        std::cout << "┌──────────┬────────────────────────┬──────────────┬────────┬─────────────────┐\n";
-        std::cout << "\033[1;33m│ " << std::left << std::setw(8) << "Ma mon" << " │ "
-                  << std::setw(22) << "Ten mon" << " │ " << std::right << std::setw(12) << "Gia"
-                  << " │ " << std::setw(6) << "Ton" << " │ " << std::left << std::setw(15)
-                  << "Trang thai" << " │\033[0m\n";
-        std::cout << "├──────────┼────────────────────────┼──────────────┼────────┼─────────────────┤\n";
-        for (const Mon* mon : trang) {
-            if (mon->getLoai() != loai) continue;
-            std::string trangThai = mon->getTonKho() == 0 ? "[HET HANG]" :
-                                    mon->getTonKho() < 5 ? "[SAP HET]" : "Con hang";
-            std::string mau = mon->getTonKho() == 0 ? "\033[2;31m" :
-                              mon->getTonKho() < 5 ? "\033[33m" : "";
-            std::cout << mau << "│ " << canTrai(mon->getMa(), 8) << " │ "
-                      << canTrai(mon->getTen(), 22) << " │ "
-                      << canPhai(dinhDangGia(mon->getGia()), 12) << " │ "
-                      << canPhai(std::to_string(mon->getTonKho()), 6) << " │ "
-                      << canTrai(trangThai, 15);
-            std::cout << " │" << RESET << '\n';
-        }
-        std::cout << "└──────────┴────────────────────────┴──────────────┴────────┴─────────────────┘\n";
-    };
-
-    const int kichThuocTrang = 15;
-    int tongTrang = std::max(1, static_cast<int>((danhSach.size() + kichThuocTrang - 1) / kichThuocTrang));
-    for (int trangSo = 0; trangSo < tongTrang; ++trangSo) {
-        tieuDe("THUC DON NHA HANG");
-        int dau = trangSo * kichThuocTrang;
-        int cuoi = std::min(static_cast<int>(danhSach.size()), dau + kichThuocTrang);
-        std::vector<const Mon*> trang(danhSach.begin() + dau, danhSach.begin() + cuoi);
-        inBang(trang, "Mon an");
-        inBang(trang, "Nuoc uong");
-        if (danhSach.empty()) std::cout << VANG << "\n(Thuc don khong co mon phu hop)\n" << RESET;
-        if (tongTrang > 1 && trangSo + 1 < tongTrang) {
-            std::cout << VANG << "Trang " << trangSo + 1 << '/' << tongTrang
-                      << " - Nhan Enter xem tiep, Q de dung: " << RESET;
-            std::string lenh; std::getline(std::cin, lenh);
-            if (lenh == "q" || lenh == "Q") break;
-        }
+    if (sapXep == 1) {
+        sort(danhSach.begin(), danhSach.end(), soSanhTen);
+    } else if (sapXep == 2) {
+        sort(danhSach.begin(), danhSach.end(), soSanhGiaTang);
+    } else if (sapXep == 3) {
+        sort(danhSach.begin(), danhSach.end(), soSanhGiaGiam);
     }
+
+    GiaoDien::hienThiThucDon(danhSach);
 }
 
 void QuanLy::menuKhachHang() {
     while (true) {
         hienThiKhachHang();
-        std::cout << "\n1.Them  2.Sua  3.Xoa  4.Tim kiem  0.Quay lai\n";
-        int c = nhapInt("Lua chon: ", 0, 4);
-        if (c == 0)
+        cout << "\n1.Them  2.Sua  3.Xoa  4.Tim kiem  0.Quay lai\n";
+        int luaChon = nhapInt("Lua chon: ", 0, 4);
+        if (luaChon == 0)
             return;
-        if (c == 1) {
-            std::string m = nhapChuoi("Ma KH: ");
-            if (timKhach(m)) {
-                std::cout << DO << "Ma da ton tai!\n" << RESET;
+        if (luaChon == 1) {
+            string maKhach = nhapChuoi("Ma KH: ");
+            if (timKhach(maKhach)) {
+                cout << DO << "Ma da ton tai!\n" << RESET;
             } else {
-                dsKhachHang.emplace_back(m, nhapChuoi("Ho ten: "), nhapChuoi("SDT: "),
-                                         nhapChuoi("Gioi tinh: "), nhapInt("Diem ban dau: "));
+                string hoTen = nhapChuoi("Ho ten: ");
+                string soDienThoai = nhapChuoi("SDT: ");
+                string gioiTinh = nhapChuoi("Gioi tinh: ");
+                int diemBanDau = nhapInt("Diem ban dau: ");
+                KhachHang khachMoi(maKhach, hoTen, soDienThoai, gioiTinh, diemBanDau);
+                dsKhachHang.push_back(khachMoi);
                 ghiDuLieu();
-                std::cout << XANH << "Them thanh cong!\n" << RESET;
+                cout << XANH << "Them thanh cong!\n" << RESET;
             }
-        } else if (c == 2) {
-            auto* x = timKhach(nhapChuoi("Ma can sua: "));
-            if (!x)
-                std::cout << DO << "Khong tim thay!\n" << RESET;
+        } else if (luaChon == 2) {
+            KhachHang* khachHang = timKhach(nhapChuoi("Ma can sua: "));
+            if (!khachHang)
+                cout << DO << "Khong tim thay!\n" << RESET;
             else {
-                x->capNhatThongTin(nhapChuoi("Ten moi: "), nhapChuoi("SDT moi: "),
-                                   nhapChuoi("Gioi tinh moi: "));
-                x->setDiemTichLuy(nhapInt("Diem moi: "));
+                string tenMoi = nhapChuoi("Ten moi: ");
+                string soDienThoaiMoi = nhapChuoi("SDT moi: ");
+                string gioiTinhMoi = nhapChuoi("Gioi tinh moi: ");
+                khachHang->capNhatThongTin(tenMoi, soDienThoaiMoi, gioiTinhMoi);
+                khachHang->setDiemTichLuy(nhapInt("Diem moi: "));
                 ghiDuLieu();
-                std::cout << XANH << "Cap nhat thanh cong!\n" << RESET;
+                cout << XANH << "Cap nhat thanh cong!\n" << RESET;
             }
-        } else if (c == 3) {
-            std::string m = nhapChuoi("Ma can xoa: ");
-            auto it = std::find_if(dsKhachHang.begin(), dsKhachHang.end(),
-                                   [&](const auto& x) { return x.getMa() == m; });
-            if (it == dsKhachHang.end())
-                std::cout << DO << "Khong tim thay!\n" << RESET;
+        } else if (luaChon == 3) {
+            string maKhach = nhapChuoi("Ma can xoa: ");
+            // Tim vi tri can xoa; size() nghia la chua tim thay.
+            size_t viTri = dsKhachHang.size();
+            for (size_t i = 0; i < dsKhachHang.size(); i++) {
+                if (dsKhachHang[i].getMa() == maKhach) {
+                    viTri = i;
+                    break;
+                }
+            }
+            if (viTri == dsKhachHang.size())
+                cout << DO << "Khong tim thay!\n" << RESET;
             else if (xacNhan("Ban chac chan muon xoa")) {
-                dsKhachHang.erase(it);
+                dsKhachHang.erase(dsKhachHang.begin() + viTri);
                 ghiDuLieu();
-                std::cout << XANH << "Da xoa!\n" << RESET;
+                cout << XANH << "Da xoa!\n" << RESET;
             }
         } else {
-            std::string k = chuThuong(nhapChuoi("Nhap ma/ten/SDT: "));
-            bool co = false;
-            for (const auto& x : dsKhachHang)
-                if (chuThuong(x.getMa()).find(k) != std::string::npos ||
-                    chuThuong(x.getTen()).find(k) != std::string::npos ||
-                    x.getSoDienThoai().find(k) != std::string::npos) {
-                    x.hienThiThongTin();
-                    co = true;
+            string tuKhoa = chuThuong(nhapChuoi("Nhap ma/ten/SDT: "));
+            bool timThay = false;
+            for (const KhachHang& khachHang : dsKhachHang)
+                if (chuThuong(khachHang.getMa()).find(tuKhoa) != string::npos ||
+                    chuThuong(khachHang.getTen()).find(tuKhoa) != string::npos ||
+                    khachHang.getSoDienThoai().find(tuKhoa) != string::npos) {
+                    khachHang.hienThiThongTin();
+                    timThay = true;
                 }
-            if (!co)
-                std::cout << DO << "Khong co ket qua.\n" << RESET;
+            if (!timThay)
+                cout << DO << "Khong co ket qua.\n" << RESET;
         }
         dungManHinh();
     }
 }
 
 void QuanLy::menuNhanVien() {
+    if (!laQuanLy()) {
+        cout << DO << "Ban khong co quyen su dung chuc nang nay.\n" << RESET;
+        dungManHinh();
+        return;
+    }
+
     while (true) {
         hienThiNhanVien();
-        std::cout << "\n1.Them  2.Sua  3.Xoa  4.Tim kiem  0.Quay lai\n";
-        int c = nhapInt("Lua chon: ", 0, 4);
-        if (c == 0)
+        cout << "\n1.Them  2.Sua  3.Xoa  4.Tim kiem  0.Quay lai\n";
+        int luaChon = nhapInt("Lua chon: ", 0, 4);
+        if (luaChon == 0)
             return;
-        if (c == 1) {
-            std::string m = nhapChuoi("Ma NV: ");
-            if (timNhanVien(m))
-                std::cout << DO << "Ma da ton tai!\n" << RESET;
+        if (luaChon == 1) {
+            string maNhanVien = nhapChuoi("Ma NV: ");
+            if (timNhanVien(maNhanVien))
+                cout << DO << "Ma da ton tai!\n" << RESET;
             else {
-                std::string t = nhapChuoi("Ho ten: "), s = nhapChuoi("SDT: "),
-                            g = nhapChuoi("Gioi tinh: "), cv = nhapChuoi("Chuc vu: ");
-                double l = nhapDouble("Luong co ban: "), pc = nhapDouble("Phu cap: ");
-                dsNhanVien.emplace_back(m, t, s, g, cv, l, pc);
+                string hoTen = nhapChuoi("Ho ten: ");
+                string dienThoai = nhapChuoi("SDT: ");
+                string gioiTinh = nhapChuoi("Gioi tinh: ");
+                string chucVu = nhapChuoi("Chuc vu: ");
+                double luong = nhapDouble("Luong co ban: ");
+                double phuCap = nhapDouble("Phu cap: ");
+                dsNhanVien.push_back(NhanVien(maNhanVien, hoTen, dienThoai, gioiTinh, chucVu, luong, phuCap));
                 ghiDuLieu();
-                std::cout << XANH << "Them thanh cong!\n" << RESET;
+                cout << XANH << "Them thanh cong!\n" << RESET;
             }
-        } else if (c == 2) {
-            auto* x = timNhanVien(nhapChuoi("Ma can sua: "));
-            if (!x)
-                std::cout << DO << "Khong tim thay!\n" << RESET;
+        } else if (luaChon == 2) {
+            NhanVien* nhanVien = timNhanVien(nhapChuoi("Ma can sua: "));
+            if (!nhanVien)
+                cout << DO << "Khong tim thay!\n" << RESET;
             else {
-                x->capNhatThongTin(nhapChuoi("Ten moi: "), nhapChuoi("SDT moi: "),
-                                   nhapChuoi("Gioi tinh moi: "));
-                x->capNhatCongViec(nhapChuoi("Chuc vu moi: "), nhapDouble("Luong moi: "),
-                                   nhapDouble("Phu cap moi: "));
+                string tenMoi = nhapChuoi("Ten moi: ");
+                string soDienThoaiMoi = nhapChuoi("SDT moi: ");
+                string gioiTinhMoi = nhapChuoi("Gioi tinh moi: ");
+                nhanVien->capNhatThongTin(tenMoi, soDienThoaiMoi, gioiTinhMoi);
+                string chucVuMoi = nhapChuoi("Chuc vu moi: ");
+                double luongMoi = nhapDouble("Luong moi: ");
+                double phuCapMoi = nhapDouble("Phu cap moi: ");
+                nhanVien->capNhatCongViec(chucVuMoi, luongMoi, phuCapMoi);
                 ghiDuLieu();
-                std::cout << XANH << "Cap nhat thanh cong!\n" << RESET;
+                cout << XANH << "Cap nhat thanh cong!\n" << RESET;
             }
-        } else if (c == 3) {
-            std::string m = nhapChuoi("Ma can xoa: ");
-            auto it = std::find_if(dsNhanVien.begin(), dsNhanVien.end(),
-                                   [&](const auto& x) { return x.getMa() == m; });
-            if (it == dsNhanVien.end())
-                std::cout << DO << "Khong tim thay!\n" << RESET;
+        } else if (luaChon == 3) {
+            string maNhanVien = nhapChuoi("Ma can xoa: ");
+            // Tim vi tri can xoa; size() nghia la chua tim thay.
+            size_t viTri = dsNhanVien.size();
+            for (size_t i = 0; i < dsNhanVien.size(); i++) {
+                if (dsNhanVien[i].getMa() == maNhanVien) {
+                    viTri = i;
+                    break;
+                }
+            }
+            if (viTri == dsNhanVien.size())
+                cout << DO << "Khong tim thay!\n" << RESET;
             else if (xacNhan("Ban chac chan muon xoa")) {
-                dsNhanVien.erase(it);
+                dsNhanVien.erase(dsNhanVien.begin() + viTri);
                 ghiDuLieu();
-                std::cout << XANH << "Da xoa!\n" << RESET;
+                cout << XANH << "Da xoa!\n" << RESET;
             }
         } else {
-            std::string k = chuThuong(nhapChuoi("Nhap ma/ten/SDT: "));
-            bool co = false;
-            for (const auto& x : dsNhanVien)
-                if (chuThuong(x.getMa()).find(k) != std::string::npos ||
-                    chuThuong(x.getTen()).find(k) != std::string::npos ||
-                    x.getSoDienThoai().find(k) != std::string::npos) {
-                    x.hienThiThongTin();
-                    co = true;
+            string tuKhoa = chuThuong(nhapChuoi("Nhap ma/ten/SDT: "));
+            bool timThay = false;
+            for (const NhanVien& nhanVien : dsNhanVien)
+                if (chuThuong(nhanVien.getMa()).find(tuKhoa) != string::npos ||
+                    chuThuong(nhanVien.getTen()).find(tuKhoa) != string::npos ||
+                    nhanVien.getSoDienThoai().find(tuKhoa) != string::npos) {
+                    nhanVien.hienThiThongTin();
+                    timThay = true;
                 }
-            if (!co)
-                std::cout << DO << "Khong co ket qua.\n" << RESET;
+            if (!timThay)
+                cout << DO << "Khong co ket qua.\n" << RESET;
         }
         dungManHinh();
     }
 }
 
 void QuanLy::menuThucDon() {
+    if (!laQuanLy()) {
+        hienThiThucDon();
+        dungManHinh();
+        return;
+    }
+
     int boLoc = 0, sapXep = 0;
     bool chiConHang = false;
     while (true) {
         hienThiThucDon(boLoc, sapXep, chiConHang);
-        std::cout << "\n1.Them  2.Sua  3.Xoa  4.Tim kiem  5.Nhap them kho"
+        cout << "\n1.Them  2.Sua  3.Xoa  4.Tim kiem  5.Nhap them kho"
                      "  6.Loc/Sap xep  0.Quay lai\n";
-        int c = nhapInt("Lua chon: ", 0, 6);
-        if (c == 0)
+        int luaChon = nhapInt("Lua chon: ", 0, 6);
+        if (luaChon == 0)
             return;
-        if (c == 1) {
-            int l = nhapInt("Loai (1-Mon an, 2-Nuoc uong): ", 1, 2);
-            std::string m = nhapChuoi("Ma mon: ");
-            if (timMon(m))
-                std::cout << DO << "Ma da ton tai!\n" << RESET;
+        if (luaChon == 1) {
+            int loaiMon = nhapInt("Loai (1-Mon an, 2-Nuoc uong): ", 1, 2);
+            string maMon = nhapChuoi("Ma mon: ");
+            if (timMon(maMon))
+                cout << DO << "Ma da ton tai!\n" << RESET;
             else {
-                std::string t = nhapChuoi("Ten mon: ");
-                double g = nhapDouble("Gia: ");
-                int ton = nhapInt("Ton kho: ");
-                if (l == 1)
-                    dsMon.push_back(std::make_unique<MonAn>(m, t, g, ton,
-                                                            nhapInt("Do cay (0-5): ", 0, 5),
-                                                            nhapInt("Mon chay (1/0): ", 0, 1)));
-                else
-                    dsMon.push_back(std::make_unique<NuocUong>(
-                        m, t, g, ton, nhapChuoi("Size S/M/L: "), nhapInt("Co da (1/0): ", 0, 1)));
-                ghiDuLieu();
-                std::cout << XANH << "Them thanh cong!\n" << RESET;
-            }
-        } else if (c == 2) {
-            Mon* x = timMon(nhapChuoi("Ma can sua: "));
-            if (!x)
-                std::cout << DO << "Khong tim thay!\n" << RESET;
-            else {
-                x->capNhatCoBan(nhapChuoi("Ten moi: "), nhapDouble("Gia moi: "),
-                                nhapInt("Ton kho moi: "));
-                x->capNhatChiTiet();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                ghiDuLieu();
-                std::cout << XANH << "Cap nhat thanh cong!\n" << RESET;
-            }
-        } else if (c == 3) {
-            std::string m = nhapChuoi("Ma can xoa: ");
-            auto it = std::find_if(dsMon.begin(), dsMon.end(),
-                                   [&](const auto& x) { return x->getMa() == m; });
-            if (it == dsMon.end())
-                std::cout << DO << "Khong tim thay!\n" << RESET;
-            else if (xacNhan("Ban chac chan muon xoa")) {
-                dsMon.erase(it);
-                ghiDuLieu();
-                std::cout << XANH << "Da xoa!\n" << RESET;
-            }
-        } else if (c == 4) {
-            std::string k = chuThuong(nhapChuoi("Nhap ma/ten mon: "));
-            bool co = false;
-            for (const auto& x : dsMon)
-                if (chuThuong(x->getMa()).find(k) != std::string::npos ||
-                    chuThuong(x->getTen()).find(k) != std::string::npos) {
-                    std::cout << x->getMa() << " | " << x->getTen() << " | " << x->hienThiChiTiet()
-                              << '\n';
-                    co = true;
+                string tenMon = nhapChuoi("Ten mon: ");
+                double giaMon = nhapDouble("Gia: ");
+                int tonKho = nhapInt("Ton kho: ");
+                if (loaiMon == 1) {
+                    int doCay = nhapInt("Do cay (0-5): ", 0, 5);
+                    bool monChay = nhapInt("Mon chay (1/0): ", 0, 1) == 1;
+                    dsMon.push_back(make_unique<MonAn>(maMon, tenMon, giaMon, tonKho, doCay, monChay));
+                } else {
+                    string sizeLy = nhapChuoi("Size S/M/L: ");
+                    bool coDa = nhapInt("Co da (1/0): ", 0, 1) == 1;
+                    dsMon.push_back(make_unique<NuocUong>(maMon, tenMon, giaMon, tonKho, sizeLy, coDa));
                 }
-            if (!co)
-                std::cout << DO << "Khong co ket qua.\n" << RESET;
-        } else if (c == 5) {
-            Mon* x = timMon(nhapChuoi("Ma mon: "));
-            if (!x)
-                std::cout << DO << "Khong tim thay!\n" << RESET;
-            else {
-                x->congTonKho(nhapInt("So luong nhap them: ", 1));
                 ghiDuLieu();
-                std::cout << XANH << "Da cap nhat ton kho!\n" << RESET;
+                cout << XANH << "Them thanh cong!\n" << RESET;
+            }
+        } else if (luaChon == 2) {
+            Mon* mon = timMon(nhapChuoi("Ma can sua: "));
+            if (!mon)
+                cout << DO << "Khong tim thay!\n" << RESET;
+            else {
+                string tenMoi = nhapChuoi("Ten moi: ");
+                double giaMoi = nhapDouble("Gia moi: ");
+                int tonKhoMoi = nhapInt("Ton kho moi: ");
+                mon->capNhatCoBan(tenMoi, giaMoi, tonKhoMoi);
+                mon->capNhatChiTiet();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                ghiDuLieu();
+                cout << XANH << "Cap nhat thanh cong!\n" << RESET;
+            }
+        } else if (luaChon == 3) {
+            string maMon = nhapChuoi("Ma can xoa: ");
+            // Tim vi tri can xoa; size() nghia la chua tim thay.
+            size_t viTri = dsMon.size();
+            for (size_t i = 0; i < dsMon.size(); i++) {
+                if (dsMon[i]->getMa() == maMon) {
+                    viTri = i;
+                    break;
+                }
+            }
+            if (viTri == dsMon.size())
+                cout << DO << "Khong tim thay!\n" << RESET;
+            else if (xacNhan("Ban chac chan muon xoa")) {
+                dsMon.erase(dsMon.begin() + viTri);
+                ghiDuLieu();
+                cout << XANH << "Da xoa!\n" << RESET;
+            }
+        } else if (luaChon == 4) {
+            string tuKhoa = chuThuong(nhapChuoi("Nhap ma/ten mon: "));
+            bool timThay = false;
+            for (const unique_ptr<Mon>& mon : dsMon)
+                if (chuThuong(mon->getMa()).find(tuKhoa) != string::npos ||
+                    chuThuong(mon->getTen()).find(tuKhoa) != string::npos) {
+                    cout << mon->getMa() << " | " << mon->getTen() << " | " << mon->hienThiChiTiet()
+                              << '\n';
+                    timThay = true;
+                }
+            if (!timThay)
+                cout << DO << "Khong co ket qua.\n" << RESET;
+        } else if (luaChon == 5) {
+            Mon* mon = timMon(nhapChuoi("Ma mon: "));
+            if (!mon)
+                cout << DO << "Khong tim thay!\n" << RESET;
+            else {
+                mon->congTonKho(nhapInt("So luong nhap them: ", 1));
+                ghiDuLieu();
+                cout << XANH << "Da cap nhat ton kho!\n" << RESET;
             }
         } else {
             tieuDe("TUY CHON HIEN THI THUC DON");
@@ -481,166 +426,158 @@ void QuanLy::menuThucDon() {
 
 void QuanLy::banHang() {
     tieuDe("TAO HOA DON MOI");
-    std::string ma = nhapChuoi("Ma hoa don: ");
-    if (std::any_of(dsHoaDon.begin(), dsHoaDon.end(),
-                    [&](const auto& x) { return x.getMa() == ma; })) {
-        std::cout << DO << "Ma hoa don da ton tai!\n" << RESET;
+    string maHoaDon = nhapChuoi("Ma hoa don: ");
+    bool trungMa = false;
+    for (const HoaDon& hoaDon : dsHoaDon) {
+        if (hoaDon.getMa() == maHoaDon) {
+            trungMa = true;
+            break;
+        }
+    }
+    if (trungMa) {
+        cout << DO << "Ma hoa don da ton tai!\n" << RESET;
         dungManHinh();
         return;
     }
-    std::string ngay = nhapChuoi("Ngay (dd/mm/yyyy): "),
-                kh = nhapChuoi("Ma KH (Enter neu khach le): ", true),
-                nv = nhapChuoi("Ma nhan vien: ");
-    HoaDon h(ma, ngay, kh, nv);
-    std::vector<std::pair<Mon*, int>> daTru;
+    string ngayLap = nhapChuoi("Ngay (dd/mm/yyyy): ");
+    string maKhachHang = nhapChuoi("Ma KH (Enter neu khach le): ", true);
+    string maNhanVien = taiKhoanHienTai.maNhanVien;
+    if (laQuanLy()) {
+        maNhanVien = nhapChuoi("Ma nhan vien: ");
+    }
+    if (timNhanVien(maNhanVien) == nullptr) {
+        cout << DO << "Ma nhan vien khong ton tai.\n" << RESET;
+        dungManHinh();
+        return;
+    }
+    HoaDon hoaDonMoi(maHoaDon, ngayLap, maKhachHang, maNhanVien);
+    vector<MonDaTruKho> daTru;
     while (true) {
         hienThiThucDon();
-        std::string m = nhapChuoi("Ma mon (0 de thanh toan): ");
-        if (m == "0")
+        string maMon = nhapChuoi("Ma mon (0 de thanh toan): ");
+        if (maMon == "0")
             break;
-        Mon* x = timMon(m);
-        if (!x) {
-            std::cout << DO << "Khong tim thay mon!\n" << RESET;
+        Mon* mon = timMon(maMon);
+        if (!mon) {
+            cout << DO << "Khong tim thay mon!\n" << RESET;
             continue;
         }
-        int sl = nhapInt("So luong: ", 1);
-        if (!x->truTonKho(sl)) {
-            std::cout << DO << "Khong du ton kho!\n" << RESET;
+        int soLuong = nhapInt("So luong: ", 1);
+        if (!mon->truTonKho(soLuong)) {
+            cout << DO << "Khong du ton kho!\n" << RESET;
             continue;
         }
         // MonAn giu nguyen ten; NuocUong se hoi size va co da/khong da tai day.
-        std::string tenKhiBan = x->taoTenKhiBan();
-        h.themMon({x->getMa(), tenKhiBan, sl, x->getGia()});
-        daTru.push_back({x, sl});
-        std::cout << XANH << "Da them vao gio!\n" << RESET;
+        string tenKhiBan = mon->taoTenKhiBan();
+        hoaDonMoi.themMon({mon->getMa(), tenKhiBan, soLuong, mon->getGia()});
+        daTru.push_back({mon, soLuong});
+        cout << XANH << "Da them vao gio!\n" << RESET;
     }
-    if (h.tamTinh() == 0) {
-        for (auto& p : daTru)
-            p.first->congTonKho(p.second);
-        std::cout << DO << "Hoa don rong, da huy.\n" << RESET;
+    if (hoaDonMoi.tamTinh() == 0) {
+        for (const MonDaTruKho& daTruKho : daTru) {
+            daTruKho.mon->congTonKho(daTruKho.soLuong);
+        }
+        cout << DO << "Hoa don rong, da huy.\n" << RESET;
         dungManHinh();
         return;
     }
-    KhachHang* k = timKhach(kh);
-    if (k) {
-        h.setGiamGia(k->getPhanTramGiam());
-        k->congDiem(static_cast<int>(h.tongTien() / 10000));
+    KhachHang* khachHang = timKhach(maKhachHang);
+    if (khachHang) {
+        hoaDonMoi.setGiamGia(khachHang->getPhanTramGiam());
+        khachHang->congDiem(static_cast<int>(hoaDonMoi.tongTien() / 10000));
     }
-    dsHoaDon.push_back(h);
+    dsHoaDon.push_back(hoaDonMoi);
     ghiDuLieu();
-    h.inHoaDon();
+    hoaDonMoi.inHoaDon();
     dungManHinh();
 }
 
 void QuanLy::menuThongKe() const {
-    xoaManHinh();
-    std::cout << LAM
-              << "┌────────────────────────────────────────────────────────────────────────────┐\n"
-              << "│" << canGiua("CHON PHAM VI THONG KE", 76) << "│\n"
-              << "└────────────────────────────────────────────────────────────────────────────┘\n"
-              << RESET;
-    std::string ngay = nhapChuoi("Nhap dd/mm/yyyy, mm/yyyy hoac Enter de xem tat ca: ", true);
-    double dt = 0;
-    int so = 0;
-    std::map<std::string, std::pair<std::string, int>> ban;
-    for (const auto& h : dsHoaDon)
-        if (ngay.empty() || h.getNgayLap().find(ngay) != std::string::npos) {
-            dt += h.tongTien();
-            ++so;
-            for (const auto& x : h.getGioHang()) {
-                ban[x.maMon].first = x.tenMon;
-                ban[x.maMon].second += x.soLuong;
+    if (!laQuanLy()) {
+        cout << DO << "Ban khong co quyen su dung chuc nang nay.\n" << RESET;
+        dungManHinh();
+        return;
+    }
+
+    GiaoDien::tieuDeThongKe();
+    string ngayCanXem = nhapChuoi("Nhap dd/mm/yyyy, mm/yyyy hoac Enter de xem tat ca: ", true);
+    double tongDoanhThu = 0;
+    int soHoaDon = 0;
+    map<string, ThongKeMon> thongKeTheoMa;
+    for (const HoaDon& hoaDon : dsHoaDon)
+        if (ngayCanXem.empty() || hoaDon.getNgayLap().find(ngayCanXem) != string::npos) {
+            tongDoanhThu += hoaDon.tongTien();
+            ++soHoaDon;
+            for (const ChiTietHoaDon& chiTiet : hoaDon.getGioHang()) {
+                thongKeTheoMa[chiTiet.maMon].tenMon = chiTiet.tenMon;
+                thongKeTheoMa[chiTiet.maMon].soLuong += chiTiet.soLuong;
             }
         }
-    auto best = std::max_element(ban.begin(), ban.end(), [](const auto& a, const auto& b) {
-        return a.second.second < b.second.second;
-    });
-    auto dinhDangTien = [](double tien) {
-        std::string s = std::to_string(static_cast<long long>(tien));
-        for (int i = static_cast<int>(s.size()) - 3; i > 0; i -= 3) s.insert(i, ".");
-        return s + " VND";
-    };
-    std::string monBanChay = best == ban.end()
-        ? "Chua co du lieu"
-        : best->second.first + " (" + std::to_string(best->second.second) + " phan)";
-    std::string phamVi = ngay.empty() ? "Tat ca hoa don" : ngay;
-
-    xoaManHinh();
-    const int rongBaoCao = 76;
-    std::cout << LAM
-              << "┌────────────────────────────────────────────────────────────────────────────┐\n"
-              << "│" << canGiua("THONG KE - BAO CAO KINH DOANH", rongBaoCao) << "│\n"
-              << "├────────────────────────────────────────────────────────────────────────────┤\n"
-              << RESET
-              << "│ " << canTrai("Pham vi: " + phamVi, 74) << " │\n"
-              << "├────────────────────────┬───────────────────────────────────────────────────┤\n"
-              << VANG
-              << "│ " << canTrai("CHI TIEU", 22) << " │ "
-              << canTrai("KET QUA", 49) << " │\n"
-              << RESET
-              << "├────────────────────────┼───────────────────────────────────────────────────┤\n"
-              << "│ " << canTrai("So hoa don", 22) << " │ "
-              << canTrai(std::to_string(so) + " hoa don", 49) << " │\n"
-              << "├────────────────────────┼───────────────────────────────────────────────────┤\n"
-              << "│ " << canTrai("Tong doanh thu", 22) << " │ " << XANH
-              << canTrai(dinhDangTien(dt), 49) << RESET << " │\n"
-              << "├────────────────────────┼───────────────────────────────────────────────────┤\n"
-              << "│ " << canTrai("Mon ban chay", 22) << " │ " << VANG
-              << canTrai(monBanChay, 49) << RESET << " │\n"
-              << "└────────────────────────┴───────────────────────────────────────────────────┘\n";
-
-    std::cout << "\n" << VANG << "TON KHO THAP - CAN NHAP THEM (<= 5)" << RESET << "\n"
-              << "┌──────────┬──────────────────────────────┬────────────┐\n"
-              << VANG
-              << "│" << canTrai(" Ma mon", 10) << "│" << canTrai(" Ten mon", 30)
-              << "│" << canPhai("Con lai ", 12) << "│\n"
-              << RESET
-              << "├──────────┼──────────────────────────────┼────────────┤\n";
-    bool co = false;
-    for (const auto& x : dsMon) {
-        if (x->getTonKho() <= 5) {
-            std::string mau = x->getTonKho() == 0 ? DO : VANG;
-            std::cout << mau << "│" << canTrai(" " + x->getMa(), 10)
-                      << "│" << canTrai(" " + x->getTen(), 30)
-                      << "│" << canPhai(std::to_string(x->getTonKho()) + " ", 12)
-                      << "│" << RESET << '\n';
-            co = true;
+    string monBanChay = "Chua co du lieu";
+    int soLuongLonNhat = 0;
+    bool daTimThayMon = false;
+    // map sap xep theo ma mon; giu mon dau tien neu bang so luong.
+    for (const pair<const string, ThongKeMon>& muc : thongKeTheoMa) {
+        const ThongKeMon& thongKe = muc.second;
+        if (!daTimThayMon || thongKe.soLuong > soLuongLonNhat) {
+            soLuongLonNhat = thongKe.soLuong;
+            monBanChay = thongKe.tenMon + " (" + to_string(thongKe.soLuong) + " phan)";
+            daTimThayMon = true;
         }
     }
-    if (!co)
-        std::cout << "│" << canGiua("Khong co mon nao sap het hang", 54) << "│\n";
-    std::cout << "└──────────┴──────────────────────────────┴────────────┘\n";
+    string phamVi = ngayCanXem;
+    if (ngayCanXem.empty()) {
+        phamVi = "Tat ca hoa don";
+    }
+
+    GiaoDien::hienThiThongKe(phamVi, soHoaDon, tongDoanhThu, monBanChay, dsMon);
     dungManHinh();
 }
 
 void QuanLy::chay() {
     docDuLieu();
+    if (!quanLyTaiKhoan.docDuLieu()) {
+        bool daTao = taoTaiKhoan(true);
+        dungManHinh();
+        if (!daTao) {
+            return;
+        }
+    }
+    if (!dangNhap()) {
+        return;
+    }
     while (true) {
-        xoaManHinh();
-        const int rongMenu = 66;
-        std::cout << LAM
-                  << "┌──────────────────────────────────────────────────────────────────┐\n"
-                  << "│" << canGiua("HE THONG QUAN LY NHA HANG", rongMenu) << "│\n"
-                  << "├──────────────────────────────────────────────────────────────────┤\n"
-                  << RESET
-                  << "│" << canTrai("", rongMenu) << "│\n";
-        auto inMuc = [&](const std::string& so, const std::string& noiDung,
-                         const std::string& mau) {
-            std::cout << "│" << mau << canTrai("   " + so + "  " + noiDung, rongMenu)
-                      << RESET << "│\n";
-        };
-        inMuc("1.", "Quan ly khach hang", VANG);
-        inMuc("2.", "Quan ly nhan vien", VANG);
-        inMuc("3.", "Quan ly thuc don", VANG);
-        inMuc("4.", "Ban hang - Lap hoa don", VANG);
-        inMuc("5.", "Thong ke va bao cao", VANG);
-        inMuc("0.", "Luu du lieu va thoat", DO);
-        std::cout << "│" << canTrai("", rongMenu) << "│\n"
-                  << LAM
-                  << "└──────────────────────────────────────────────────────────────────┘\n"
-                  << RESET;
-        int c = nhapInt("Lua chon cua ban: ", 0, 5);
-        switch (c) {
+        GiaoDien::menuChinh(taiKhoanHienTai.tenDangNhap, laQuanLy());
+        int luaChonLonNhat = 5;
+        if (laQuanLy()) {
+            luaChonLonNhat = 8;
+        }
+        int luaChon = nhapInt("Lua chon cua ban: ", 0, luaChonLonNhat);
+        // Menu nhan vien danh so 1-5; doi sang ma chuc nang dung chung.
+        int chucNang = luaChon;
+        if (!laQuanLy()) {
+            switch (luaChon) {
+                case 2:
+                    chucNang = 3; // Xem thuc don
+                    break;
+                case 3:
+                    chucNang = 4; // Ban hang
+                    break;
+                case 4:
+                    chucNang = 7; // Doi mat khau
+                    break;
+                case 5:
+                    chucNang = 8; // Dang xuat
+                    break;
+            }
+        }
+        // Kiem tra quyen tai noi xu ly, khong chi an muc menu.
+        if (!laQuanLy() && (chucNang == 2 || chucNang == 5 || chucNang == 6)) {
+            cout << DO << "Ban khong co quyen su dung chuc nang nay.\n" << RESET;
+            dungManHinh();
+            continue;
+        }
+        switch (chucNang) {
             case 1:
                 menuKhachHang();
                 break;
@@ -656,9 +593,24 @@ void QuanLy::chay() {
             case 5:
                 menuThongKe();
                 break;
+            case 6:
+                taoTaiKhoan();
+                dungManHinh();
+                break;
+            case 7:
+                doiMatKhau();
+                dungManHinh();
+                break;
+            case 8:
+                ghiDuLieu();
+                taiKhoanHienTai = TaiKhoan();
+                if (!dangNhap()) {
+                    return;
+                }
+                break;
             case 0:
                 ghiDuLieu();
-                std::cout << XANH << "Da luu du lieu. Hen gap lai!\n" << RESET;
+                cout << XANH << "Da luu du lieu. Hen gap lai!\n" << RESET;
                 return;
         }
     }

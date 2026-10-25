@@ -1,39 +1,58 @@
 #include "KhachHang.h"
 
-#include <iomanip>
-#include <iostream>
-#include <utility>
-KhachHang::KhachHang(std::string m, std::string t, std::string s, std::string g, int d)
-    : Nguoi(std::move(m), std::move(t), std::move(s), std::move(g)), diemTichLuy(d) {
+using namespace std;
+
+KhachHang::KhachHang(string maKhach, string hoTen, string dienThoai, string gioiTinhMoi, int diem)
+    : Nguoi(maKhach, hoTen, dienThoai, gioiTinhMoi), diemTichLuy(diem) {
     capNhatHangVip();
 }
+
 void KhachHang::capNhatHangVip() {
-    hangVip = diemTichLuy >= 1000  ? "Kim Cuong"
-              : diemTichLuy >= 500 ? "Vang"
-              : diemTichLuy >= 200 ? "Bac"
-                                   : "Thuong";
+    if (diemTichLuy >= 1000) {
+        hangVip = "Kim Cuong";
+    } else if (diemTichLuy >= 500) {
+        hangVip = "Vang";
+    } else if (diemTichLuy >= 200) {
+        hangVip = "Bac";
+    } else {
+        hangVip = "Thuong";
+    }
 }
+
 int KhachHang::getDiemTichLuy() const {
     return diemTichLuy;
 }
-const std::string& KhachHang::getHangVip() const {
+
+const string& KhachHang::getHangVip() const {
     return hangVip;
 }
-void KhachHang::setDiemTichLuy(int d) {
-    diemTichLuy = d < 0 ? 0 : d;
+
+void KhachHang::setDiemTichLuy(int diem) {
+    if (diem < 0) {
+        diemTichLuy = 0;
+    } else {
+        diemTichLuy = diem;
+    }
     capNhatHangVip();
 }
-void KhachHang::congDiem(int d) {
-    setDiemTichLuy(diemTichLuy + d);
+
+void KhachHang::congDiem(int diem) {
+    setDiemTichLuy(diemTichLuy + diem);
 }
+
 double KhachHang::getPhanTramGiam() const {
-    return hangVip == "Kim Cuong" ? 15 : hangVip == "Vang" ? 10 : hangVip == "Bac" ? 5 : 0;
+    if (hangVip == "Kim Cuong") {
+        return 15;
+    }
+    if (hangVip == "Vang") {
+        return 10;
+    }
+    if (hangVip == "Bac") {
+        return 5;
+    }
+    return 0;
 }
-void KhachHang::hienThiThongTin() const {
-    std::cout << std::left << std::setw(10) << ma << std::setw(24) << ten << std::setw(15)
-              << soDienThoai << std::setw(12) << gioiTinh << std::setw(10) << diemTichLuy << hangVip
-              << '\n';
-}
-std::string KhachHang::toFile() const {
-    return ma + '|' + ten + '|' + soDienThoai + '|' + gioiTinh + '|' + std::to_string(diemTichLuy);
+
+string KhachHang::toFile() const {
+    return ma + '|' + ten + '|' + soDienThoai + '|' + gioiTinh + '|' + to_string(diemTichLuy);
 }

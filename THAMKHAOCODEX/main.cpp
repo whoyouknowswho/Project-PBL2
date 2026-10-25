@@ -1,17 +1,19 @@
 #include "Module4_QuanLy/QuanLy.h"
-#ifdef _WIN32
-#include <windows.h>
-#endif
+#include "Module5_GiaoDien/GiaoDien.h"
+#include <iostream>
+#include <exception>
+
+using namespace std;
+
+
 int main() {
-#ifdef _WIN32
-    SetConsoleOutputCP(CP_UTF8);
-    SetConsoleCP(CP_UTF8);
-    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD mode = 0;
-    if (GetConsoleMode(h, &mode))
-        SetConsoleMode(h, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-#endif
+    GiaoDien::khoiTao();
     QuanLy quanLy;
-    quanLy.chay();
+    try {
+        quanLy.chay();
+    } catch (const exception& loi) {
+        cerr << loi.what() << '\n';
+        return 1;
+    }
     return 0;
 }

@@ -7,11 +7,21 @@
 #include "../Module1_ConNguoi/NhanVien.h"
 #include "../Module2_ThucDon/Mon.h"
 #include "../Module3_BanHang/HoaDon.h"
+#include "../Module6_TaiKhoan/TaiKhoan.h"
+
+using namespace std;
 class QuanLy {
-    std::vector<KhachHang> dsKhachHang;
-    std::vector<NhanVien> dsNhanVien;
-    std::vector<std::unique_ptr<Mon>> dsMon;
-    std::vector<HoaDon> dsHoaDon;
+    vector<KhachHang> dsKhachHang;
+    vector<NhanVien> dsNhanVien;
+    // unique_ptr tu giai phong mon; MonAn va NuocUong dung chung lop cha Mon.
+    vector<unique_ptr<Mon>> dsMon;
+    vector<HoaDon> dsHoaDon;
+    QuanLyTaiKhoan quanLyTaiKhoan;
+    TaiKhoan taiKhoanHienTai;
+    bool laQuanLy() const;
+    bool dangNhap();
+    bool taoTaiKhoan(bool lanDau = false);
+    void doiMatKhau();
     void menuKhachHang();
     void menuNhanVien();
     void menuThucDon();
@@ -20,9 +30,9 @@ class QuanLy {
     void hienThiKhachHang() const;
     void hienThiNhanVien() const;
     void hienThiThucDon(int loc = 0, int sapXep = 0, bool chiConHang = false) const;
-    KhachHang* timKhach(const std::string&);
-    NhanVien* timNhanVien(const std::string&);
-    Mon* timMon(const std::string&);
+    KhachHang* timKhach(const string& maCanTim);
+    NhanVien* timNhanVien(const string& maCanTim);
+    Mon* timMon(const string& maCanTim);
 
    public:
     void docDuLieu();

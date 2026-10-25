@@ -1,19 +1,21 @@
 #ifndef NGUOI_H
 #define NGUOI_H
 #include <string>
+
+using namespace std;
 class Nguoi {
    protected:
-    std::string ma, ten, soDienThoai, gioiTinh;
+    string ma, ten, soDienThoai, gioiTinh;
 
    public:
     Nguoi() = default;
-    Nguoi(std::string ma, std::string ten, std::string sdt, std::string gioiTinh);
+    Nguoi(string ma, string ten, string sdt, string gioiTinh);
     virtual ~Nguoi() = default;
-    const std::string& getMa() const;
-    const std::string& getTen() const;
-    const std::string& getSoDienThoai() const;
-    const std::string& getGioiTinh() const;
-    void capNhatThongTin(const std::string&, const std::string&, const std::string&);
+    const string& getMa() const;
+    const string& getTen() const;
+    const string& getSoDienThoai() const;
+    const string& getGioiTinh() const;
+    void capNhatThongTin(const string& hoTen, const string& dienThoai, const string& gioiTinh);
     virtual void hienThiThongTin() const = 0;
 };
 #endif

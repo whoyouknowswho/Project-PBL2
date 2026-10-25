@@ -1,19 +1,22 @@
 #ifndef NHANVIEN_H
 #define NHANVIEN_H
 #include "Nguoi.h"
+
+using namespace std;
 class NhanVien : public Nguoi {
-    std::string chucVu;
+    string chucVu;
     double luongCoBan = 0, phuCap = 0;
 
    public:
     NhanVien() = default;
-    NhanVien(std::string, std::string, std::string, std::string, std::string, double, double = 0);
-    const std::string& getChucVu() const;
+    NhanVien(string maNhanVien, string hoTen, string dienThoai, string gioiTinh,
+             string chucVu, double luong, double phuCap = 0);
+    const string& getChucVu() const;
     double getLuongCoBan() const;
     double getPhuCap() const;
     double tinhLuong() const;
-    void capNhatCongViec(const std::string&, double, double);
+    void capNhatCongViec(const string& chucVuMoi, double luong, double phuCap);
     void hienThiThongTin() const override;
-    std::string toFile() const;
+    string toFile() const;
 };
 #endif

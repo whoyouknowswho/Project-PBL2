@@ -2,8 +2,10 @@
 #define HOADON_H
 #include <string>
 #include <vector>
+
+using namespace std;
 struct ChiTietHoaDon {
-    std::string maMon, tenMon;
+    string maMon, tenMon;
     int soLuong = 0;
     double donGia = 0;
     double thanhTien() const {
@@ -11,23 +13,23 @@ struct ChiTietHoaDon {
     }
 };
 class HoaDon {
-    std::string maHoaDon, ngayLap, maKhachHang, maNhanVien;
-    std::vector<ChiTietHoaDon> gioHang;
+    string maHoaDon, ngayLap, maKhachHang, maNhanVien;
+    vector<ChiTietHoaDon> gioHang;
     double phanTramGiam = 0;
 
    public:
     HoaDon() = default;
-    HoaDon(std::string, std::string, std::string, std::string);
-    const std::string& getMa() const;
-    const std::string& getNgayLap() const;
-    const std::vector<ChiTietHoaDon>& getGioHang() const;
-    void themMon(const ChiTietHoaDon&);
-    void setGiamGia(double);
+    HoaDon(string maHoaDon, string ngayLap, string maKhachHang, string maNhanVien);
+    const string& getMa() const;
+    const string& getNgayLap() const;
+    const vector<ChiTietHoaDon>& getGioHang() const;
+    void themMon(const ChiTietHoaDon& chiTiet);
+    void setGiamGia(double phanTram);
     double tamTinh() const;
     double tienGiam() const;
     double tongTien() const;
     void inHoaDon() const;
-    std::string toFile() const;
-    static HoaDon fromFile(const std::string&);
+    string toFile() const;
+    static HoaDon fromFile(const string& dongDuLieu);
 };
 #endif
