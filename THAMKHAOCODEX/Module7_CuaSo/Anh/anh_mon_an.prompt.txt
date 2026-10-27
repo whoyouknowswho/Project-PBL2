@@ -1,0 +1,8 @@
+Generated with the built-in image_gen tool on 2026-10-27.
+Project asset: anh_mon_an.png. Representative illustrations, not actual restaurant photos.
+
+Final prompt:
+Use case: product-mockup. Create one food photography texture atlas for a C++ restaurant menu. A single landscape image, 1536 by 1024 pixels, exactly 3 columns and 2 rows of equal square photographic tiles, perfectly edge-to-edge, no gutters, no borders, no text, no lettering, no watermarks. Each photograph has its own light warm cream background, clean restaurant catalog style, appetizing natural soft light, entire dish or glass centered with breathing room and fully contained within its own tile. Top left: Vietnamese chicken rice, white rice, golden poached chicken pieces, cucumber, small garnish on a round white plate. Top middle: Vietnamese garlic stir-fried green vegetables on a white plate. Top right: a bowl of Vietnamese instant noodles in broth with scallions and a little vegetables, no packaged food branding. Bottom left: a clear tall glass of iced peach tea with visible peach slices. Bottom middle: a clear glass of freshly squeezed orange juice, orange slice on rim. Bottom right: a neutral white restaurant plate with folded linen and silver fork and spoon, no food, as a generic placeholder. The six images must be strictly arranged in a regular 3 by 2 grid so rendering code can address each square tile. Photorealistic actual food, consistent scale and studio lighting.
+
+The generated image has its horizontal row boundary at about 47.4% of its height.
+ThucDonKhachHang.cpp draws each region directly; the PNG is kept intact.

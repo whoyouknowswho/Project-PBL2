@@ -22,6 +22,7 @@ class HoaDon {
     HoaDon(string maHoaDon, string ngayLap, string maKhachHang, string maNhanVien);
     const string& getMa() const;
     const string& getNgayLap() const;
+    const string& getMaKhachHang() const;
     const vector<ChiTietHoaDon>& getGioHang() const;
     void themMon(const ChiTietHoaDon& chiTiet);
     void setGiamGia(double phanTram);

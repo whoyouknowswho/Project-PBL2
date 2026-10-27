@@ -68,3 +68,36 @@ void veLogo(HDC dc, HBITMAP logo, RECT vung) {
     SetStretchBltMode(dc, cheDoCu);
     SelectObject(anh, cu); DeleteDC(anh);
 }
+
+HBITMAP taiAnhTep(const wstring& duongDan) {
+    if(GetFileAttributesW(duongDan.c_str())==INVALID_FILE_ATTRIBUTES) return nullptr;
+    Gdiplus::GdiplusStartupInput thietLap;
+    ULONG_PTR phien=0;
+    if(Gdiplus::GdiplusStartup(&phien,&thietLap,nullptr)!=Gdiplus::Ok) return nullptr;
+    HBITMAP ketQua=nullptr;
+    {
+        Gdiplus::Bitmap anh(duongDan.c_str());
+        if(anh.GetLastStatus()==Gdiplus::Ok)
+            anh.GetHBITMAP(Gdiplus::Color(255,255,255),&ketQua);
+    }
+    Gdiplus::GdiplusShutdown(phien);
+    return ketQua;
+}
+
+void veAnhCat(HDC dc, HBITMAP anh, RECT nguon, RECT dich) {
+    if(!anh || nguon.right<=nguon.left || nguon.bottom<=nguon.top ||
+       dich.right<=dich.left || dich.bottom<=dich.top) return;
+    int sw=nguon.right-nguon.left, sh=nguon.bottom-nguon.top;
+    int dw=dich.right-dich.left, dh=dich.bottom-dich.top;
+    double tiLe=max(static_cast<double>(dw)/sw,static_cast<double>(dh)/sh);
+    int catW=max(1,static_cast<int>(dw/tiLe)), catH=max(1,static_cast<int>(dh/tiLe));
+    int sx=nguon.left+(sw-catW)/2, sy=nguon.top+(sh-catH)/2;
+    HDC boNho=CreateCompatibleDC(dc);
+    HGDIOBJ cu=SelectObject(boNho,anh);
+    int cheDo=SetStretchBltMode(dc,HALFTONE);
+    POINT goc; SetBrushOrgEx(dc,0,0,&goc);
+    StretchBlt(dc,dich.left,dich.top,dw,dh,boNho,sx,sy,catW,catH,SRCCOPY);
+    SetBrushOrgEx(dc,goc.x,goc.y,nullptr);
+    SetStretchBltMode(dc,cheDo);
+    SelectObject(boNho,cu); DeleteDC(boNho);
+}

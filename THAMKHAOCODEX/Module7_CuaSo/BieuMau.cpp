@@ -12,9 +12,6 @@ wstring chuThuong(wstring s) {
     return s;
 }
 bool khop(const string& s, const wstring& tuKhoa) { return chuThuong(rong(s)).find(chuThuong(tuKhoa)) != wstring::npos; }
-bool tenTang(const Mon* a,const Mon* b) { return chuThuong(rong(a->getTen()))<chuThuong(rong(b->getTen())); }
-bool giaTang(const Mon* a,const Mon* b) { return a->getGia()<b->getGia(); }
-bool giaGiam(const Mon* a,const Mon* b) { return a->getGia()>b->getGia(); }
 }
 
 void CuaSoNhaHang::trangDangNhap() {
@@ -23,20 +20,29 @@ void CuaSoNhaHang::trangDangNhap() {
     theBieuMau={x-32,y-28,x+w+32,y+456};
     HWND tieuDe=tao(L"STATIC",thietLap?L"Thiết lập lần đầu":L"Chào mừng trở lại",SS_LEFT,-1,x,y,w,44);
     SendMessageW(tieuDe,WM_SETFONT,reinterpret_cast<WPARAM>(fontLon),TRUE);
-    nhan(thietLap?L"Tạo tài khoản quản lý để bắt đầu.":L"Đăng nhập để bắt đầu ca làm việc.",x,y+50,w);
+    nhan(thietLap?L"Tạo tài khoản quản lý để bắt đầu.":L"Đăng nhập để tiếp tục.",x,y+50,w);
     nhap(L"Tên đăng nhập",O_USER,x,y+108,w);
     nhap(L"Mật khẩu",O_PASS,x,y+188,w,L"",true);
     if(thietLap) nhap(L"Nhập lại mật khẩu",O_CONFIRM,x,y+268,w,L"",true);
-    else nhan(L"Tài khoản được cấp bởi quản lý nhà hàng.",x,y+272,w);
+    else nhan(L"Khách mới có thể tự đăng ký tài khoản bên dưới.",x,y+272,w);
     nut(thietLap?L"Tạo tài khoản quản lý":L"Đăng nhập",NUT_DANGNHAP,x,y+348,w,1);
-    nhan(L"Nhấn Enter hoặc chọn nút để tiếp tục.",x,y+410,w);
+    if(thietLap) nhan(L"Nhấn Enter hoặc chọn nút để tiếp tục.",x,y+410,w);
+    else nut(L"Đăng ký khách hàng",NUT_MO_DANGKY,x,y+400,w);
     SetFocus(o(O_USER));
 }
 
 void CuaSoNhaHang::trangChu() {
-    nut(L"+ Tạo đơn bán hàng",BAN_HANG,264,266,210,1);
-    nut(L"Xem thực đơn",THUC_DON,490,266,180);
-    nhan(L"Tồn kho thấp · Cần kiểm tra trước khi bán",264,324,600,true);
+    if(dichVu.laKhachHang()) { trangChuKhachHang(); return; }
+    if(dichVu.laQuanLy()) {
+        nut(L"Quản lý thực đơn",THUC_DON,264,266,210,1);
+        nut(L"Xem báo cáo",BAO_CAO,490,266,180);
+        trangBieuDoDoanhThu();
+        return;
+    } else {
+        nut(L"+ Tạo đơn bán hàng",BAN_HANG,264,266,210,1);
+        nut(L"Xem thực đơn",THUC_DON,490,266,180);
+    }
+    nhan(L"Tồn kho thấp · Cần kiểm tra và nhập thêm",264,324,600,true);
     bang(BANG_CHINH,264,358,rongCuaSo-290,caoCuaSo-414,
          {{L"Mã món",110},{L"Tên món",300},{L"Loại",180},{L"Còn lại",110},{L"Tình trạng",190}});
     for(size_t i=0;i<dichVu.thucDon().size();i++) {
@@ -53,18 +59,25 @@ void CuaSoNhaHang::trangDanhSach() {
     int x=rongCuaSo-334, w=290;
     if(coBieuMau) { bangW-=354; theBieuMau={x-20,130,rongCuaSo-24,caoCuaSo-52}; }
     int timW=bangW;
-    if(trangHienTai==THUC_DON) timW=max(180,bangW-332);
-    nhap(L"Tìm theo mã, tên hoặc số điện thoại",TIM_KIEM,264,130,timW);
+    if(trangHienTai==THUC_DON) timW=bangW-180;
+    nhap(trangHienTai==THUC_DON?L"Tìm món theo mã hoặc tên":L"Tìm theo mã, tên hoặc số điện thoại",TIM_KIEM,264,130,timW);
     if(trangHienTai==THUC_DON) {
-        chon(L"Loại món",LOC_LOAI,264+timW+12,130,144,{L"Tất cả",L"Món ăn",L"Nước uống"});
-        chon(L"Sắp xếp",SAP_XEP,264+timW+168,130,164,{L"Mặc định",L"Tên A–Z",L"Giá tăng",L"Giá giảm"});
-        danhDau(L"Chỉ hiện món còn hàng",CON_HANG,264,190,250);
-    } else nhan(L"Chọn một dòng để xem và chỉnh sửa thông tin.",264,190,bangW);
-    vector<pair<wstring,int>> cot;
-    if(trangHienTai==KHACH_HANG) cot={{L"Mã KH",90},{L"Họ tên",200},{L"Điện thoại",130},{L"Giới tính",95},{L"Điểm",75},{L"Hạng VIP",105}};
-    if(trangHienTai==NHAN_VIEN) cot={{L"Mã NV",90},{L"Họ tên",185},{L"Điện thoại",125},{L"Chức vụ",140},{L"Tổng lương",140}};
-    if(trangHienTai==THUC_DON) cot={{L"Mã món",85},{L"Tên món",180},{L"Loại",110},{L"Giá",120},{L"Tồn",65},{L"Chi tiết",200}};
-    bang(BANG_CHINH,264,226,bangW,caoCuaSo-282,cot);
+        chon(L"Sắp xếp",SAP_XEP,264+bangW-168,130,168,{L"Mặc định",L"Tên A–Z",L"Giá tăng",L"Giá giảm"});
+        int nua=(bangW-12)/2;
+        nut(L"Thức ăn",NUT_NHOM_THUCAN,264,202,nua,nhomThucDon==0?1:0);
+        nut(L"Nước uống",NUT_NHOM_NUOC,264+nua+12,202,bangW-nua-12,nhomThucDon==1?1:0);
+        danhDau(L"Chỉ hiện món còn hàng",CON_HANG,264,252,250);
+        int dau=292;
+        HWND ds=tao(L"LISTBOX",L"",WS_TABSTOP|WS_VSCROLL|LBS_NOTIFY|LBS_OWNERDRAWFIXED|
+            LBS_HASSTRINGS|LBS_NOINTEGRALHEIGHT,DANH_SACH_THUCDON,264,dau,bangW,caoCuaSo-dau-56);
+        SendMessageW(ds,LB_SETITEMHEIGHT,0,160);
+    } else {
+        nhan(L"Chọn một dòng để xem và chỉnh sửa thông tin.",264,190,bangW);
+        vector<pair<wstring,int>> cot;
+        if(trangHienTai==KHACH_HANG) cot={{L"Mã KH",90},{L"Họ tên",200},{L"Điện thoại",130},{L"Giới tính",95},{L"Điểm",75},{L"Hạng VIP",105}};
+        else cot={{L"Mã NV",90},{L"Họ tên",185},{L"Điện thoại",125},{L"Chức vụ",140},{L"Tổng lương",140}};
+        bang(BANG_CHINH,264,226,bangW,caoCuaSo-282,cot);
+    }
     if(!coBieuMau) return;
     nhan(L"Thông tin chi tiết",x,144,w,true);
     if(trangHienTai==THUC_DON) {
@@ -109,6 +122,7 @@ void CuaSoNhaHang::doiLoaiMon() {
 }
 
 void CuaSoNhaHang::napBang() {
+    if(trangHienTai==THUC_DON) { napThucDonAnh(); return; }
     bool cu=dangVeBang; dangVeBang=true;
     ListView_DeleteAllItems(o(BANG_CHINH));
     wstring tuKhoa=chu(TIM_KIEM);
@@ -126,30 +140,13 @@ void CuaSoNhaHang::napBang() {
             if(!khop(n.getMa()+" "+n.getTen()+" "+n.getSoDienThoai(),tuKhoa)) continue;
             dongBang(BANG_CHINH,{rong(n.getMa()),rong(n.getTen()),rong(n.getSoDienThoai()),rong(n.getChucVu()),tien(n.tinhLuong())},static_cast<int>(i));
         }
-    } else if(trangHienTai==THUC_DON) {
-        vector<const Mon*> ds;
-        for(const unique_ptr<Mon>& m:dichVu.thucDon()) {
-            if(!khop(m->getMa()+" "+m->getTen(),tuKhoa)) continue;
-            if(luaChon(LOC_LOAI)==1 && m->getLoai()!="Mon an") continue;
-            if(luaChon(LOC_LOAI)==2 && m->getLoai()!="Nuoc uong") continue;
-            if(daDanhDau(CON_HANG) && m->getTonKho()==0) continue;
-            ds.push_back(m.get());
-        }
-        if(luaChon(SAP_XEP)==1) sort(ds.begin(),ds.end(),tenTang);
-        if(luaChon(SAP_XEP)==2) sort(ds.begin(),ds.end(),giaTang);
-        if(luaChon(SAP_XEP)==3) sort(ds.begin(),ds.end(),giaGiam);
-        for(const Mon* m:ds) {
-            int viTri=0;
-            for(size_t i=0;i<dichVu.thucDon().size();i++) if(dichVu.thucDon()[i].get()==m) viTri=static_cast<int>(i);
-            dongBang(BANG_CHINH,{rong(m->getMa()),rong(m->getTen()),m->getLoai()=="Mon an"?L"Món ăn":L"Nước uống",tien(m->getGia()),so(m->getTonKho()),rong(m->hienThiChiTiet())},viTri);
-        }
     }
     dangVeBang=cu;
     thanhCong(L"Có "+to_wstring(ListView_GetItemCount(o(BANG_CHINH)))+L" kết quả. Dữ liệu được lưu khi nhấn Lưu.");
 }
 
 void CuaSoNhaHang::chonDong() {
-    int viTri=dongChon(BANG_CHINH);
+    int viTri=trangHienTai==THUC_DON?monThucDonDaChon():dongChon(BANG_CHINH);
     if(viTri<0 || (trangHienTai==THUC_DON && !dichVu.laQuanLy())) return;
     if(trangHienTai==KHACH_HANG || trangHienTai==NHAN_VIEN) {
         const Nguoi* nguoi=nullptr;
@@ -177,7 +174,11 @@ void CuaSoNhaHang::chonDong() {
             chonMuc(O_SIZE,size); SendMessageW(o(O_DA),BM_SETCHECK,n.getCoDa()?BST_CHECKED:BST_UNCHECKED,0);
         }
         doiLoaiMon();
-    } else if(trangHienTai==BAN_HANG) {
+    } else if(trangHienTai==BAO_CAO) {
+        EnableWindow(o(NUT_HOADON),true); return;
+    } else if(trangHienTai==DON_DAT) {
+        chiTietDonDat(); return;
+    } else if(trangHienTai==BAN_HANG || trangHienTai==DAT_MON) {
         const Mon& mon=*dichVu.thucDon().at(viTri);
         bool nuoc=mon.getLoai()=="Nuoc uong";
         EnableWindow(o(O_SIZE),nuoc); EnableWindow(o(O_DA),nuoc);
@@ -225,10 +226,9 @@ void CuaSoNhaHang::trangTaiKhoan() {
     theBieuMau={264,130,780,caoCuaSo-60};
     nhan(L"Cấp tài khoản mới",x,154,w,true);
     nhap(L"Tên đăng nhập",O_USER,x,200,w);
-    chon(L"Vai trò",O_ROLE,x,268,w,{L"Nhân viên",L"Quản lý"});
-    vector<wstring> ds;
-    for(const NhanVien& n:dichVu.nhanVien()) ds.push_back(rong(n.getMa()));
-    chon(L"Mã nhân viên (dành cho tài khoản nhân viên)",O_NHANVIEN,x,336,w,ds);
+    chon(L"Vai trò",O_ROLE,x,268,w,{L"Nhân viên",L"Quản lý",L"Khách hàng"});
+    chon(L"Hồ sơ liên kết (nhân viên hoặc khách hàng)",O_NHANVIEN,x,336,w,{});
+    capNhatHoSoTaiKhoan();
     nhap(L"Mật khẩu (8–128 byte)",O_PASS,x,404,w,L"",true);
     nhap(L"Nhập lại mật khẩu",O_CONFIRM,x,472,w,L"",true);
     nut(L"Tạo tài khoản",NUT_TAOTAIKHOAN,x,554,w,1);
@@ -246,18 +246,46 @@ void CuaSoNhaHang::trangMatKhau() {
 }
 
 void CuaSoNhaHang::xuLyNut(int id,int suKien) {
+    if(id==DANH_SACH_THUCDON && suKien==LBN_SELCHANGE) { chonDong(); return; }
+    if(id==LOC_NAM_DOANHTHU && suKien==CBN_SELCHANGE) { napBieuDoDoanhThu(); return; }
+    if(id==DANH_SACH_MON && suKien==LBN_SELCHANGE) { chonMonDat(); return; }
+    if(id==DANH_SACH_MON && suKien==LBN_DBLCLK) { themVaoGio(); return; }
     if(suKien==EN_CHANGE && (id==TIM_KIEM)) {
-        if(trangHienTai==BAN_HANG) napBanHang(); else napBang(); return;
+        if(trangHienTai==BAN_HANG || trangHienTai==DAT_MON) napBanHang(); else napBang(); return;
     }
-    if(suKien==CBN_SELCHANGE && (id==LOC_LOAI || id==SAP_XEP)) { napBang(); return; }
+    if(suKien==CBN_SELCHANGE && id==SAP_XEP) { napBang(); return; }
     if(suKien==CBN_SELCHANGE && id==O_LOAI) { doiLoaiMon(); return; }
     if(suKien==CBN_SELCHANGE && id==O_KHACH) { napGio(); return; }
-    if(suKien==CBN_SELCHANGE && id==O_ROLE) { EnableWindow(o(O_NHANVIEN),luaChon(O_ROLE)==0); return; }
+    if(suKien==CBN_SELCHANGE && id==O_ROLE) { capNhatHoSoTaiKhoan(); return; }
     if(suKien!=BN_CLICKED) return;
-    if(id==NUT_DANGNHAP && !dichVu.daDangNhap()) {
+    if(!dichVu.daDangNhap() && id==NUT_MO_DANGKY && !thietLap) {
+        dangDangKy=true;
+        hienTrang(TRANG_CHU);
+        return;
+    }
+    if(!dichVu.daDangNhap() && id==NUT_VE_DANGNHAP) {
+        dangDangKy=false;
+        hienTrang(TRANG_CHU);
+        return;
+    }
+    if(!dichVu.daDangNhap() && id==NUT_DANGKY && dangDangKy && !thietLap) {
+        string ten=duLieu(O_USER);
+        string ma=dichVu.dangKyKhachHang(duLieu(O_TEN),duLieu(O_SDT),duLieu(O_GIOITINH),
+                                        ten,duLieu(O_PASS),duLieu(O_CONFIRM));
+        dangDangKy=false;
+        soLanSai=0;
+        hienTrang(TRANG_CHU);
+        gan(O_USER,rong(ten));
+        SetFocus(o(O_PASS));
+        wstring noiDung=L"Đăng ký thành công! Mã khách hàng của bạn: "+rong(ma)+
+                       L".\nHãy đăng nhập bằng tài khoản vừa tạo.";
+        MessageBoxW(cuaSo,noiDung.c_str(),L"Đăng ký thành công",MB_OK|MB_ICONINFORMATION);
+        return;
+    }
+    if(id==NUT_DANGNHAP && !dichVu.daDangNhap() && !dangDangKy) {
         if(thietLap) {
             string ten=duLieu(O_USER);
-            dichVu.taoTaiKhoan(ten,duLieu(O_PASS),duLieu(O_CONFIRM),true,"");
+            dichVu.taoTaiKhoan(ten,duLieu(O_PASS),duLieu(O_CONFIRM),"QUANLY","");
             thietLap=false; hienTrang(TRANG_CHU); gan(O_USER,rong(ten)); SetFocus(o(O_PASS));
             MessageBoxW(cuaSo,L"Đã tạo tài khoản quản lý. Hãy đăng nhập để tiếp tục.",L"Thành công",MB_OK|MB_ICONINFORMATION);
         } else {
@@ -265,22 +293,34 @@ void CuaSoNhaHang::xuLyNut(int id,int suKien) {
             if(!dichVu.dangNhap(ten,duLieu(O_PASS))) {
                 soLanSai++; gan(O_PASS,L"");
                 if(soLanSai>=3) { baoLoi("Đăng nhập sai 3 lần. Hãy mở lại ứng dụng để thử lại."); DestroyWindow(cuaSo); }
-                else { baoLoi("Sai tài khoản, mật khẩu hoặc hồ sơ nhân viên không còn tồn tại."); SetFocus(o(O_PASS)); }
+                else { baoLoi("Sai tài khoản, mật khẩu hoặc hồ sơ liên kết không còn tồn tại."); SetFocus(o(O_PASS)); }
                 return;
             }
-            soLanSai=0; thongBao=L"Xin chào, "+rong(ten)+L". Chúc bạn một ngày làm việc hiệu quả!";
+            soLanSai=0; thongBao=L"Xin chào, "+rong(ten)+L"!";
             hienTrang(TRANG_CHU);
         }
         return;
     }
     if(!dichVu.daDangNhap()) return;
-    if(id>=TRANG_CHU && id<=MAT_KHAU) { hienTrang(id); return; }
+    if((id>=TRANG_CHU && id<=MAT_KHAU) || id==HO_SO_CUA_TOI || id==HOA_DON_CUA_TOI || id==DAT_MON || id==DON_DAT) { hienTrang(id); return; }
     if(id==DANG_XUAT) {
         if(!xacNhan(gioHang.empty()?L"Bạn muốn đăng xuất?":L"Giỏ hàng chưa thanh toán sẽ bị hủy. Bạn muốn đăng xuất?")) return;
-        gioHang.clear(); maHoaDon.clear(); ngayDon.clear(); khachDon.clear(); nhanVienDon.clear();
+        gioHang.clear(); hoaDonBaoCao.clear(); maHoaDon.clear(); ngayDon.clear(); khachDon.clear(); nhanVienDon.clear();
+        maMonDangChon.clear(); nhomDatMon=0; nhomThucDon=0;
         dichVu.dangXuat(); hienTrang(TRANG_CHU); return;
     }
     switch(id) {
+        case NUT_NHOM_THUCAN: case NUT_NHOM_NUOC:
+            if(trangHienTai==THUC_DON) {
+                nhomThucDon=id==NUT_NHOM_NUOC?1:0;
+                gan(TIM_KIEM,L""); napThucDonAnh();
+            } else {
+                nhomDatMon=id==NUT_NHOM_NUOC?1:0;
+                maMonDangChon.clear(); gan(TIM_KIEM,L""); napMonDat();
+            }
+            break;
+        case NUT_GUI_DON: case NUT_HUY_DON: case NUT_THANHTOAN_DON: case NUT_LAMMOI_DON:
+            xuLyDonDat(id); break;
         case NUT_LUU: luuBieuMau(); break;
         case NUT_MOI: hienTrang(trangHienTai); SetFocus(o(O_MA)); break;
         case NUT_XOA: xoaBanGhi(); break;
@@ -290,7 +330,7 @@ void CuaSoNhaHang::xuLyNut(int id,int suKien) {
             string ma=maDangSua; hienTrang(THUC_DON); thanhCong(L"Đã nhập thêm tồn kho cho "+rong(ma)); break;
         }
         case NUT_TAOTAIKHOAN:
-            dichVu.taoTaiKhoan(duLieu(O_USER),duLieu(O_PASS),duLieu(O_CONFIRM),luaChon(O_ROLE)==1,duLieu(O_NHANVIEN));
+            dichVu.taoTaiKhoan(duLieu(O_USER),duLieu(O_PASS),duLieu(O_CONFIRM),vaiTroDuocChon(),maLienKetDuocChon());
             hienTrang(TAI_KHOAN); thanhCong(L"Đã tạo tài khoản thành công."); break;
         case NUT_DOIMATKHAU:
             dichVu.doiMatKhau(duLieu(O_OLDPASS),duLieu(O_PASS),duLieu(O_CONFIRM));
@@ -299,17 +339,20 @@ void CuaSoNhaHang::xuLyNut(int id,int suKien) {
         case NUT_XOA_GIO: {
             int i=dongChon(BANG_GIO);
             if(i<0) throw runtime_error("Chọn món trong giỏ cần xóa.");
-            gioHang.erase(gioHang.begin()+i); napGio(); break;
+            gioHang.erase(gioHang.begin()+i); napGio(); if(trangHienTai==DAT_MON) napMonDat(); break;
         }
         case NUT_HUY_GIO:
-            if(!gioHang.empty() && xacNhan(L"Hủy toàn bộ giỏ hàng?")) { gioHang.clear(); napGio(); }
+            if(!gioHang.empty() && xacNhan(L"Hủy toàn bộ giỏ hàng?")) { gioHang.clear(); napGio(); if(trangHienTai==DAT_MON) napMonDat(); }
             break;
         case NUT_THANHTOAN: thanhToan(); break;
+        case NUT_BC_HOMNAY: gan(LOC_BAO_CAO,rong(homNay())); napBaoCao(); break;
+        case NUT_BC_THANG: gan(LOC_BAO_CAO,rong(homNay().substr(3))); napBaoCao(); break;
+        case NUT_BC_TATCA: gan(LOC_BAO_CAO,L""); napBaoCao(); break;
         case NUT_BAOCAO: napBaoCao(); break;
         case NUT_HOADON: {
             int i=dongChon(BANG_CHINH);
             if(i<0) throw runtime_error("Chọn một hóa đơn trong danh sách.");
-            xemHoaDon(cuaSo,hoaDonBaoCao.at(i)); break;
+            xemHoaDon(cuaSo,dichVu.hoaDonDuocXem(hoaDonBaoCao.at(i).getMa())); break;
         }
     }
 }

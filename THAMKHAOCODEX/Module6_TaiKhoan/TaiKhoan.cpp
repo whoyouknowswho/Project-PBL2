@@ -106,13 +106,18 @@ bool QuanLyTaiKhoan::docDuLieu() {
         }
         if (truong.size() != 6 || truong[0] != "PBKDF2-SHA256-600000" ||
             !tenHopLe(truong[1]) || tim(truong[1]) != nullptr ||
-            (truong[2] != "QUANLY" && truong[2] != "NHANVIEN") ||
-            (truong[2] == "NHANVIEN" && !tenHopLe(truong[3])) ||
+            (truong[2] != "QUANLY" && truong[2] != "NHANVIEN" && truong[2] != "KHACHHANG") ||
+            ((truong[2] == "NHANVIEN" || truong[2] == "KHACHHANG") && !tenHopLe(truong[3])) ||
             !laHex(truong[4], 32) || !laHex(truong[5], 64) ||
             (!dong.empty() && dong.back() == '|')) {
             throw runtime_error("Tep tai khoan khong hop le. Khong tu dong tao lai tai khoan.");
         }
-        TaiKhoan taiKhoan = {truong[1], truong[2], truong[3], truong[4], truong[5]};
+        TaiKhoan taiKhoan = {truong[1], truong[2], truong[3], truong[4], truong[5], ""};
+        // Giu dinh dang 6 cot de doc duoc tat ca tai khoan cu.
+        if (taiKhoan.vaiTro == "KHACHHANG") {
+            taiKhoan.maKhachHang = truong[3];
+            taiKhoan.maNhanVien.clear();
+        }
         danhSach.push_back(taiKhoan);
         if (taiKhoan.vaiTro == "QUANLY") {
             coQuanLy = true;
@@ -146,14 +151,22 @@ bool QuanLyTaiKhoan::kiemTraMatKhau(const string& tenDangNhap, const string& mat
     return khacNhau == 0;
 }
 
+string QuanLyTaiKhoan::noiDungTep(const vector<TaiKhoan>& duLieu) const {
+    ostringstream noiDung;
+    for (const TaiKhoan& taiKhoan : duLieu) {
+        string maLienKet = taiKhoan.maNhanVien;
+        if (taiKhoan.vaiTro == "KHACHHANG") maLienKet = taiKhoan.maKhachHang;
+        noiDung << "PBKDF2-SHA256-600000|" << taiKhoan.tenDangNhap << '|'
+                << taiKhoan.vaiTro << '|' << maLienKet << '|'
+                << taiKhoan.muoi << '|' << taiKhoan.matKhauBam << '\n';
+    }
+    return noiDung.str();
+}
+
 void QuanLyTaiKhoan::luu(const vector<TaiKhoan>& duLieu) const {
     string tepTam = string(TEP_TAI_KHOAN) + ".tmp";
     ofstream tep(tepTam, ios::trunc);
-    for (const TaiKhoan& taiKhoan : duLieu) {
-        tep << "PBKDF2-SHA256-600000|" << taiKhoan.tenDangNhap << '|'
-            << taiKhoan.vaiTro << '|' << taiKhoan.maNhanVien << '|'
-            << taiKhoan.muoi << '|' << taiKhoan.matKhauBam << '\n';
-    }
+    tep << noiDungTep(duLieu);
     tep.close();
     if (!tep || !MoveFileExA(tepTam.c_str(), TEP_TAI_KHOAN,
                              MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
@@ -161,25 +174,39 @@ void QuanLyTaiKhoan::luu(const vector<TaiKhoan>& duLieu) const {
     }
 }
 
-void QuanLyTaiKhoan::tao(const string& tenDangNhap, const string& matKhau,
-                         const string& vaiTro, const string& maNhanVien) {
+TaiKhoan QuanLyTaiKhoan::chuanBi(const string& tenDangNhap, const string& matKhau,
+                                 const string& vaiTro, const string& maLienKet) const {
     if (!tenHopLe(tenDangNhap)) {
         throw runtime_error("Ten dang nhap: 1-32 chu cai, chu so, _ hoac -.");
     }
     if (tim(tenDangNhap) != nullptr) {
         throw runtime_error("Ten dang nhap da ton tai.");
     }
-    if ((vaiTro != "QUANLY" && vaiTro != "NHANVIEN") ||
-        (vaiTro == "NHANVIEN" && !tenHopLe(maNhanVien))) {
-        throw runtime_error("Vai tro hoac ma nhan vien khong hop le.");
+    if ((vaiTro != "QUANLY" && vaiTro != "NHANVIEN" && vaiTro != "KHACHHANG") ||
+        ((vaiTro == "NHANVIEN" || vaiTro == "KHACHHANG") && !tenHopLe(maLienKet))) {
+        throw runtime_error("Vai tro hoac ma ho so lien ket khong hop le.");
+    }
+    if (vaiTro == "KHACHHANG") {
+        for (const TaiKhoan& cu : danhSach) {
+            if (cu.vaiTro == "KHACHHANG" && cu.maKhachHang == maLienKet) {
+                throw runtime_error("Khach hang nay da co tai khoan.");
+            }
+        }
     }
     kiemTraMatKhauMoi(matKhau);
     TaiKhoan taiKhoan;
     taiKhoan.tenDangNhap = tenDangNhap;
     taiKhoan.vaiTro = vaiTro;
-    taiKhoan.maNhanVien = maNhanVien;
+    if (vaiTro == "NHANVIEN") taiKhoan.maNhanVien = maLienKet;
+    if (vaiTro == "KHACHHANG") taiKhoan.maKhachHang = maLienKet;
     taiKhoan.muoi = taoMuoi();
     taiKhoan.matKhauBam = bamMatKhau(matKhau, taiKhoan.muoi);
+    return taiKhoan;
+}
+
+void QuanLyTaiKhoan::tao(const string& tenDangNhap, const string& matKhau,
+                         const string& vaiTro, const string& maLienKet) {
+    TaiKhoan taiKhoan = chuanBi(tenDangNhap, matKhau, vaiTro, maLienKet);
     vector<TaiKhoan> banMoi = danhSach;
     banMoi.push_back(taiKhoan);
     luu(banMoi);

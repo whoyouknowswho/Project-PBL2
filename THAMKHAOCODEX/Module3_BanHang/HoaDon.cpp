@@ -29,6 +29,10 @@ const string& HoaDon::getNgayLap() const {
     return ngayLap;
 }
 
+const string& HoaDon::getMaKhachHang() const {
+    return maKhachHang;
+}
+
 const vector<ChiTietHoaDon>& HoaDon::getGioHang() const {
     return gioHang;
 }

@@ -171,15 +171,29 @@ void CuaSoNhaHang::xoaDieuKhien() {
     vector<HWND> ds;
     for (HWND h = GetWindow(cuaSo, GW_CHILD); h; h = GetWindow(h, GW_HWNDNEXT)) ds.push_back(h);
     for (HWND h : ds) DestroyWindow(h);
+    if (khoangDongBaoCao) { ImageList_Destroy(khoangDongBaoCao); khoangDongBaoCao = nullptr; }
 }
 
 void CuaSoNhaHang::thanhBen() {
     nut(L"Tổng quan", TRANG_CHU, 18, 160, 200, 3);
+    if (dichVu.laKhachHang()) {
+        nut(L"Thực đơn", THUC_DON, 18, 210, 200, 3);
+        nut(L"Thông tin của tôi", HO_SO_CUA_TOI, 18, 260, 200, 3);
+        nut(L"Hóa đơn của tôi", HOA_DON_CUA_TOI, 18, 310, 200, 3);
+        nut(L"Đặt món", DAT_MON, 18, 360, 200, 3);
+        nut(L"Đơn đặt của tôi", DON_DAT, 18, 410, 200, 3);
+        nut(L"Đổi mật khẩu", MAT_KHAU, 18, 460, 200, 3);
+        nut(L"Đăng xuất", DANG_XUAT, 18, caoCuaSo - 85, 200, 3);
+        return;
+    }
     nut(L"Khách hàng", KHACH_HANG, 18, 210, 200, 3);
     int y = 260;
     if (dichVu.laQuanLy()) { nut(L"Nhân viên", NHAN_VIEN, 18, y, 200, 3); y += 50; }
     nut(L"Thực đơn", THUC_DON, 18, y, 200, 3); y += 50;
-    nut(L"Bán hàng", BAN_HANG, 18, y, 200, 3); y += 50;
+    if (!dichVu.laQuanLy()) {
+        nut(L"Bán hàng", BAN_HANG, 18, y, 200, 3); y += 50;
+        nut(L"Đơn khách đặt", DON_DAT, 18, y, 200, 3); y += 50;
+    }
     if (dichVu.laQuanLy()) {
         nut(L"Báo cáo", BAO_CAO, 18, y, 200, 3); y += 50;
         nut(L"Tạo tài khoản", TAI_KHOAN, 18, y, 200, 3); y += 50;
@@ -189,6 +203,16 @@ void CuaSoNhaHang::thanhBen() {
 }
 
 void CuaSoNhaHang::hienTrang(int trangMoi, bool giuNhap) {
+    if (dichVu.laQuanLy() && (trangMoi == BAN_HANG || trangMoi == DON_DAT))
+        throw runtime_error("Quản lý sử dụng các chức năng quản trị. Bán hàng và xử lý đơn dành cho nhân viên.");
+    if (dichVu.laKhachHang() && trangMoi != TRANG_CHU && trangMoi != THUC_DON &&
+        trangMoi != HO_SO_CUA_TOI && trangMoi != HOA_DON_CUA_TOI && trangMoi != MAT_KHAU && trangMoi != DAT_MON && trangMoi != DON_DAT) {
+        throw runtime_error("Tài khoản khách hàng không có quyền truy cập chức năng này.");
+    }
+    if (dichVu.daDangNhap() && !dichVu.laKhachHang() &&
+        (trangMoi == HO_SO_CUA_TOI || trangMoi == HOA_DON_CUA_TOI || trangMoi == DAT_MON)) {
+        throw runtime_error("Trang này dành cho tài khoản khách hàng.");
+    }
     if (dichVu.daDangNhap() && !dichVu.laQuanLy() &&
         (trangMoi == NHAN_VIEN || trangMoi == BAO_CAO || trangMoi == TAI_KHOAN)) {
         throw runtime_error("Chức năng này chỉ dành cho quản lý.");
@@ -205,7 +229,7 @@ void CuaSoNhaHang::hienTrang(int trangMoi, bool giuNhap) {
             O_USER, O_PASS, O_CONFIRM, O_OLDPASS};
         for (int id : cacO) if (o(id)) nhapCu[id] = chu(id);
         for (int id : {LOC_LOAI, SAP_XEP, O_GIOITINH, O_LOAI, O_SIZE, O_KHACH, O_NHANVIEN, O_ROLE})
-            if (o(id)) chonCu[id] = luaChon(id);
+            if (o(id) && !(trangHienTai == HO_SO_CUA_TOI && id == O_GIOITINH)) chonCu[id] = luaChon(id);
         for (int id : {CON_HANG, O_CHAY, O_DA}) if (o(id)) chonCu[id] = daDanhDau(id) ? 1 : 0;
     }
     dangVeBang = true;
@@ -214,16 +238,23 @@ void CuaSoNhaHang::hienTrang(int trangMoi, bool giuNhap) {
     if (!giuNhap) maDangSua.clear();
     trangHienTai = trangMoi;
     theBieuMau = {};
-    if (!dichVu.daDangNhap()) trangDangNhap();
+    if (!dichVu.daDangNhap()) {
+        if (dangDangKy && !thietLap) trangDangKy();
+        else trangDangNhap();
+    }
     else {
         thanhBen();
         switch (trangHienTai) {
             case TRANG_CHU: trangChu(); break;
             case KHACH_HANG: case NHAN_VIEN: case THUC_DON: trangDanhSach(); break;
             case BAN_HANG: trangBanHang(); break;
+            case DAT_MON: trangDatMon(); break;
+            case DON_DAT: trangDonDat(); break;
             case BAO_CAO: trangBaoCao(); break;
             case TAI_KHOAN: trangTaiKhoan(); break;
             case MAT_KHAU: trangMatKhau(); break;
+            case HO_SO_CUA_TOI: trangHoSoKhachHang(); break;
+            case HOA_DON_CUA_TOI: trangLichSuKhachHang(); break;
         }
     }
     for (const pair<const int,wstring>& muc : nhapCu) if (o(muc.first)) gan(muc.first, muc.second);
@@ -235,8 +266,12 @@ void CuaSoNhaHang::hienTrang(int trangMoi, bool giuNhap) {
         }
     }
     if (dichVu.daDangNhap()) {
+        if (trangHienTai == TAI_KHOAN) {
+            capNhatHoSoTaiKhoan();
+            if (giuNhap && chonCu.count(O_NHANVIEN)) chonMuc(O_NHANVIEN, chonCu[O_NHANVIEN]);
+        }
         if (trangHienTai == KHACH_HANG || trangHienTai == NHAN_VIEN || trangHienTai == THUC_DON) { napBang(); doiLoaiMon(); }
-        if (trangHienTai == BAN_HANG) { napBanHang(); napGio(); }
+        if (trangHienTai == BAN_HANG || trangHienTai == DAT_MON) { napBanHang(); napGio(); }
     }
     if (!maDangSua.empty() && o(O_MA)) SendMessageW(o(O_MA), EM_SETREADONLY, TRUE, 0);
     dangVeBang = false;
@@ -254,31 +289,54 @@ void CuaSoNhaHang::ve(HDC dc) {
     RECT ben = {0,0,236,caoCuaSo};
     HBRUSH brush = CreateSolidBrush(THANH_BEN); FillRect(dc, &ben, brush); DeleteObject(brush);
     chuVe(dc, L"NHÀ HÀNG", {25,34,216,70}, fontDam, RGB(255,255,255));
-    chuVe(dc, L"Không gian làm việc", {25,75,216,100}, fontNho, RGB(155,177,209));
+    chuVe(dc, dichVu.laKhachHang() ? L"Không gian khách hàng" : L"Không gian làm việc", {25,75,216,100}, fontNho, RGB(155,177,209));
     chuVe(dc, rong(dichVu.phien().tenDangNhap), {25,caoCuaSo-145,218,caoCuaSo-118}, fontDam, RGB(255,255,255));
-    wstring vaiTro = dichVu.laQuanLy() ? L"Quản lý" : L"Nhân viên";
+    wstring vaiTro = L"Nhân viên";
+    if (dichVu.laQuanLy()) vaiTro = L"Quản lý";
+    if (dichVu.laKhachHang()) vaiTro = L"Khách hàng";
     chuVe(dc, vaiTro, {25,caoCuaSo-119,218,caoCuaSo-95}, fontNho, RGB(155,177,209));
     map<int,wstring> tieuDe = {{TRANG_CHU,L"Tổng quan"},{KHACH_HANG,L"Khách hàng"},{NHAN_VIEN,L"Nhân viên"},
+        {DAT_MON,L"Đặt món"},{DON_DAT,dichVu.laKhachHang()?L"Đơn đặt của tôi":L"Đơn khách đặt"},
         {THUC_DON,L"Thực đơn"},{BAN_HANG,L"Bán hàng"},{BAO_CAO,L"Báo cáo kinh doanh"},
-        {TAI_KHOAN,L"Tạo tài khoản"},{MAT_KHAU,L"Đổi mật khẩu"}};
+        {TAI_KHOAN,L"Tạo tài khoản"},{MAT_KHAU,L"Đổi mật khẩu"},
+        {HO_SO_CUA_TOI,L"Thông tin của tôi"},{HOA_DON_CUA_TOI,L"Hóa đơn của tôi"}};
     map<int,wstring> moTa = {{TRANG_CHU,L"Một ngày làm việc hiệu quả bắt đầu từ đây."},
         {KHACH_HANG,L"Tìm kiếm, chăm sóc và cập nhật thông tin khách hàng."},
         {NHAN_VIEN,L"Quản lý hồ sơ và thu nhập của đội ngũ."},
-        {THUC_DON,L"Món ăn, nước uống và tồn kho trong một danh sách."},
+        {THUC_DON,L"Khám phá món ăn và nước uống qua hình ảnh, giá và thông tin chi tiết."},
         {BAN_HANG,L"Chọn món, thêm vào giỏ và thanh toán nhanh chóng."},
+        {DAT_MON,L"Chọn món yêu thích và gửi đơn để nhân viên tiếp nhận."},
+        {DON_DAT,L"Đơn chờ có thể hủy. Giá và ưu đãi được xác nhận lại khi thanh toán."},
         {BAO_CAO,L"Theo dõi hóa đơn, doanh thu và các món cần nhập thêm."},
-        {TAI_KHOAN,L"Cấp quyền truy cập cho quản lý và nhân viên."},
+        {TAI_KHOAN,L"Cấp tài khoản cho quản lý, nhân viên và khách hàng."},
+        {HO_SO_CUA_TOI,L"Thông tin cá nhân, điểm tích lũy và ưu đãi thành viên."},
+        {HOA_DON_CUA_TOI,L"Xem lại các hóa đơn mua hàng của riêng bạn."},
         {MAT_KHAU,L"Cập nhật mật khẩu cho tài khoản đang đăng nhập."}};
+    if (dichVu.laKhachHang() && trangHienTai == TRANG_CHU) {
+        moTa[TRANG_CHU] = L"Chào mừng bạn. Cùng khám phá thực đơn và ưu đãi thành viên.";
+    }
     chuVe(dc, tieuDe[trangHienTai], {264,26,rongCuaSo-240,70}, fontLon, CHU);
     chuVe(dc, moTa[trangHienTai], {266,76,rongCuaSo-30,104}, fontNho, MO);
     chuVe(dc, rong(homNay()), {rongCuaSo-205,34,rongCuaSo-26,66}, fontChu, MO, DT_RIGHT);
     if (theBieuMau.right > 0) the(dc, theBieuMau, RGB(255,255,255));
     if (trangHienTai == TRANG_CHU) {
-        vector<wstring> ten = {L"KHÁCH HÀNG", L"MÓN TRONG THỰC ĐƠN", L"CẦN NHẬP THÊM", L"TRONG GIỎ HÀNG"};
-        int thap = 0;
-        for (const unique_ptr<Mon>& mon : dichVu.thucDon()) if (mon->getTonKho() <= 5) thap++;
-        vector<wstring> giaTri = {to_wstring(dichVu.khachHang().size()),to_wstring(dichVu.thucDon().size()),to_wstring(thap),to_wstring(gioHang.size())};
-        if (dichVu.laQuanLy()) { ten[3] = L"DOANH THU HÔM NAY"; giaTri[3] = tien(dichVu.baoCao(homNay()).doanhThu); }
+        vector<wstring> ten, giaTri;
+        if (dichVu.laKhachHang()) {
+            const KhachHang& k = dichVu.hoSoCuaToi();
+            ten = {L"ĐIỂM TÍCH LŨY", L"HẠNG THÀNH VIÊN", L"ƯU ĐÃI HIỆN TẠI", L"HÓA ĐƠN CỦA BẠN"};
+            wstring hang = rong(k.getHangVip());
+            if (k.getHangVip() == "Thuong") hang = L"Thường";
+            if (k.getHangVip() == "Bac") hang = L"Bạc";
+            if (k.getHangVip() == "Vang") hang = L"Vàng";
+            if (k.getHangVip() == "Kim Cuong") hang = L"Kim cương";
+            giaTri = {so(k.getDiemTichLuy()), hang, so(k.getPhanTramGiam()) + L"%", to_wstring(dichVu.hoaDonCuaToi().size())};
+        } else {
+            ten = {L"KHÁCH HÀNG", L"MÓN TRONG THỰC ĐƠN", L"CẦN NHẬP THÊM", L"TRONG GIỎ HÀNG"};
+            int thap = 0;
+            for (const unique_ptr<Mon>& mon : dichVu.thucDon()) if (mon->getTonKho() <= 5) thap++;
+            giaTri = {to_wstring(dichVu.khachHang().size()),to_wstring(dichVu.thucDon().size()),to_wstring(thap),to_wstring(gioHang.size())};
+            if (dichVu.laQuanLy()) { ten[3] = L"DOANH THU HÔM NAY"; giaTri[3] = tien(dichVu.baoCao(homNay()).doanhThu); }
+        }
         int w = (rongCuaSo - 290) / 4;
         for (int i=0; i<4; i++) {
             int x=264+i*w;
@@ -287,6 +345,8 @@ void CuaSoNhaHang::ve(HDC dc) {
             chuVe(dc,giaTri[i],{x+18,184,x+w-24,226},fontDam,i==2?RGB(191,108,22):XANH);
         }
     }
+    if (trangHienTai == BAO_CAO) veThongKeBaoCao(dc);
+    if (trangHienTai == TRANG_CHU && dichVu.laQuanLy()) veBieuDoDoanhThu(dc);
     RECT chan = {250,caoCuaSo-33,rongCuaSo-20,caoCuaSo-6};
     chuVe(dc, thongBao, chan, fontNho, MO);
 }
@@ -345,12 +405,20 @@ LRESULT CALLBACK CuaSoNhaHang::thuTuc(HWND h, UINT tin, WPARAM w, LPARAM l) {
                 app->fontLon=CreateFontW(-30,0,0,0,FW_SEMIBOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,0,0,CLEARTYPE_QUALITY,0,L"Segoe UI");
                 app->logoBachKhoa=taiLogo(LOGO_BACH_KHOA);
                 app->logoCntt=taiLogo(LOGO_CNTT);
+                app->anhThucDon=taiLogo(ANH_THUC_DON);
                 app->nen=CreateSolidBrush(NEN); app->trang=CreateSolidBrush(RGB(255,255,255));
                 RECT r; GetClientRect(h,&r); app->rongCuaSo=r.right; app->caoCuaSo=r.bottom;
                 app->hienTrang(TRANG_CHU); return 0;
             }
             case WM_SIZE:
                 if(w!=SIZE_MINIMIZED) { app->rongCuaSo=LOWORD(l); app->caoCuaSo=HIWORD(l); SetTimer(h,1,180,nullptr); }
+                return 0;
+            case WM_MOUSEMOVE:
+                if(app->trangHienTai==TRANG_CHU && app->dichVu.laQuanLy())
+                    app->diChuyenBieuDo(static_cast<short>(LOWORD(l)),static_cast<short>(HIWORD(l)));
+                return 0;
+            case WM_MOUSELEAVE:
+                if(app->thangDangXem!=-1) { app->thangDangXem=-1; InvalidateRect(h,nullptr,FALSE); }
                 return 0;
             case WM_TIMER:
                 if(w==1) { KillTimer(h,1); app->hienTrang(app->trangHienTai,true); } return 0;
@@ -360,16 +428,36 @@ LRESULT CALLBACK CuaSoNhaHang::thuTuc(HWND h, UINT tin, WPARAM w, LPARAM l) {
             case WM_COMMAND: if(!app->dangVeBang) app->xuLyNut(LOWORD(w),HIWORD(w)); return 0;
             case WM_NOTIFY: {
                 NMHDR* n=reinterpret_cast<NMHDR*>(l);
+                if(app->trangHienTai==BAO_CAO && (n->idFrom==BANG_CHINH || n->idFrom==BANG_TON) && n->code==NM_CUSTOMDRAW)
+                    return app->veDongBaoCao(reinterpret_cast<NMLVCUSTOMDRAW*>(l));
                 if(!app->dangVeBang && n->idFrom==BANG_CHINH && n->code==LVN_ITEMCHANGED) {
                     NMLISTVIEW* lv=reinterpret_cast<NMLISTVIEW*>(l);
                     if((lv->uNewState & LVIS_SELECTED) && !(lv->uOldState & LVIS_SELECTED)) app->chonDong();
                 }
-                if(!app->dangVeBang && n->idFrom==BANG_CHINH && n->code==NM_DBLCLK && app->trangHienTai==BAO_CAO) app->xuLyNut(NUT_HOADON,BN_CLICKED);
+                if(!app->dangVeBang && n->idFrom==BANG_CHINH && n->code==NM_DBLCLK && (app->trangHienTai==BAO_CAO || app->trangHienTai==HOA_DON_CUA_TOI)) app->xuLyNut(NUT_HOADON,BN_CLICKED);
                 return 0;
             }
-            case WM_DRAWITEM: app->veNut(reinterpret_cast<DRAWITEMSTRUCT*>(l)); return TRUE;
+            case WM_MEASUREITEM: {
+                auto* dong=reinterpret_cast<MEASUREITEMSTRUCT*>(l);
+                if(dong->CtlID==DANH_SACH_MON) { dong->itemHeight=128; return TRUE; }
+                if(dong->CtlID==DANH_SACH_THUCDON) { dong->itemHeight=160; return TRUE; }
+                break;
+            }
+            case WM_DRAWITEM: {
+                auto* dong=reinterpret_cast<DRAWITEMSTRUCT*>(l);
+                if(dong->CtlID==DANH_SACH_MON) app->veMonDat(dong);
+                else if(dong->CtlID==DANH_SACH_THUCDON) app->veMonThucDon(dong);
+                else app->veNut(dong);
+                return TRUE;
+            }
+            case WM_CTLCOLORLISTBOX:
+                SetBkColor(reinterpret_cast<HDC>(w),NEN);
+                return reinterpret_cast<LRESULT>(app->nen);
             case WM_CTLCOLORSTATIC: {
                 HDC dc=reinterpret_cast<HDC>(w); SetTextColor(dc,MO); SetBkMode(dc,TRANSPARENT);
+                if(app->trangHienTai==DAT_MON && GetDlgCtrlID(reinterpret_cast<HWND>(l))==O_TONG)
+                    SetTextColor(dc,CHU);
+                if(GetDlgCtrlID(reinterpret_cast<HWND>(l))==NHAN_GIO_TRONG) return reinterpret_cast<LRESULT>(app->trang);
                 RECT r; GetWindowRect(reinterpret_cast<HWND>(l),&r); MapWindowPoints(nullptr,h,reinterpret_cast<POINT*>(&r),2);
                 if(r.left>=app->theBieuMau.left && r.top>=app->theBieuMau.top && r.right<=app->theBieuMau.right && r.bottom<=app->theBieuMau.bottom) return reinterpret_cast<LRESULT>(app->trang);
                 return reinterpret_cast<LRESULT>(app->nen);
@@ -381,8 +469,11 @@ LRESULT CALLBACK CuaSoNhaHang::thuTuc(HWND h, UINT tin, WPARAM w, LPARAM l) {
                 if(!app->gioHang.empty() && !app->xacNhan(L"Giỏ hàng chưa thanh toán sẽ bị hủy. Bạn muốn thoát?")) return 0;
                 DestroyWindow(h); return 0;
             case WM_DESTROY:
+                if(app->khoangDongBaoCao) ImageList_Destroy(app->khoangDongBaoCao);
                 DeleteObject(app->fontChu); DeleteObject(app->fontNho); DeleteObject(app->fontDam); DeleteObject(app->fontLon);
                 DeleteObject(app->logoBachKhoa); DeleteObject(app->logoCntt);
+                DeleteObject(app->anhThucDon);
+                for(const auto& anh:app->anhMonRieng) if(anh.second) DeleteObject(anh.second);
                 DeleteObject(app->nen); DeleteObject(app->trang); PostQuitMessage(0); return 0;
         }
     } catch(const exception& e) {
@@ -409,10 +500,22 @@ int CuaSoNhaHang::chay(HINSTANCE ungDung, int cheDoHien) {
     ShowWindow(win,cheDoHien); UpdateWindow(win);
     MSG tin;
     while(GetMessageW(&tin,nullptr,0,0)>0) {
-        if(tin.message==WM_KEYDOWN && tin.wParam==VK_RETURN && !dichVu.daDangNhap()) {
-            try { xuLyNut(NUT_DANGNHAP,BN_CLICKED); }
-            catch(const exception& loi) { baoLoi(loi.what()); }
+        if(tin.message==WM_KEYDOWN && tin.wParam==VK_RETURN &&
+           dichVu.daDangNhap() && trangHienTai==BAO_CAO && GetFocus()==o(LOC_BAO_CAO)) {
+            try { napBaoCao(); } catch(const exception& loi) { baoLoi(loi.what()); }
             continue;
+        }
+        if(tin.message==WM_KEYDOWN && tin.wParam==VK_RETURN && !dichVu.daDangNhap()) {
+            HWND dangChon=GetFocus();
+            bool dangMoGioiTinh=o(O_GIOITINH) && SendMessageW(o(O_GIOITINH),CB_GETDROPPEDSTATE,0,0);
+            if(!dangMoGioiTinh) {
+                int nut=dangDangKy ? NUT_DANGKY : NUT_DANGNHAP;
+                if(dangChon==o(NUT_MO_DANGKY)) nut=NUT_MO_DANGKY;
+                if(dangChon==o(NUT_VE_DANGNHAP)) nut=NUT_VE_DANGNHAP;
+                try { xuLyNut(nut,BN_CLICKED); }
+                catch(const exception& loi) { baoLoi(loi.what()); }
+                continue;
+            }
         }
         if(!IsDialogMessageW(win,&tin)) { TranslateMessage(&tin); DispatchMessageW(&tin); }
     }
@@ -426,6 +529,19 @@ int chayGiaoDienCuaSo() {
     if(n==0 || n>=32768) throw runtime_error("Không xác định được thư mục ứng dụng.");
     wstring thuMuc(duongDan,n); thuMuc=thuMuc.substr(0,thuMuc.find_last_of(L"\\/"));
     if(!SetCurrentDirectoryW(thuMuc.c_str())) throw runtime_error("Không mở được thư mục ứng dụng.");
+    // Mot bo du lieu chi mo mot cua so, tranh hai phien ghi de don cua nhau.
+    wstring tenKhoa=L"Local\\PBL2_NhaHang_";
+    for(wchar_t c:thuMuc) tenKhoa+=(c==L'\\' || c==L'/')?L'_':c;
+    struct KhoaUngDung {
+        HANDLE giaTri;
+        ~KhoaUngDung() { if(giaTri) CloseHandle(giaTri); }
+    } khoa{CreateMutexW(nullptr,FALSE,tenKhoa.c_str())};
+    if(!khoa.giaTri) throw runtime_error("Không tạo được khóa dữ liệu ứng dụng.");
+    if(GetLastError()==ERROR_ALREADY_EXISTS) {
+        MessageBoxW(nullptr,L"Chương trình đang mở. Hãy dùng cửa sổ hiện có và đăng xuất để chuyển tài khoản.",
+                    L"Nhà hàng",MB_OK|MB_ICONINFORMATION);
+        return 0;
+    }
     CuaSoNhaHang app;
     return app.chay(GetModuleHandleW(nullptr),SW_SHOWDEFAULT);
 }
