@@ -19,25 +19,11 @@ class QuanLy {
     vector<HoaDon> dsHoaDon;
     QuanLyTaiKhoan quanLyTaiKhoan;
     TaiKhoan taiKhoanHienTai;
-    bool laQuanLy() const;
-    bool dangNhap();
-    bool taoTaiKhoan(bool lanDau = false);
-    void doiMatKhau();
-    void menuKhachHang();
-    void menuNhanVien();
-    void menuThucDon();
-    void banHang();
-    void menuThongKe() const;
-    void hienThiKhachHang() const;
-    void hienThiNhanVien() const;
-    void hienThiThucDon(int loc = 0, int sapXep = 0, bool chiConHang = false) const;
     KhachHang* timKhach(const string& maCanTim);
     NhanVien* timNhanVien(const string& maCanTim);
     Mon* timMon(const string& maCanTim);
 
    public:
     void docDuLieu();
-    void ghiDuLieu() const;
-    void chay();
 };
 #endif

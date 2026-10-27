@@ -22,12 +22,6 @@ int Mon::getTonKho() const {
     return tonKho;
 }
 
-void Mon::capNhatCoBan(const string& tenMon, double giaMon, int soLuongTon) {
-    ten = tenMon;
-    gia = giaMon;
-    tonKho = soLuongTon;
-}
-
 bool Mon::truTonKho(int soLuong) {
     if (soLuong <= 0 || soLuong > tonKho)
         return false;

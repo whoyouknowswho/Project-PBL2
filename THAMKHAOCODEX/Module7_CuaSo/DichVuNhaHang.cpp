@@ -6,7 +6,7 @@
 #include <cmath>
 #include <fstream>
 #include <map>
-#include <sstream>
+#include <utility>
 #include <stdexcept>
 
 using namespace std;
@@ -55,7 +55,7 @@ bool DichVuNhaHang::khoiTao() {
 }
 
 bool DichVuNhaHang::daDangNhap() const { return !duLieu.taiKhoanHienTai.tenDangNhap.empty(); }
-bool DichVuNhaHang::laQuanLy() const { return daDangNhap() && duLieu.laQuanLy(); }
+bool DichVuNhaHang::laQuanLy() const { return daDangNhap() && phien().vaiTro == "QUANLY"; }
 const TaiKhoan& DichVuNhaHang::phien() const { return duLieu.taiKhoanHienTai; }
 
 void DichVuNhaHang::yeuCauDangNhap() const {

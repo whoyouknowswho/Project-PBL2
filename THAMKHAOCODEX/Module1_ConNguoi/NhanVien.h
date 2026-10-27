@@ -15,8 +15,6 @@ class NhanVien : public Nguoi {
     double getLuongCoBan() const;
     double getPhuCap() const;
     double tinhLuong() const;
-    void capNhatCongViec(const string& chucVuMoi, double luong, double phuCap);
-    void hienThiThongTin() const override;
-    string toFile() const;
+    string toFile() const override;
 };
 #endif

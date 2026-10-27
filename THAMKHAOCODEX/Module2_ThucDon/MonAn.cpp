@@ -1,6 +1,5 @@
 #include "MonAn.h"
 
-#include <iostream>
 #include <sstream>
 
 using namespace std;
@@ -27,17 +26,6 @@ string MonAn::hienThiChiTiet() const {
         loaiMon = "Chay";
     }
     return "Cay " + to_string(doCay) + "/5, " + loaiMon;
-}
-
-string MonAn::taoTenKhiBan() const {
-    return ten;
-}
-
-void MonAn::capNhatChiTiet() {
-    cout << "Do cay (0-5): ";
-    cin >> doCay;
-    cout << "Mon chay (1/0): ";
-    cin >> monChay;
 }
 
 string MonAn::toFile() const {

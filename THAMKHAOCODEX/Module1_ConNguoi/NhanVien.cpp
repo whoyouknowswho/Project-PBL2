@@ -28,12 +28,6 @@ double NhanVien::tinhLuong() const {
     return luongCoBan + phuCap;
 }
 
-void NhanVien::capNhatCongViec(const string& chucVuMoi, double luong, double tienPhuCap) {
-    chucVu = chucVuMoi;
-    luongCoBan = luong;
-    phuCap = tienPhuCap;
-}
-
 string NhanVien::toFile() const {
     ostringstream dongDuLieu;
     dongDuLieu << ma << '|' << ten << '|' << soDienThoai << '|' << gioiTinh << '|' << chucVu << '|'

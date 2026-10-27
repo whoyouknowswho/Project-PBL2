@@ -15,7 +15,6 @@ class Nguoi {
     const string& getTen() const;
     const string& getSoDienThoai() const;
     const string& getGioiTinh() const;
-    void capNhatThongTin(const string& hoTen, const string& dienThoai, const string& gioiTinh);
-    virtual void hienThiThongTin() const = 0;
+    virtual string toFile() const = 0;
 };
 #endif

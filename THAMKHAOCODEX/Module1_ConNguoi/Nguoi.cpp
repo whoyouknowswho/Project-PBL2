@@ -22,8 +22,3 @@ const string& Nguoi::getGioiTinh() const {
     return gioiTinh;
 }
 
-void Nguoi::capNhatThongTin(const string& hoTen, const string& dienThoai, const string& gioiTinhMoi) {
-    ten = hoTen;
-    soDienThoai = dienThoai;
-    gioiTinh = gioiTinhMoi;
-}

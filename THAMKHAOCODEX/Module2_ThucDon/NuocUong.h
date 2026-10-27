@@ -15,9 +15,6 @@ class NuocUong : public Mon {
     bool getCoDa() const;
     string getLoai() const override;
     string hienThiChiTiet() const override;
-    void inChiTietRieng() const override;
-    string taoTenKhiBan() const override;
-    void capNhatChiTiet() override;
     string toFile() const override;
 };
 #endif

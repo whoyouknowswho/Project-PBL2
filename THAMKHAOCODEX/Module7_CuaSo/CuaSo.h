@@ -38,9 +38,6 @@ string maHoaDonMoi();
 void xemHoaDon(HWND chu, const HoaDon& hoaDon);
 
 class CuaSoNhaHang {
-#ifdef NHAHANG_GUI_PREVIEW
-    friend class KiemTraCuaSo;
-#endif
     HWND cuaSo = nullptr;
     HFONT fontChu = nullptr, fontNho = nullptr, fontDam = nullptr, fontLon = nullptr;
     HBRUSH nen = nullptr, trang = nullptr;

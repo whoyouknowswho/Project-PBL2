@@ -16,7 +16,6 @@ class KhachHang : public Nguoi {
     void setDiemTichLuy(int diem);
     void congDiem(int diem);
     double getPhanTramGiam() const;
-    void hienThiThongTin() const override;
-    string toFile() const;
+    string toFile() const override;
 };
 #endif
