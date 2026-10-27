@@ -40,6 +40,7 @@ void xemHoaDon(HWND chu, const HoaDon& hoaDon);
 class CuaSoNhaHang {
     HWND cuaSo = nullptr;
     HFONT fontChu = nullptr, fontNho = nullptr, fontDam = nullptr, fontLon = nullptr;
+    HBITMAP logoBachKhoa = nullptr, logoCntt = nullptr;
     HBRUSH nen = nullptr, trang = nullptr;
     map<HWND, int> kieuNut;
     DichVuNhaHang dichVu;
@@ -76,6 +77,7 @@ class CuaSoNhaHang {
     void xoaDieuKhien();
     void hienTrang(int trangMoi, bool giuNhap = false);
     void ve(HDC dc);
+    void veNhanDienDangNhap(HDC dc);
     void veNut(const DRAWITEMSTRUCT* nut);
     void thanhBen();
     void trangDangNhap();

@@ -1,4 +1,5 @@
 #include "CuaSo.h"
+#include "Logo.h"
 #include <uxtheme.h>
 #include <algorithm>
 #include <cmath>
@@ -246,13 +247,7 @@ void CuaSoNhaHang::hienTrang(int trangMoi, bool giuNhap) {
 void CuaSoNhaHang::ve(HDC dc) {
     RECT toan = {0,0,rongCuaSo,caoCuaSo}; FillRect(dc, &toan, nen);
     if (!dichVu.daDangNhap()) {
-        RECT trai = {0,0,rongCuaSo / 2,caoCuaSo};
-        HBRUSH brush = CreateSolidBrush(THANH_BEN); FillRect(dc, &trai, brush); DeleteObject(brush);
-        chuVe(dc, L"NHÀ HÀNG", {60,120,rongCuaSo/2-32,160}, fontDam, RGB(117,171,255));
-        chuVe(dc, L"Quản lý gọn gàng.", {60,185,rongCuaSo/2-24,240}, fontLon, RGB(255,255,255));
-        chuVe(dc, L"Phục vụ chu đáo.", {60,238,rongCuaSo/2-24,293}, fontLon, RGB(255,255,255));
-        chuVe(dc, L"Khách hàng · Thực đơn · Bán hàng", {60,330,rongCuaSo/2-30,365}, fontChu, RGB(173,192,220));
-        chuVe(dc, L"Ứng dụng C++ dành cho đội ngũ của bạn", {60,caoCuaSo-100,rongCuaSo/2-24,caoCuaSo-60}, fontNho, RGB(173,192,220));
+        veNhanDienDangNhap(dc);
         the(dc, theBieuMau, RGB(255,255,255));
         return;
     }
@@ -348,6 +343,8 @@ LRESULT CALLBACK CuaSoNhaHang::thuTuc(HWND h, UINT tin, WPARAM w, LPARAM l) {
                 app->fontNho=CreateFontW(-14,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,0,0,CLEARTYPE_QUALITY,0,L"Segoe UI");
                 app->fontDam=CreateFontW(-18,0,0,0,FW_SEMIBOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,0,0,CLEARTYPE_QUALITY,0,L"Segoe UI");
                 app->fontLon=CreateFontW(-30,0,0,0,FW_SEMIBOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,0,0,CLEARTYPE_QUALITY,0,L"Segoe UI");
+                app->logoBachKhoa=taiLogo(LOGO_BACH_KHOA);
+                app->logoCntt=taiLogo(LOGO_CNTT);
                 app->nen=CreateSolidBrush(NEN); app->trang=CreateSolidBrush(RGB(255,255,255));
                 RECT r; GetClientRect(h,&r); app->rongCuaSo=r.right; app->caoCuaSo=r.bottom;
                 app->hienTrang(TRANG_CHU); return 0;
@@ -385,6 +382,7 @@ LRESULT CALLBACK CuaSoNhaHang::thuTuc(HWND h, UINT tin, WPARAM w, LPARAM l) {
                 DestroyWindow(h); return 0;
             case WM_DESTROY:
                 DeleteObject(app->fontChu); DeleteObject(app->fontNho); DeleteObject(app->fontDam); DeleteObject(app->fontLon);
+                DeleteObject(app->logoBachKhoa); DeleteObject(app->logoCntt);
                 DeleteObject(app->nen); DeleteObject(app->trang); PostQuitMessage(0); return 0;
         }
     } catch(const exception& e) {

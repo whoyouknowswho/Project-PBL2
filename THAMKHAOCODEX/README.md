@@ -45,7 +45,7 @@ Cần MinGW-w64 có `g++` và `windres` trong PATH. Đóng ứng dụng trước
 
 Trong VS Code, **Ctrl+Shift+B** biên dịch toàn bộ dự án; tác vụ **Nha hang: Chay giao dien** mở chương trình.
 
-Build tạo một bản chạy chính là `QuanLyNhaHangGUI.exe`. Thư viện C++ được liên kết tĩnh. `bcrypt`, `comctl32`, `gdi32`, `uxtheme` là thư viện Windows. Tệp `.rc` và `.manifest` là tài nguyên hiển thị Windows, được nhúng vào exe.
+Build tạo một bản chạy chính là `QuanLyNhaHangGUI.exe`. Thư viện C++ được liên kết tĩnh. `bcrypt`, `comctl32`, `gdi32`, `uxtheme`, `gdiplus`, `ole32` là thư viện Windows. Tệp `.rc` và `.manifest` là tài nguyên hiển thị Windows, được nhúng vào exe. Hai logo gốc nằm trong `Module7_CuaSo/Anh` và cũng được nhúng vào exe; khi chạy không cần chép ảnh riêng.
 
 ## Cấu trúc mã nguồn
 

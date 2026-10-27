@@ -18,17 +18,18 @@ bool giaGiam(const Mon* a,const Mon* b) { return a->getGia()>b->getGia(); }
 }
 
 void CuaSoNhaHang::trangDangNhap() {
-    int x=rongCuaSo/2+42, w=rongCuaSo/2-84;
-    int y=max(50,(caoCuaSo-480)/2);
-    theBieuMau={x-22,y-22,x+w+22,y+454};
-    nhan(thietLap?L"Thiết lập lần đầu":L"Chào mừng trở lại",x,y,w,true);
-    nhan(thietLap?L"Tạo tài khoản quản lý để bắt đầu.":L"Đăng nhập để tiếp tục công việc.",x,y+34,w);
-    nhap(L"Tên đăng nhập",O_USER,x,y+90,w);
-    nhap(L"Mật khẩu",O_PASS,x,y+160,w,L"",true);
-    if(thietLap) nhap(L"Nhập lại mật khẩu",O_CONFIRM,x,y+230,w,L"",true);
-    else nhan(L"Tài khoản được cấp bởi quản lý nhà hàng.",x,y+242,w);
-    nut(thietLap?L"Tạo tài khoản quản lý":L"Đăng nhập",NUT_DANGNHAP,x,y+320,w,1);
-    nhan(L"Mật khẩu từ 8 đến 128 byte, hiển thị bằng dấu *.",x,y+382,w);
+    int x=rongCuaSo/2+64, w=rongCuaSo/2-128;
+    int y=max(60,(caoCuaSo-492)/2+28);
+    theBieuMau={x-32,y-28,x+w+32,y+456};
+    HWND tieuDe=tao(L"STATIC",thietLap?L"Thiết lập lần đầu":L"Chào mừng trở lại",SS_LEFT,-1,x,y,w,44);
+    SendMessageW(tieuDe,WM_SETFONT,reinterpret_cast<WPARAM>(fontLon),TRUE);
+    nhan(thietLap?L"Tạo tài khoản quản lý để bắt đầu.":L"Đăng nhập để bắt đầu ca làm việc.",x,y+50,w);
+    nhap(L"Tên đăng nhập",O_USER,x,y+108,w);
+    nhap(L"Mật khẩu",O_PASS,x,y+188,w,L"",true);
+    if(thietLap) nhap(L"Nhập lại mật khẩu",O_CONFIRM,x,y+268,w,L"",true);
+    else nhan(L"Tài khoản được cấp bởi quản lý nhà hàng.",x,y+272,w);
+    nut(thietLap?L"Tạo tài khoản quản lý":L"Đăng nhập",NUT_DANGNHAP,x,y+348,w,1);
+    nhan(L"Nhấn Enter hoặc chọn nút để tiếp tục.",x,y+410,w);
     SetFocus(o(O_USER));
 }
 
