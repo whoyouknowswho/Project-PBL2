@@ -9,14 +9,14 @@ import tempfile
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-EXE = ROOT / 'QuanLyNhaHangDangNhap.exe'
+EXE = ROOT / 'QuanLyNhaHangGUI.exe'
 if len(sys.argv) > 1:
     EXE = Path(sys.argv[1]).resolve()
 
 
 def chay(thu_muc, cau_tra_loi, thanh_cong=True):
     ket_qua = subprocess.run(
-        [str(EXE)], cwd=thu_muc, input=cau_tra_loi.encode(),
+        [str(EXE), '--console'], cwd=thu_muc, input=cau_tra_loi.encode(),
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30)
     if thanh_cong:
         assert ket_qua.returncode == 0, ket_qua.stderr.decode(errors='replace')

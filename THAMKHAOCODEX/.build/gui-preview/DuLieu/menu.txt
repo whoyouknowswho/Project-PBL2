@@ -1,0 +1,4 @@
+MONAN|MA01|Cơm gà Hội An|45000|20|1|0
+MONAN|MA02|Rau xào nấm|35000|4|0|1
+NUOC|NU01|Trà đào cam sả|25000|12|M|1
+NUOC|NU02|Nước cam tươi|30000|0|L|0

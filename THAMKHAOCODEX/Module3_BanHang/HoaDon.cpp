@@ -87,8 +87,17 @@ HoaDon HoaDon::fromFile(const string& dongDuLieu) {
     hoaDon.setGiamGia(stod(cacTruong[4]));
     for (const string& dongChiTiet : tach(cacTruong[5], ';')) {
         vector<string> truongChiTiet = tach(dongChiTiet, ',');
-        if (truongChiTiet.size() == 4)
-            hoaDon.themMon({truongChiTiet[0], truongChiTiet[1], stoi(truongChiTiet[2]), stod(truongChiTiet[3])});
+        // Ten nuoc co the chua dau phay: "Tra (Size M, Co da)".
+        // Hai truong cuoi luon la so luong va don gia.
+        if (truongChiTiet.size() >= 4) {
+            string tenMon = truongChiTiet[1];
+            for (size_t i = 2; i + 2 < truongChiTiet.size(); i++) {
+                tenMon += "," + truongChiTiet[i];
+            }
+            size_t cuoi = truongChiTiet.size();
+            hoaDon.themMon({truongChiTiet[0], tenMon,
+                           stoi(truongChiTiet[cuoi - 2]), stod(truongChiTiet[cuoi - 1])});
+        }
     }
     return hoaDon;
 }

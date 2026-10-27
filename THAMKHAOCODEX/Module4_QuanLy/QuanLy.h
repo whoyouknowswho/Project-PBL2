@@ -11,6 +11,7 @@
 
 using namespace std;
 class QuanLy {
+    friend class DichVuNhaHang;
     vector<KhachHang> dsKhachHang;
     vector<NhanVien> dsNhanVien;
     // unique_ptr tu giai phong mon; MonAn va NuocUong dung chung lop cha Mon.

@@ -22,7 +22,7 @@ double NHANVIEN::getphucap() const {
 double NHANVIEN::tinhluong() const {
     return this->luong + this->phucap;
 }
-void NHANVIEN::updateVIEC(const string& a, double b, double c) const {
+void NHANVIEN::updateVIEC(const string& a, double b, double c){
     this->chucvu = a;
     this->luong = b;
     this->phucap = c;

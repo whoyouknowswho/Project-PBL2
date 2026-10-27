@@ -1,3 +1,5 @@
+> Bản cửa sổ mới dùng Module7_CuaSo. Chạy `QuanLyNhaHangGUI.exe`; tài khoản cũ dùng được. Xem README.md ở thư mục gốc.
+
 # Đăng nhập và phân quyền
 
 ## Chạy lần đầu
@@ -35,9 +37,8 @@ Mật khẩu được băm bằng PBKDF2-HMAC-SHA256 với 600.000 vòng, muối
 Phần mật khẩu dùng thư viện BCrypt có sẵn trên Windows; khi biên dịch bằng g++ cần thêm `-lbcrypt` **sau danh sách mã nguồn**:
 
 ```powershell
-$sources = @(Get-ChildItem main.cpp,Module*/*.cpp | ForEach-Object FullName)
-g++ -std=c++14 -Wall -Wextra @sources -lbcrypt -o QuanLyNhaHangDangNhap.exe
-.\QuanLyNhaHangDangNhap.exe
+.\build.ps1
+.\QuanLyNhaHangGUI.exe --console
 ```
 
 Kiểm tra tự động trên dữ liệu tạm, không sửa dữ liệu thật:

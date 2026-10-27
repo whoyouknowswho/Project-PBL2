@@ -1,3 +1,5 @@
+> Bản cửa sổ mới dùng Module7_CuaSo. Chạy `QuanLyNhaHangGUI.exe`; tài khoản cũ dùng được. Xem README.md ở thư mục gốc.
+
 # Module giao diện console
 
 - `GiaoDien.h`: khai báo các hàm giao diện trong namespace `GiaoDien`.
@@ -13,9 +15,8 @@ Muốn đổi khung bảng, màu hoặc bố cục, sửa các tệp `.cpp` tron
 Chạy từ thư mục gốc dự án, cần g++ hỗ trợ C++14 trở lên:
 
 ```powershell
-$sources = @(Get-ChildItem main.cpp,Module*/*.cpp | ForEach-Object FullName)
-g++ -std=c++14 -Wall -Wextra @sources -lbcrypt -o QuanLyNhaHangDangNhap.exe
-.\QuanLyNhaHangDangNhap.exe
+.\build.ps1
+.\QuanLyNhaHangGUI.exe --console
 ```
 
 Nếu dùng IDE, thêm cả `GiaoDien.cpp` và `HienThiDoiTuong.cpp` vào danh sách tệp biên dịch. Chạy chương trình từ thư mục chứa `DuLieu`.

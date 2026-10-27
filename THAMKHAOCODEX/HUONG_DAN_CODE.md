@@ -1,3 +1,5 @@
+> Giao diện cửa sổ mới: xem README.md và chạy QuanLyNhaHangGUI.exe. Module7_CuaSo chứa giao diện Win32 viết bằng C++. main.cpp mặc định mở cửa sổ; tham số --console chạy luồng menu cũ.
+
 # Cách đọc mã nguồn
 
 Đọc theo thứ tự: `main.cpp` → `QuanLy::chay()` → hàm xử lý menu bạn muốn tìm hiểu.
@@ -29,10 +31,11 @@ Các lambda đã được thay bằng hàm có tên hoặc vòng lặp. Biến d
 
 ## Biên dịch và chạy trong PowerShell
 
-Chạy từ thư mục `THAMKHAOCODEX` chứa `DuLieu`:
+Chạy từ thư mục THAMKHAOCODEX:
 
 ```powershell
-$sources = @(Get-ChildItem main.cpp,Module*/*.cpp | ForEach-Object FullName)
-g++ -std=c++14 -Wall -Wextra @sources -lbcrypt -o QuanLyNhaHangDangNhap.exe
-.\QuanLyNhaHangDangNhap.exe
+.\build.ps1
+.\QuanLyNhaHangGUI.exe
 ```
+
+Dùng `.\QuanLyNhaHangGUI.exe --console` nếu muốn xem bản console cũ.
