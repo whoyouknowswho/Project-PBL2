@@ -1,2 +1,3 @@
 "XONG" "HD_DM1" "DM1|27/10/2026|KH0001||0|MA02,Rau xao,1,35000;NU02,Nuoc cam (Size M, Co da),2,30000;NU01,Tra dao (Size M, Co da),1,25000" 3 "MA02" 1 "" 0 "NU02" 2 "M" 1 "NU01" 1 "M" 1
 "XONG" "HD_DM2" "DM2|27/10/2026|KH0001||0|MA01,Com ga,1,45000;MA03,Mi Tom,4,15000;NU01,Tra dao (Size M, Khong da),5,25000" 3 "MA01" 1 "" 0 "MA03" 4 "" 0 "NU01" 5 "M" 0
+"XONG" "HD_DM3" "DM3|30/10/2026|KH0001||0|MA01,Com ga,2,45000;MA02,Rau xao,3,35000;MA03,Mi Tom,7,15000;NU01,Tra dao (Size L, Co da),36,25000;NU02,Nuoc cam (Size L, Co da),37,30000" 5 "MA01" 2 "" 0 "MA02" 3 "" 0 "MA03" 7 "" 0 "NU01" 36 "L" 1 "NU02" 37 "L" 1

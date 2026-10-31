@@ -15,10 +15,7 @@ vector<string> tach(const string& chuoi, char dauPhanCach) {
 }
 }  // namespace
 HoaDon::HoaDon(string ma, string ngay, string maKhach, string maNhanVienMoi)
-    : maHoaDon(ma)
-    , ngayLap(ngay)
-    , maKhachHang(maKhach)
-    , maNhanVien(maNhanVienMoi) {
+    : maHoaDon(ma), ngayLap(ngay), maKhachHang(maKhach), maNhanVien(maNhanVienMoi) {
 }
 
 const string& HoaDon::getMa() const {
@@ -73,12 +70,12 @@ double HoaDon::tongTien() const {
 string HoaDon::toFile() const {
     ostringstream dongDuLieu;
     dongDuLieu << maHoaDon << '|' << ngayLap << '|' << maKhachHang << '|' << maNhanVien << '|'
-      << phanTramGiam << '|';
+               << phanTramGiam << '|';
     for (size_t i = 0; i < gioHang.size(); ++i) {
         if (i)
             dongDuLieu << ';';
-        dongDuLieu << gioHang[i].maMon << ',' << gioHang[i].tenMon << ',' << gioHang[i].soLuong << ','
-          << gioHang[i].donGia;
+        dongDuLieu << gioHang[i].maMon << ',' << gioHang[i].tenMon << ',' << gioHang[i].soLuong
+                   << ',' << gioHang[i].donGia;
     }
     return dongDuLieu.str();
 }
@@ -91,16 +88,14 @@ HoaDon HoaDon::fromFile(const string& dongDuLieu) {
     hoaDon.setGiamGia(stod(cacTruong[4]));
     for (const string& dongChiTiet : tach(cacTruong[5], ';')) {
         vector<string> truongChiTiet = tach(dongChiTiet, ',');
-        // Ten nuoc co the chua dau phay: "Tra (Size M, Co da)".
-        // Hai truong cuoi luon la so luong va don gia.
         if (truongChiTiet.size() >= 4) {
             string tenMon = truongChiTiet[1];
             for (size_t i = 2; i + 2 < truongChiTiet.size(); i++) {
                 tenMon += "," + truongChiTiet[i];
             }
             size_t cuoi = truongChiTiet.size();
-            hoaDon.themMon({truongChiTiet[0], tenMon,
-                           stoi(truongChiTiet[cuoi - 2]), stod(truongChiTiet[cuoi - 1])});
+            hoaDon.themMon({truongChiTiet[0], tenMon, stoi(truongChiTiet[cuoi - 2]),
+                            stod(truongChiTiet[cuoi - 1])});
         }
     }
     return hoaDon;

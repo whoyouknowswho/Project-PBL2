@@ -1,8 +1,10 @@
 #include "QuanLy.h"
-#include "../Module2_ThucDon/MonAn.h"
-#include "../Module2_ThucDon/NuocUong.h"
+
 #include <fstream>
 #include <sstream>
+
+#include "../Module2_ThucDon/MonAn.h"
+#include "../Module2_ThucDon/NuocUong.h"
 
 using namespace std;
 
@@ -15,7 +17,7 @@ vector<string> tach(const string& chuoi, char dauPhanCach = '|') {
         cacTruong.push_back(truong);
     return cacTruong;
 }
-}
+}  // namespace
 
 KhachHang* QuanLy::timKhach(const string& maCanTim) {
     for (KhachHang& khachHang : dsKhachHang)
@@ -52,13 +54,13 @@ void QuanLy::docDuLieu() {
                 continue;
             if (cacTruong[0] == "MONAN")
                 dsMon.push_back(make_unique<MonAn>(cacTruong[1], cacTruong[2], stod(cacTruong[3]),
-                                                        stoi(cacTruong[4]), stoi(cacTruong[5]),
-                                                        stoi(cacTruong[6])));
+                                                   stoi(cacTruong[4]), stoi(cacTruong[5]),
+                                                   stoi(cacTruong[6])));
             else if (cacTruong[0] == "NUOC")
-                dsMon.push_back(make_unique<NuocUong>(cacTruong[1], cacTruong[2], stod(cacTruong[3]),
-                                                           stoi(cacTruong[4]), cacTruong[5], stoi(cacTruong[6])));
+                dsMon.push_back(make_unique<NuocUong>(cacTruong[1], cacTruong[2],
+                                                      stod(cacTruong[3]), stoi(cacTruong[4]),
+                                                      cacTruong[5], stoi(cacTruong[6])));
         } catch (...) {
-            // Bo qua dong khong doc duoc, giong cac tep du lieu con lai.
         }
     tepDuLieu.close();
     tepDuLieu.open("DuLieu/khachhang.txt");
@@ -66,7 +68,8 @@ void QuanLy::docDuLieu() {
         try {
             vector<string> cacTruong = tach(dongDuLieu);
             if (cacTruong.size() >= 5)
-                dsKhachHang.push_back(KhachHang(cacTruong[0], cacTruong[1], cacTruong[2], cacTruong[3], stoi(cacTruong[4])));
+                dsKhachHang.push_back(KhachHang(cacTruong[0], cacTruong[1], cacTruong[2],
+                                                cacTruong[3], stoi(cacTruong[4])));
         } catch (...) {
         }
     tepDuLieu.close();
@@ -75,8 +78,9 @@ void QuanLy::docDuLieu() {
         try {
             vector<string> cacTruong = tach(dongDuLieu);
             if (cacTruong.size() >= 7)
-                dsNhanVien.push_back(NhanVien(cacTruong[0], cacTruong[1], cacTruong[2], cacTruong[3], cacTruong[4], stod(cacTruong[5]),
-                                        stod(cacTruong[6])));
+                dsNhanVien.push_back(NhanVien(cacTruong[0], cacTruong[1], cacTruong[2],
+                                              cacTruong[3], cacTruong[4], stod(cacTruong[5]),
+                                              stod(cacTruong[6])));
         } catch (...) {
         }
     tepDuLieu.close();
