@@ -69,7 +69,8 @@ void QuanLy::docDuLieu() {
             vector<string> cacTruong = tach(dongDuLieu);
             if (cacTruong.size() >= 5)
                 dsKhachHang.push_back(KhachHang(cacTruong[0], cacTruong[1], cacTruong[2],
-                                                cacTruong[3], stoi(cacTruong[4])));
+                                                cacTruong[3], stoi(cacTruong[4]),
+                                                cacTruong.size() >= 6 ? cacTruong[5] : ""));
         } catch (...) {
         }
     tepDuLieu.close();

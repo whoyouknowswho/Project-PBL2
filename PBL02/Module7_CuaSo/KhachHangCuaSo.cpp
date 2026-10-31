@@ -43,8 +43,9 @@ void CuaSoNhaHang::trangHoSoKhachHang() {
     nhap(L"Điện thoại",O_SDT,x,358,w,rong(k.getSoDienThoai()));
     nhap(L"Ưu đãi giảm giá",O_UUDAI,phai,358,w,so(k.getPhanTramGiam())+L"%");
     nhap(L"Giới tính",O_GIOITINH,x,434,w,rong(k.getGioiTinh()));
-    nhan(L"Liên hệ nhân viên nếu cần cập nhật thông tin.",phai,462,w);
-    for(int id:{O_MA,O_TEN,O_SDT,O_GIOITINH,O_DIEM,O_HANG,O_UUDAI}) {
+    nhap(L"Email",O_EMAIL,phai,434,w,rong(k.getEmail()));
+    nhan(L"Liên hệ nhân viên nếu cần cập nhật thông tin.",x,510,rongCuaSo-340);
+    for(int id:{O_MA,O_TEN,O_SDT,O_GIOITINH,O_EMAIL,O_DIEM,O_HANG,O_UUDAI}) {
         SendMessageW(o(id),EM_SETREADONLY,TRUE,0);
     }
 }

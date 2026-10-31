@@ -36,7 +36,7 @@ Trang **Tổng quan** của quản lý hiển thị biểu đồ đường doanh
 | Đổi mật khẩu của mình, đăng xuất | Có | Có | Có |
 
 - Chọn dòng trong bảng để sửa thông tin; **Thêm mới** làm trống biểu mẫu.
-- Trang **Thực đơn** có hai mục riêng **Thức ăn** và **Nước uống**, mỗi mục hiển thị số món của nhóm. Các thẻ món có ảnh, tên, giá và thông tin riêng (độ cay/món chay hoặc size/đá). Tìm kiếm trong nhóm, chỉ hiện món còn hàng và sắp xếp tên/giá vẫn dùng được. Quản lý chọn thẻ món để sửa thông tin hoặc nhập kho; khách không thấy số lượng tồn kho.
+- Trang **Thực đơn** có hai mục riêng **Thức ăn** và **Nước uống**, mỗi mục hiển thị số món của nhóm. Các thẻ món có ảnh, tên, giá và thông tin riêng (độ cay/món chay hoặc size). Tìm kiếm trong nhóm, chỉ hiện món còn hàng và sắp xếp tên/giá vẫn dùng được. Quản lý chọn thẻ món để sửa thông tin hoặc nhập kho; khách không thấy số lượng tồn kho.
 - Giỏ hàng chưa trừ tồn kho. Tồn kho, giảm giá VIP và điểm tích lũy được cập nhật khi xác nhận thanh toán.
 - Hóa đơn hiển thị bằng bảng món, cột số lượng/đơn giá/thành tiền và khung tổng thanh toán.
 - Nhân viên lập hóa đơn bằng mã gắn với tài khoản của mình.
@@ -73,10 +73,10 @@ Chỉ giữ giao diện cửa sổ. Các menu, hàm nhập/xuất console và b�
 Khách hàng mới có thể tự đăng ký ngay tại màn hình đăng nhập:
 
 1. Nhấn **Đăng ký khách hàng**.
-2. Nhập họ tên, số điện thoại gồm 9–15 chữ số, giới tính, tên đăng nhập và mật khẩu từ 8–128 ký tự; nhập lại mật khẩu để xác nhận.
+2. Nhập họ tên, số điện thoại gồm 9–15 chữ số, email hợp lệ, giới tính, tên đăng nhập và mật khẩu từ 8–128 ký tự; nhập lại mật khẩu để xác nhận.
 3. Nhấn **Đăng ký**, sau đó đăng nhập bằng tài khoản vừa tạo.
 
-Chương trình tự tạo mã khách hàng và hồ sơ hạng **Thường**, bắt đầu với **0 điểm**. Tài khoản tự đăng ký chỉ có quyền khách hàng. Tên đăng nhập và số điện thoại không được trùng dữ liệu đã có. Nếu đã có hồ sơ tại nhà hàng, liên hệ nhân viên hoặc quản lý để được cấp tài khoản liên kết đúng hồ sơ cũ.
+Chương trình tự tạo mã khách hàng và hồ sơ hạng **Thường**, bắt đầu với **0 điểm**. Tài khoản tự đăng ký chỉ có quyền khách hàng. Tên đăng nhập, email và số điện thoại không được trùng dữ liệu đã có. Email được lưu cùng hồ sơ trong `DuLieu/khachhang.txt`; thông tin xác thực vẫn nằm trong `DuLieu/taikhoan.txt`. Nếu đã có hồ sơ tại nhà hàng, liên hệ nhân viên hoặc quản lý để được cấp tài khoản liên kết đúng hồ sơ cũ.
 
 Quản lý vẫn có thể cấp tài khoản cho khách đã có hồ sơ:
 
@@ -93,7 +93,7 @@ Khách có các trang **Tổng quan**, **Thực đơn**, **Đặt món**, **Đơ
 
 1. Đăng nhập tài khoản khách hàng, mở **Đặt món**.
 2. Chọn nhóm **Thức ăn** hoặc **Nước uống**. Mỗi món có ảnh, tên và giá; món hết hàng có thông báo riêng, không hiển thị số lượng tồn cho khách. Có thể tìm theo tên hoặc mã trong nhóm đang xem và cuộn danh sách để xem thêm.
-3. Chọn món, nhập số lượng; với nước uống chọn size và có đá/không đá, rồi nhấn **Thêm món đã chọn** (hoặc nhấp đúp món). Có thể xóa từng món hoặc hủy giỏ trước khi gửi. Chuyển nhóm không làm mất giỏ hàng; món hết hàng không thêm được.
+3. Chọn món, nhập số lượng; với nước uống chọn size, rồi nhấn **Thêm món đã chọn** (hoặc nhấp đúp món). Có thể xóa từng món hoặc hủy giỏ trước khi gửi. Chuyển nhóm không làm mất giỏ hàng; món hết hàng không thêm được.
 4. Nhấn **Gửi đơn đặt món** và xác nhận số tiền tạm tính. Đơn được gắn với khách đang đăng nhập, bắt đầu ở trạng thái **Chờ xử lý**.
 5. Mở **Đơn đặt của tôi** để xem chi tiết và trạng thái. Khách chỉ xem được đơn của mình và có thể hủy đơn còn chờ.
 6. Nhân viên đăng nhập, mở **Đơn khách đặt**, chọn đơn. Nhấn **Thanh toán đơn** để xác nhận tổng tiền và lưu hóa đơn, hoặc **Hủy đơn đã chọn** nếu không phục vụ được.

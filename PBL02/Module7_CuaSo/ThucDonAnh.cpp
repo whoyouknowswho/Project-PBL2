@@ -99,7 +99,7 @@ void CuaSoNhaHang::veMonThucDon(const DRAWITEMSTRUCT* dong) {
     if(thucAn) chiTiet=L"Độ cay: "+to_wstring(thucAn->getDoCay())+L"/5 · "+(thucAn->laMonChay()?L"Món chay":L"Món mặn");
     else {
         const NuocUong& nuoc=dynamic_cast<const NuocUong&>(mon);
-        chiTiet=L"Size "+rong(nuoc.getSizeLy())+L" · "+(nuoc.getCoDa()?L"Có đá":L"Không đá");
+        chiTiet=L"Size "+rong(nuoc.getSizeLy());
     }
     veChuMon(dc,chiTiet,{x,the.top+78,phai,the.top+102},fontNho,RGB(88,105,128));
     wstring loai=thucAn?L"Thức ăn":L"Nước uống";

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-// Moi dong luu mot don, gom ban du tinh va cac lua chon size/da.
+// Moi dong luu mot don; coDa van duoc doc de tuong thich voi du lieu cu.
 string DichVuNhaHang::noiDungDonDat() const {
     ostringstream tep;
     for (const DonDatMon& don : cacDonDat) {

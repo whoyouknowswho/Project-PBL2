@@ -87,29 +87,32 @@ void CuaSoNhaHang::trangDanhSach() {
         nhap(L"Giá bán (đ)",O_GIA,x,310,134,L"0");
         nhap(L"Tồn kho",O_TON,x+148,310,142,L"0");
         nhap(L"Độ cay (0–5)",O_CAY,x,374,134,L"0");
-        chon(L"Size nước",O_SIZE,x+148,374,142,{L"S",L"M",L"L"}); chonMuc(O_SIZE,1);
+        HWND nhanSize=tao(L"STATIC",L"Size nước",SS_LEFT|SS_CENTERIMAGE,NHAN_SIZE,x+148,374,142,24);
+        SendMessageW(nhanSize,WM_SETFONT,reinterpret_cast<WPARAM>(fontNho),TRUE);
+        chon(L"",O_SIZE,x+148,374,142,{L"S",L"M",L"L"}); chonMuc(O_SIZE,1);
         danhDau(L"Món chay",O_CHAY,x,442,134);
-        danhDau(L"Có đá",O_DA,x+148,442,142,true);
     } else {
         nhap(trangHienTai==KHACH_HANG?L"Mã khách hàng":L"Mã nhân viên",O_MA,x,182,w);
         nhap(L"Họ và tên",O_TEN,x,246,w);
         nhap(L"Điện thoại",O_SDT,x,310,148);
         chon(L"Giới tính",O_GIOITINH,x+160,310,130,{L"Nam",L"Nữ",L"Khác"});
-        if(trangHienTai==KHACH_HANG) nhap(L"Điểm tích lũy",O_DIEM,x,374,w,L"0");
-        else {
+        if(trangHienTai==KHACH_HANG) {
+            nhap(L"Điểm tích lũy",O_DIEM,x,374,w,L"0");
+            nhap(L"Email",O_EMAIL,x,438,w);
+        } else {
             nhap(L"Chức vụ",O_CHUCVU,x,374,w);
             nhap(L"Lương cơ bản (đ)",O_LUONG,x,438,140,L"0");
             nhap(L"Phụ cấp (đ)",O_PHUCAP,x+152,438,138,L"0");
         }
     }
-    int y=trangHienTai==THUC_DON?486:518;
+    int y=trangHienTai==THUC_DON?486:(trangHienTai==KHACH_HANG?582:518);
     nut(L"Lưu thông tin",NUT_LUU,x,y,178,1);
     nut(L"Xóa",NUT_XOA,x+190,y,100,2);
     nut(L"+ Thêm mới / Làm trống",NUT_MOI,x,y+50,w);
     if(trangHienTai==THUC_DON) {
         nhap(L"Nhập thêm tồn kho",O_NHAPKHO,x,586,130,L"1");
         nut(L"Nhập kho",NUT_NHAPKHO,x+144,610,146);
-    } else nhan(L"Mã được giữ cố định khi sửa bản ghi.",x,632,w);
+    } else nhan(L"Mã được giữ cố định khi sửa bản ghi.",x,trangHienTai==KHACH_HANG?682:632,w);
     EnableWindow(o(NUT_XOA),!maDangSua.empty());
 }
 
@@ -117,7 +120,9 @@ void CuaSoNhaHang::doiLoaiMon() {
     if(trangHienTai!=THUC_DON || !dichVu.laQuanLy()) return;
     bool monAn=luaChon(O_LOAI)==0;
     EnableWindow(o(O_CAY),monAn); EnableWindow(o(O_CHAY),monAn);
-    EnableWindow(o(O_SIZE),!monAn); EnableWindow(o(O_DA),!monAn);
+    EnableWindow(o(O_SIZE),!monAn);
+    ShowWindow(o(NHAN_SIZE),monAn?SW_HIDE:SW_SHOW);
+    ShowWindow(o(O_SIZE),monAn?SW_HIDE:SW_SHOW);
     EnableWindow(o(NUT_NHAPKHO),!maDangSua.empty());
 }
 
@@ -130,7 +135,7 @@ void CuaSoNhaHang::napBang() {
         const vector<KhachHang>& ds=dichVu.khachHang();
         for(size_t i=0;i<ds.size();i++) {
             const KhachHang& k=ds[i];
-            if(!khop(k.getMa()+" "+k.getTen()+" "+k.getSoDienThoai(),tuKhoa)) continue;
+            if(!khop(k.getMa()+" "+k.getTen()+" "+k.getSoDienThoai()+" "+k.getEmail(),tuKhoa)) continue;
             dongBang(BANG_CHINH,{rong(k.getMa()),rong(k.getTen()),rong(k.getSoDienThoai()),rong(k.getGioiTinh()),so(k.getDiemTichLuy()),rong(k.getHangVip())},static_cast<int>(i));
         }
     } else if(trangHienTai==NHAN_VIEN) {
@@ -151,7 +156,7 @@ void CuaSoNhaHang::chonDong() {
     if(trangHienTai==KHACH_HANG || trangHienTai==NHAN_VIEN) {
         const Nguoi* nguoi=nullptr;
         if(trangHienTai==KHACH_HANG) {
-            const KhachHang& k=dichVu.khachHang().at(viTri); nguoi=&k; gan(O_DIEM,so(k.getDiemTichLuy()));
+            const KhachHang& k=dichVu.khachHang().at(viTri); nguoi=&k; gan(O_DIEM,so(k.getDiemTichLuy())); gan(O_EMAIL,rong(k.getEmail()));
         } else {
             const NhanVien& n=dichVu.nhanVien().at(viTri); nguoi=&n;
             gan(O_CHUCVU,rong(n.getChucVu())); gan(O_LUONG,so(n.getLuongCoBan())); gan(O_PHUCAP,so(n.getPhuCap()));
@@ -171,7 +176,7 @@ void CuaSoNhaHang::chonDong() {
         } else {
             const NuocUong& n=dynamic_cast<const NuocUong&>(m); chonMuc(O_LOAI,1);
             int size=1; if(n.getSizeLy()=="S") size=0; if(n.getSizeLy()=="L") size=2;
-            chonMuc(O_SIZE,size); SendMessageW(o(O_DA),BM_SETCHECK,n.getCoDa()?BST_CHECKED:BST_UNCHECKED,0);
+            chonMuc(O_SIZE,size);
         }
         doiLoaiMon();
     } else if(trangHienTai==BAO_CAO) {
@@ -181,7 +186,9 @@ void CuaSoNhaHang::chonDong() {
     } else if(trangHienTai==BAN_HANG || trangHienTai==DAT_MON) {
         const Mon& mon=*dichVu.thucDon().at(viTri);
         bool nuoc=mon.getLoai()=="Nuoc uong";
-        EnableWindow(o(O_SIZE),nuoc); EnableWindow(o(O_DA),nuoc);
+        EnableWindow(o(O_SIZE),nuoc);
+        ShowWindow(o(NHAN_SIZE),nuoc?SW_SHOW:SW_HIDE);
+        ShowWindow(o(O_SIZE),nuoc?SW_SHOW:SW_HIDE);
         return;
     } else return;
     SendMessageW(o(O_MA),EM_SETREADONLY,TRUE,0);
@@ -194,7 +201,7 @@ void CuaSoNhaHang::luuBieuMau() {
     if(!themMoi && ma!=maDangSua) throw runtime_error("Không thể thay đổi mã của bản ghi đang sửa.");
     if(trangHienTai==KHACH_HANG) {
         int diem=static_cast<int>(soNhap(O_DIEM,"Điểm tích lũy",true));
-        KhachHang k(ma,duLieu(O_TEN),duLieu(O_SDT),duLieu(O_GIOITINH),diem);
+        KhachHang k(ma,duLieu(O_TEN),duLieu(O_SDT),duLieu(O_GIOITINH),diem,duLieu(O_EMAIL));
         dichVu.luuKhachHang(k,themMoi);
     } else if(trangHienTai==NHAN_VIEN) {
         double luong=soNhap(O_LUONG,"Lương"),phuCap=soNhap(O_PHUCAP,"Phụ cấp");
@@ -204,7 +211,7 @@ void CuaSoNhaHang::luuBieuMau() {
         DuLieuMon m; m.ma=ma; m.ten=duLieu(O_TEN); m.gia=soNhap(O_GIA,"Giá"); m.tonKho=static_cast<int>(soNhap(O_TON,"Tồn kho",true));
         if(luaChon(O_LOAI)==0) { m.loai="Mon an"; m.doCay=static_cast<int>(soNhap(O_CAY,"Độ cay",true)); }
         else m.loai="Nuoc uong";
-        m.sizeLy=duLieu(O_SIZE); m.monChay=daDanhDau(O_CHAY); m.coDa=daDanhDau(O_DA);
+        m.sizeLy=duLieu(O_SIZE); m.monChay=daDanhDau(O_CHAY);
         dichVu.luuMon(m,themMoi);
     }
     maDangSua=ma; napBang();
@@ -270,7 +277,7 @@ void CuaSoNhaHang::xuLyNut(int id,int suKien) {
     }
     if(!dichVu.daDangNhap() && id==NUT_DANGKY && dangDangKy && !thietLap) {
         string ten=duLieu(O_USER);
-        string ma=dichVu.dangKyKhachHang(duLieu(O_TEN),duLieu(O_SDT),duLieu(O_GIOITINH),
+        string ma=dichVu.dangKyKhachHang(duLieu(O_TEN),duLieu(O_SDT),duLieu(O_EMAIL),duLieu(O_GIOITINH),
                                         ten,duLieu(O_PASS),duLieu(O_CONFIRM));
         dangDangKy=false;
         soLanSai=0;

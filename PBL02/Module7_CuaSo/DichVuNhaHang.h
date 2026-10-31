@@ -10,13 +10,13 @@ struct DuLieuMon {
     string ma, ten, loai = "Mon an", sizeLy = "M";
     double gia = 0;
     int tonKho = 0, doCay = 0;
-    bool monChay = false, coDa = true;
+    bool monChay = false, coDa = false;
 };
 
 struct YeuCauMon {
     string maMon, sizeLy = "M";
     int soLuong = 1;
-    bool coDa = true;
+    bool coDa = false;
 };
 
 struct BaoCaoKinhDoanh {
@@ -72,7 +72,7 @@ public:
     void taoTaiKhoan(const string& ten, const string& matKhau,
                     const string& xacNhan, const string& vaiTro, const string& maLienKet);
     void doiMatKhau(const string& cu, const string& moi, const string& xacNhan);
-    string dangKyKhachHang(const string& hoTen, const string& dienThoai,
+    string dangKyKhachHang(const string& hoTen, const string& dienThoai, const string& email,
                           const string& gioiTinh, const string& tenDangNhap,
                           const string& matKhau, const string& xacNhan);
 

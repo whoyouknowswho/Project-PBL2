@@ -33,9 +33,11 @@ void CuaSoNhaHang::trangBanHang() {
 
     nhap(L"Tìm món theo tên hoặc mã",TIM_KIEM,x,204,w-106);
     nhap(L"Số lượng",O_SOLUONG,x+w-94,204,94,L"1");
-    chon(L"Size (nước uống)",O_SIZE,x,270,160,{L"S",L"M",L"L"}); chonMuc(O_SIZE,1);
-    danhDau(L"Có đá",O_DA,x+180,298,110,true);
-    EnableWindow(o(O_SIZE),FALSE); EnableWindow(o(O_DA),FALSE);
+    HWND nhanSize=tao(L"STATIC",L"Size (nước uống)",SS_LEFT|SS_CENTERIMAGE,NHAN_SIZE,x,270,160,24);
+    SendMessageW(nhanSize,WM_SETFONT,reinterpret_cast<WPARAM>(fontNho),TRUE);
+    chon(L"",O_SIZE,x,270,160,{L"S",L"M",L"L"}); chonMuc(O_SIZE,1);
+    EnableWindow(o(O_SIZE),FALSE);
+    ShowWindow(o(NHAN_SIZE),SW_HIDE); ShowWindow(o(O_SIZE),SW_HIDE);
     bang(BANG_CHINH,x,344,w,caoCuaSo-454,{{L"Mã",80},{L"Tên món",175},{L"Giá bán",110},{L"Còn lại",80}});
     nut(L"+ Thêm món đã chọn",NUT_THEM_GIO,x,caoCuaSo-96,w,1);
     nhan(L"Giỏ hàng",phai,208,w,true);
@@ -74,7 +76,7 @@ void CuaSoNhaHang::napGio() {
             string ten=mon->getTen();
             if(mon->getLoai()=="Nuoc uong") {
                 ten+=" ("+muc.sizeLy;
-                ten+=muc.coDa?", có đá)":", không đá)";
+                ten+=")";
             }
             double thanhTien=mon->getGia()*muc.soLuong; tamTinh+=thanhTien;
             dongBang(BANG_GIO,{rong(ten),so(muc.soLuong),tien(thanhTien)},static_cast<int>(i));
@@ -105,11 +107,12 @@ void CuaSoNhaHang::themVaoGio() {
     for(const YeuCauMon& muc:gioHang) if(muc.maMon==mon.getMa()) daChon+=muc.soLuong;
     if(sl<1 || sl>mon.getTonKho()-daChon) throw runtime_error("Số lượng phải lớn hơn 0 và không vượt tồn kho còn lại.");
     YeuCauMon muc; muc.maMon=mon.getMa(); muc.soLuong=sl;
-    if(mon.getLoai()=="Nuoc uong") { muc.sizeLy=duLieu(O_SIZE); muc.coDa=daDanhDau(O_DA); }
-    else { muc.sizeLy=""; muc.coDa=false; }
+    if(mon.getLoai()=="Nuoc uong") muc.sizeLy=duLieu(O_SIZE);
+    else muc.sizeLy="";
+    muc.coDa=false;
     bool gop=false;
     for(YeuCauMon& cu:gioHang) {
-        if(cu.maMon==muc.maMon && cu.sizeLy==muc.sizeLy && cu.coDa==muc.coDa) {
+        if(cu.maMon==muc.maMon && cu.sizeLy==muc.sizeLy) {
             cu.soLuong+=sl; gop=true; break;
         }
     }

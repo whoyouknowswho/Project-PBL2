@@ -43,9 +43,11 @@ void CuaSoNhaHang::trangDatMon() {
                      LBS_HASSTRINGS|LBS_NOINTEGRALHEIGHT,DANH_SACH_MON,x,250,monW,caoCuaSo-484);
     SendMessageW(danhSach,LB_SETITEMHEIGHT,0,128);
     nhap(L"Số lượng",O_SOLUONG,x,caoCuaSo-214,94,L"1");
-    chon(L"Size nước uống",O_SIZE,x+110,caoCuaSo-214,144,{L"S",L"M",L"L"});
+    HWND nhanSize=tao(L"STATIC",L"Size nước uống",SS_LEFT|SS_CENTERIMAGE,NHAN_SIZE,x+110,caoCuaSo-214,144,24);
+    SendMessageW(nhanSize,WM_SETFONT,reinterpret_cast<WPARAM>(fontNho),TRUE);
+    chon(L"",O_SIZE,x+110,caoCuaSo-214,144,{L"S",L"M",L"L"});
     chonMuc(O_SIZE,1);
-    danhDau(L"Có đá",O_DA,x+270,caoCuaSo-188,monW-270,true);
+    ShowWindow(o(NHAN_SIZE),SW_HIDE); ShowWindow(o(O_SIZE),SW_HIDE);
     tao(L"STATIC",L"Chọn món ở trên để thêm vào giỏ",SS_LEFT|SS_CENTERIMAGE,
         NHAN_MON_CHON,x,caoCuaSo-144,monW,26);
     nut(L"+ Thêm món đã chọn",NUT_THEM_GIO,x,caoCuaSo-96,monW,1);
@@ -88,7 +90,9 @@ void CuaSoNhaHang::chonMonDat() {
         maMonDangChon.clear();
         gan(NHAN_MON_CHON,L"Chọn món ở trên để thêm vào giỏ");
     }
-    EnableWindow(o(O_SIZE),nuoc); EnableWindow(o(O_DA),nuoc);
+    EnableWindow(o(O_SIZE),nuoc);
+    ShowWindow(o(NHAN_SIZE),nuoc?SW_SHOW:SW_HIDE);
+    ShowWindow(o(O_SIZE),nuoc?SW_SHOW:SW_HIDE);
     EnableWindow(o(NUT_THEM_GIO),hopLe && conHang);
 }
 

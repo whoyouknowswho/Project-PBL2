@@ -21,11 +21,7 @@ string NuocUong::getLoai() const {
 }
 
 string NuocUong::hienThiChiTiet() const {
-    string trangThaiDa = "Khong da";
-    if (coDa) {
-        trangThaiDa = "Co da";
-    }
-    return "Size " + sizeLy + ", " + trangThaiDa;
+    return "Size " + sizeLy;
 }
 
 string NuocUong::toFile() const {

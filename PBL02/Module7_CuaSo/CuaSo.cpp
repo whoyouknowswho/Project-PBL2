@@ -12,6 +12,24 @@ using namespace std;
 namespace {
 const COLORREF NEN = RGB(245,247,251), CHU = RGB(26,40,64), MO = RGB(108,122,144);
 const COLORREF XANH = RGB(40,104,222), THANH_BEN = RGB(17,30,52);
+bool laOSoThuc(UINT_PTR id) { return id == O_GIA || id == O_LUONG || id == O_PHUCAP; }
+LRESULT CALLBACK locKyTuNhapSo(HWND edit, UINT msg, WPARAM w, LPARAM l, UINT_PTR id, DWORD_PTR) {
+    if (msg != WM_CHAR) return DefSubclassProc(edit, msg, w, l);
+    wchar_t kyTu = static_cast<wchar_t>(w);
+    if (kyTu < 32 || (kyTu >= L'0' && kyTu <= L'9')) return DefSubclassProc(edit, msg, w, l);
+    if (laOSoThuc(id) && kyTu == L'.') {
+        DWORD dau = 0, cuoi = 0;
+        SendMessageW(edit, EM_GETSEL, reinterpret_cast<WPARAM>(&dau), reinterpret_cast<LPARAM>(&cuoi));
+        int n = GetWindowTextLengthW(edit);
+        wstring hienTai(static_cast<size_t>(n) + 1, L'\0');
+        GetWindowTextW(edit, &hienTai[0], n + 1);
+        hienTai.resize(n);
+        size_t cham = hienTai.find(L'.');
+        if (cham == wstring::npos || (cham >= dau && cham < cuoi)) return DefSubclassProc(edit, msg, w, l);
+    }
+    if (id == O_NGAY && kyTu == L'/') return DefSubclassProc(edit, msg, w, l);
+    return 0;
+}
 void chuVe(HDC dc, const wstring& chu, RECT vung, HFONT font, COLORREF mau, UINT can = DT_LEFT) {
     SelectObject(dc, font);
     SetBkMode(dc, TRANSPARENT);
@@ -114,8 +132,12 @@ HWND CuaSoNhaHang::nhap(const wstring& ten, int id, int x, int y, int w, const w
     if (!ten.empty()) nhan(ten, x, y, w);
     DWORD kieu = WS_TABSTOP | ES_AUTOHSCROLL;
     if (matKhau) kieu |= ES_PASSWORD;
+    if (id == O_SDT || id == O_DIEM || id == O_TON || id == O_CAY || id == O_NHAPKHO || id == O_SOLUONG) kieu |= ES_NUMBER;
     HWND h = tao(L"EDIT", giaTri, kieu, id, x, y + 26, w, 32, WS_EX_CLIENTEDGE);
-    SendMessageW(h, EM_SETLIMITTEXT, matKhau ? 128 : 160, 0);
+    if (id == O_GIA || id == O_LUONG || id == O_PHUCAP || id == O_NGAY)
+        SetWindowSubclass(h, locKyTuNhapSo, static_cast<UINT_PTR>(id), 0);
+    UINT gioiHan = matKhau ? 128u : id == O_USER ? 32u : id == O_SDT ? 15u : id == O_EMAIL ? 254u : 160u;
+    SendMessageW(h, EM_SETLIMITTEXT, gioiHan, 0);
     if (matKhau) SendMessageW(h, EM_SETPASSWORDCHAR, L'*', 0);
     return h;
 }
@@ -178,11 +200,11 @@ void CuaSoNhaHang::thanhBen() {
     nut(L"Tổng quan", TRANG_CHU, 18, 160, 200, 3);
     if (dichVu.laKhachHang()) {
         nut(L"Thực đơn", THUC_DON, 18, 210, 200, 3);
-        nut(L"Thông tin của tôi", HO_SO_CUA_TOI, 18, 260, 200, 3);
-        nut(L"Hóa đơn của tôi", HOA_DON_CUA_TOI, 18, 310, 200, 3);
-        nut(L"Đặt món", DAT_MON, 18, 360, 200, 3);
-        nut(L"Đơn đặt của tôi", DON_DAT, 18, 410, 200, 3);
-        nut(L"Đổi mật khẩu", MAT_KHAU, 18, 460, 200, 3);
+        nut(L"Hóa đơn của tôi", HOA_DON_CUA_TOI, 18, 260, 200, 3);
+        nut(L"Đặt món", DAT_MON, 18, 310, 200, 3);
+        nut(L"Đơn đặt của tôi", DON_DAT, 18, 360, 200, 3);
+        nut(L"Đổi mật khẩu", MAT_KHAU, 18, 410, 200, 3);
+        nut(L"Thông tin của tôi", HO_SO_CUA_TOI, 18, 460, 200, 3);
         nut(L"Đăng xuất", DANG_XUAT, 18, caoCuaSo - 85, 200, 3);
         return;
     }
@@ -226,11 +248,11 @@ void CuaSoNhaHang::hienTrang(int trangMoi, bool giuNhap) {
     if (giuNhap) {
         const vector<int> cacO = {TIM_KIEM, LOC_BAO_CAO, O_MA, O_TEN, O_SDT, O_DIEM, O_CHUCVU,
             O_LUONG, O_PHUCAP, O_GIA, O_TON, O_CAY, O_NHAPKHO, O_NGAY, O_SOLUONG,
-            O_USER, O_PASS, O_CONFIRM, O_OLDPASS};
+            O_USER, O_PASS, O_CONFIRM, O_OLDPASS, O_EMAIL};
         for (int id : cacO) if (o(id)) nhapCu[id] = chu(id);
         for (int id : {LOC_LOAI, SAP_XEP, O_GIOITINH, O_LOAI, O_SIZE, O_KHACH, O_NHANVIEN, O_ROLE})
             if (o(id) && !(trangHienTai == HO_SO_CUA_TOI && id == O_GIOITINH)) chonCu[id] = luaChon(id);
-        for (int id : {CON_HANG, O_CHAY, O_DA}) if (o(id)) chonCu[id] = daDanhDau(id) ? 1 : 0;
+        for (int id : {CON_HANG, O_CHAY}) if (o(id)) chonCu[id] = daDanhDau(id) ? 1 : 0;
     }
     dangVeBang = true;
     SendMessageW(cuaSo, WM_SETREDRAW, FALSE, 0);
@@ -260,7 +282,7 @@ void CuaSoNhaHang::hienTrang(int trangMoi, bool giuNhap) {
     for (const pair<const int,wstring>& muc : nhapCu) if (o(muc.first)) gan(muc.first, muc.second);
     for (const pair<const int,int>& muc : chonCu) {
         if (o(muc.first)) {
-            if (muc.first == CON_HANG || muc.first == O_CHAY || muc.first == O_DA)
+            if (muc.first == CON_HANG || muc.first == O_CHAY)
                 SendMessageW(o(muc.first), BM_SETCHECK, muc.second ? BST_CHECKED : BST_UNCHECKED, 0);
             else chonMuc(muc.first, muc.second);
         }

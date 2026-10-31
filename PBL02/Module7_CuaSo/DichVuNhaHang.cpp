@@ -4,6 +4,7 @@
 #include "../Module2_ThucDon/NuocUong.h"
 #include <windows.h>
 #include <cmath>
+#include <cctype>
 #include <fstream>
 #include <map>
 #include <iomanip>
@@ -34,6 +35,43 @@ void kiemTraSo(double so, const string& ten) {
     if (!isfinite(so) || so < 0 || so > 1000000000) {
         throw runtime_error(ten + " phải nằm trong khoảng 0 đến 1.000.000.000.");
     }
+}
+
+bool dienThoaiHopLe(const string& dienThoai) {
+    return dienThoai.size() >= 9 && dienThoai.size() <= 15 &&
+        all_of(dienThoai.begin(), dienThoai.end(), [](unsigned char c) { return c >= '0' && c <= '9'; });
+}
+
+bool emailHopLe(const string& email) {
+    if (email.empty() || email.size() > 254 || email.find_first_of(" \t\r\n|;,") != string::npos) return false;
+    size_t at = email.find('@');
+    if (at == string::npos || at == 0 || at != email.rfind('@') || at > 64 || at + 1 >= email.size()) return false;
+    string local = email.substr(0, at), domain = email.substr(at + 1);
+    if (local.front() == '.' || local.back() == '.' || local.find("..") != string::npos) return false;
+    if (domain.find('.') == string::npos || domain.front() == '.' || domain.back() == '.' || domain.find("..") != string::npos) return false;
+    const string kyTuLocal = ".!#$%&'*+-/=?^_{|}~";
+    for (unsigned char c : local) {
+        if (c > 127 || (!isalnum(c) && kyTuLocal.find(static_cast<char>(c)) == string::npos)) return false;
+    }
+    size_t batDau = 0;
+    while (batDau < domain.size()) {
+        size_t ketThuc = domain.find('.', batDau);
+        if (ketThuc == string::npos) ketThuc = domain.size();
+        if (ketThuc == batDau || domain[batDau] == '-' || domain[ketThuc - 1] == '-') return false;
+        for (size_t i = batDau; i < ketThuc; i++) {
+            unsigned char c = static_cast<unsigned char>(domain[i]);
+            if (c > 127 || (!isalnum(c) && c != '-')) return false;
+        }
+        batDau = ketThuc + 1;
+    }
+    size_t chamCuoi = domain.rfind('.');
+    return domain.size() - chamCuoi - 1 >= 2;
+}
+
+string emailThuong(const string& email) {
+    string ketQua = email;
+    transform(ketQua.begin(), ketQua.end(), ketQua.begin(), [](unsigned char c) { return static_cast<char>(tolower(c)); });
+    return ketQua;
 }
 
 bool ngayHopLe(const string& ngay) {
@@ -176,10 +214,18 @@ void DichVuNhaHang::luuKhachHang(const KhachHang& khach, bool themMoi) {
     yeuCauNhanSu();
     kiemTraChuoi(khach.getMa(), "Mã khách hàng", true);
     kiemTraChuoi(khach.getTen(), "Họ tên");
+    KhachHang* cu = duLieu.timKhach(khach.getMa());
     kiemTraChuoi(khach.getSoDienThoai(), "Điện thoại");
+    if ((themMoi || !cu || cu->getSoDienThoai() != khach.getSoDienThoai()) &&
+        !dienThoaiHopLe(khach.getSoDienThoai())) throw runtime_error("Điện thoại cần có từ 9 đến 15 chữ số.");
+    if (!khach.getEmail().empty() && !emailHopLe(khach.getEmail())) throw runtime_error("Email không hợp lệ.");
+    for (const KhachHang& khac : duLieu.dsKhachHang) {
+        if (khac.getMa() != khach.getMa() && !khac.getEmail().empty() &&
+            emailThuong(khac.getEmail()) == emailThuong(khach.getEmail()))
+            throw runtime_error("Email đã được dùng cho hồ sơ khách hàng khác.");
+    }
     kiemTraChuoi(khach.getGioiTinh(), "Giới tính");
     kiemTraSo(khach.getDiemTichLuy(), "Điểm tích lũy");
-    KhachHang* cu = duLieu.timKhach(khach.getMa());
     if (themMoi && cu != nullptr) throw runtime_error("Mã khách hàng đã tồn tại.");
     if (!themMoi && cu == nullptr) throw runtime_error("Không tìm thấy khách hàng cần sửa.");
     if (cu) *cu = khach;
@@ -190,12 +236,14 @@ void DichVuNhaHang::luuNhanVien(const NhanVien& nv, bool themMoi) {
     yeuCauQuanLy();
     kiemTraChuoi(nv.getMa(), "Mã nhân viên", true);
     kiemTraChuoi(nv.getTen(), "Họ tên");
+    NhanVien* cu = duLieu.timNhanVien(nv.getMa());
     kiemTraChuoi(nv.getSoDienThoai(), "Điện thoại");
+    if ((themMoi || !cu || cu->getSoDienThoai() != nv.getSoDienThoai()) &&
+        !dienThoaiHopLe(nv.getSoDienThoai())) throw runtime_error("Điện thoại cần có từ 9 đến 15 chữ số.");
     kiemTraChuoi(nv.getGioiTinh(), "Giới tính");
     kiemTraChuoi(nv.getChucVu(), "Chức vụ");
     kiemTraSo(nv.getLuongCoBan(), "Lương");
     kiemTraSo(nv.getPhuCap(), "Phụ cấp");
-    NhanVien* cu = duLieu.timNhanVien(nv.getMa());
     if (themMoi && cu) throw runtime_error("Mã nhân viên đã tồn tại.");
     if (!themMoi && !cu) throw runtime_error("Không tìm thấy nhân viên cần sửa.");
     if (cu) *cu = nv;
@@ -303,9 +351,7 @@ HoaDon DichVuNhaHang::lapDuTinh(const string& ma, const string& ngay, const stri
         string ten = mon->getTen();
         if (mon->getLoai() == "Nuoc uong") {
             if (muc.sizeLy != "S" && muc.sizeLy != "M" && muc.sizeLy != "L") throw runtime_error("Size nước uống không hợp lệ.");
-            string da = "Khong da";
-            if (muc.coDa) da = "Co da";
-            ten += " (Size " + muc.sizeLy + ", " + da + ")";
+            ten += " (Size " + muc.sizeLy + ")";
         }
         hoaDon.themMon({muc.maMon, ten, muc.soLuong, mon->getGia()});
     }
@@ -412,7 +458,7 @@ HoaDon DichVuNhaHang::hoaDonDuocXem(const string& maHoaDon) const {
 
 // Dang ky cong khai chi tao ho so MOI va quyen KHACHHANG.
 // Ma khach, diem va vai tro khong lay tu bieu mau.
-string DichVuNhaHang::dangKyKhachHang(const string& hoTen, const string& dienThoai,
+string DichVuNhaHang::dangKyKhachHang(const string& hoTen, const string& dienThoai, const string& email,
                                      const string& gioiTinh, const string& tenDangNhap,
                                      const string& matKhau, const string& xacNhan) {
     if (canThietLap || duLieu.quanLyTaiKhoan.danhSach.empty()) throw runtime_error("Nhà hàng cần tạo tài khoản quản lý đầu tiên trước.");
@@ -424,10 +470,8 @@ string DichVuNhaHang::dangKyKhachHang(const string& hoTen, const string& dienTho
     string tenSach;
     if (dau != string::npos) tenSach = hoTen.substr(dau, cuoi-dau+1);
     kiemTraChuoi(tenSach, "Họ và tên");
-    if (dienThoai.size() < 9 || dienThoai.size() > 15) throw runtime_error("Số điện thoại cần có từ 9 đến 15 chữ số.");
-    for (char c : dienThoai) {
-        if (c < '0' || c > '9') throw runtime_error("Số điện thoại chỉ gồm chữ số, không có khoảng trắng.");
-    }
+    if (!dienThoaiHopLe(dienThoai)) throw runtime_error("Số điện thoại cần có từ 9 đến 15 chữ số.");
+    if (!emailHopLe(email)) throw runtime_error("Email không hợp lệ. Hãy nhập địa chỉ như ten@example.com.");
     if (gioiTinh != "Nam" && gioiTinh != "Nữ" && gioiTinh != "Nu" && gioiTinh != "Khác") {
         throw runtime_error("Hãy chọn giới tính hợp lệ.");
     }
@@ -437,6 +481,8 @@ string DichVuNhaHang::dangKyKhachHang(const string& hoTen, const string& dienTho
         if (soCu == dienThoai) {
             throw runtime_error("Số điện thoại đã có hồ sơ. Liên hệ nhân viên để được cấp hoặc hỗ trợ tài khoản.");
         }
+        if (!khach.getEmail().empty() && emailThuong(khach.getEmail()) == emailThuong(email))
+            throw runtime_error("Email đã có hồ sơ. Hãy dùng email khác hoặc liên hệ nhà hàng.");
     }
     string maMoi;
     for (int i = 1; i < 1000000000; i++) {
@@ -461,7 +507,7 @@ string DichVuNhaHang::dangKyKhachHang(const string& hoTen, const string& dienTho
     vector<KhachHang> khachCu = duLieu.dsKhachHang;
     vector<TaiKhoan> taiKhoanCu = duLieu.quanLyTaiKhoan.danhSach;
     try {
-        duLieu.dsKhachHang.push_back(KhachHang(maMoi, tenSach, dienThoai, gioiTinh, 0));
+        duLieu.dsKhachHang.push_back(KhachHang(maMoi, tenSach, dienThoai, gioiTinh, 0, email));
         duLieu.quanLyTaiKhoan.danhSach.push_back(taiKhoan);
         luuThayDoi(true);
     } catch (...) {
