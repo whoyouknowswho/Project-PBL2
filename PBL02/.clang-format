@@ -9,6 +9,10 @@ AllowShortFunctionsOnASingleLine: None
 AllowShortBlocksOnASingleLine: Never
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
+InsertBraces: true
+
+# Giu thu tu header Windows/ODBC; cac header nay phu thuoc nhau.
+SortIncludes: Never
 
 # Căn chỉnh dấu &, * sát vào kiểu dữ liệu: string& str thay vì string &str
 PointerAlignment: Left

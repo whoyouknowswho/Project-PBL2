@@ -27,7 +27,7 @@ struct BaoCaoKinhDoanh {
 };
 
 struct DoanhThuNam {
-    vector<double> cacThang = vector<double>(12,0);
+    vector<double> cacThang = vector<double>(12, 0);
     vector<int> cacNam;
     double tongTien = 0;
     int soHoaDon = 0, soHoaDonBoQua = 0;
@@ -55,26 +55,25 @@ class DichVuNhaHang {
     void yeuCauNhanVien() const;
     void luuThayDoi(bool kemTaiKhoan = false);
 
-public:
+   public:
     HoaDon duTinhDatMon(const vector<YeuCauMon>& gioHang);
     string datMon(const string& ngay, const vector<YeuCauMon>& gioHang);
     vector<DonDatMon> danhSachDonDat() const;
     void huyDonDat(const string& ma);
     HoaDon xemTruocDonDat(const string& ma, const string& ngay, const string& nhanVien);
     HoaDon thanhToanDonDat(const string& ma, const string& ngay, const string& nhanVien);
-    bool khoiTao(); // true: can tao tai khoan quan ly dau tien
+    bool khoiTao();  // true: can tao tai khoan quan ly dau tien
     bool dangNhap(const string& ten, const string& matKhau);
     void dangXuat();
     bool daDangNhap() const;
     bool laQuanLy() const;
     bool laKhachHang() const;
     const TaiKhoan& phien() const;
-    void taoTaiKhoan(const string& ten, const string& matKhau,
-                    const string& xacNhan, const string& vaiTro, const string& maLienKet);
+    void taoTaiKhoan(const string& ten, const string& matKhau, const string& xacNhan,
+                     const string& vaiTro, const string& maLienKet);
     void doiMatKhau(const string& cu, const string& moi, const string& xacNhan);
-    string dangKyKhachHang(const string& hoTen, const string& dienThoai,
-                          const string& gioiTinh, const string& tenDangNhap,
-                          const string& matKhau, const string& xacNhan);
+    string dangKyKhachHang(const string& hoTen, const string& dienThoai, const string& gioiTinh,
+                           const string& tenDangNhap, const string& matKhau, const string& xacNhan);
 
     const vector<KhachHang>& khachHang() const;
     const vector<NhanVien>& nhanVien() const;
@@ -90,7 +89,7 @@ public:
     void xoaMon(const string& ma);
     void nhapKho(const string& ma, int soLuong);
     HoaDon xemTruocHoaDon(const string& ma, const string& ngay, const string& khach,
-                         const string& nhanVien, const vector<YeuCauMon>& gioHang);
+                          const string& nhanVien, const vector<YeuCauMon>& gioHang);
     HoaDon thanhToan(const string& ma, const string& ngay, const string& khach,
                      const string& nhanVien, const vector<YeuCauMon>& gioHang);
     BaoCaoKinhDoanh baoCao(const string& phamVi) const;

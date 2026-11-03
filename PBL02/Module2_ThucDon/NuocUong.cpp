@@ -1,10 +1,12 @@
 #include "NuocUong.h"
 
 #include <sstream>
+#include <iomanip>
 
 using namespace std;
 
-NuocUong::NuocUong(string maMon, string tenMon, double giaMon, int soLuongTon, string kichCo, bool themDa)
+NuocUong::NuocUong(string maMon, string tenMon, double giaMon, int soLuongTon, string kichCo,
+                   bool themDa)
     : Mon(maMon, tenMon, giaMon, soLuongTon), sizeLy(kichCo), coDa(themDa) {
 }
 
@@ -28,8 +30,10 @@ string NuocUong::hienThiChiTiet() const {
     return "Size " + sizeLy + ", " + trangThaiDa;
 }
 
-string NuocUong::toFile() const {
+string NuocUong::toDuLieu() const {
     ostringstream dongDuLieu;
-    dongDuLieu << "NUOC|" << ma << '|' << ten << '|' << gia << '|' << tonKho << '|' << sizeLy << '|' << coDa;
+    dongDuLieu << fixed << setprecision(4);
+    dongDuLieu << "NUOC|" << ma << '|' << ten << '|' << gia << '|' << tonKho << '|' << sizeLy << '|'
+               << coDa;
     return dongDuLieu.str();
 }

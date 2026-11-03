@@ -23,13 +23,15 @@ int Mon::getTonKho() const {
 }
 
 bool Mon::truTonKho(int soLuong) {
-    if (soLuong <= 0 || soLuong > tonKho)
+    if (soLuong <= 0 || soLuong > tonKho) {
         return false;
+    }
     tonKho -= soLuong;
     return true;
 }
 
 void Mon::congTonKho(int soLuong) {
-    if (soLuong > 0)
+    if (soLuong > 0) {
         tonKho += soLuong;
+    }
 }

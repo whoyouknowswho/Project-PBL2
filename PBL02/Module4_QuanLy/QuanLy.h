@@ -23,6 +23,11 @@ class QuanLy {
     NhanVien* timNhanVien(const string& maCanTim);
     Mon* timMon(const string& maCanTim);
 
+    void docThucDon();
+    void docKhachHang();
+    void docNhanVien();
+    void docHoaDon();
+
    public:
     void docDuLieu();
 };

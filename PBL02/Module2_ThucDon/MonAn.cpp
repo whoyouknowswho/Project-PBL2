@@ -1,10 +1,12 @@
 #include "MonAn.h"
 
 #include <sstream>
+#include <iomanip>
 
 using namespace std;
 
-MonAn::MonAn(string maMon, string tenMon, double giaMon, int soLuongTon, int mucDoCay, bool laMonChay)
+MonAn::MonAn(string maMon, string tenMon, double giaMon, int soLuongTon, int mucDoCay,
+             bool laMonChay)
     : Mon(maMon, tenMon, giaMon, soLuongTon), doCay(mucDoCay), monChay(laMonChay) {
 }
 
@@ -28,9 +30,10 @@ string MonAn::hienThiChiTiet() const {
     return "Cay " + to_string(doCay) + "/5, " + loaiMon;
 }
 
-string MonAn::toFile() const {
+string MonAn::toDuLieu() const {
     ostringstream dongDuLieu;
+    dongDuLieu << fixed << setprecision(4);
     dongDuLieu << "MONAN|" << ma << '|' << ten << '|' << gia << '|' << tonKho << '|' << doCay << '|'
-      << monChay;
+               << monChay;
     return dongDuLieu.str();
 }

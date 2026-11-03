@@ -15,28 +15,90 @@
 
 using namespace std;
 
-enum Trang { TRANG_CHU = 100, KHACH_HANG, NHAN_VIEN, THUC_DON, BAN_HANG, BAO_CAO,
-             TAI_KHOAN, MAT_KHAU, DANG_XUAT, HO_SO_CUA_TOI, HOA_DON_CUA_TOI, DAT_MON, DON_DAT };
+enum Trang {
+    TRANG_CHU = 100,
+    KHACH_HANG,
+    NHAN_VIEN,
+    THUC_DON,
+    BAN_HANG,
+    BAO_CAO,
+    TAI_KHOAN,
+    MAT_KHAU,
+    DANG_XUAT,
+    HO_SO_CUA_TOI,
+    HOA_DON_CUA_TOI,
+    DAT_MON,
+    DON_DAT
+};
 enum DieuKhien {
-    TIM_KIEM = 200, LOC_LOAI, SAP_XEP, CON_HANG, LOC_BAO_CAO,
-    BANG_CHINH = 210, BANG_GIO, BANG_TON,
+    TIM_KIEM = 200,
+    LOC_LOAI,
+    SAP_XEP,
+    CON_HANG,
+    LOC_BAO_CAO,
+    BANG_CHINH = 210,
+    BANG_GIO,
+    BANG_TON,
     DANH_SACH_MON = 214,
     LOC_NAM_DOANHTHU,
     DANH_SACH_THUCDON,
-    O_MA = 300, O_TEN, O_SDT, O_GIOITINH, O_DIEM, O_CHUCVU, O_LUONG, O_PHUCAP,
-    O_LOAI, O_GIA, O_TON, O_CAY, O_CHAY, O_SIZE, O_DA, O_NHAPKHO,
-    O_NGAY = 330, O_KHACH, O_NHANVIEN, O_SOLUONG, O_TONG,
-    O_USER = 350, O_PASS, O_CONFIRM, O_ROLE, O_OLDPASS,
-    O_HANG = 360, O_UUDAI, NHAN_HOSO,
+    O_MA = 300,
+    O_TEN,
+    O_SDT,
+    O_GIOITINH,
+    O_DIEM,
+    O_CHUCVU,
+    O_LUONG,
+    O_PHUCAP,
+    O_LOAI,
+    O_GIA,
+    O_TON,
+    O_CAY,
+    O_CHAY,
+    O_SIZE,
+    O_DA,
+    O_NHAPKHO,
+    O_NGAY = 330,
+    O_KHACH,
+    O_NHANVIEN,
+    O_SOLUONG,
+    O_TONG,
+    O_USER = 350,
+    O_PASS,
+    O_CONFIRM,
+    O_ROLE,
+    O_OLDPASS,
+    O_HANG = 360,
+    O_UUDAI,
+    NHAN_HOSO,
     NHAN_KY_BAOCAO = 370,
-    NHAN_MON_CHON, NHAN_GIO_TRONG,
-    NUT_LUU = 400, NUT_MOI, NUT_XOA, NUT_NHAPKHO, NUT_THEM_GIO,
-    NUT_XOA_GIO, NUT_HUY_GIO, NUT_THANHTOAN, NUT_BAOCAO, NUT_HOADON,
-    NUT_DANGNHAP, NUT_TAOTAIKHOAN, NUT_DOIMATKHAU,
-    NUT_MO_DANGKY, NUT_DANGKY, NUT_VE_DANGNHAP,
-    NUT_GUI_DON, NUT_HUY_DON, NUT_THANHTOAN_DON, NUT_LAMMOI_DON,
-    NUT_BC_HOMNAY, NUT_BC_THANG, NUT_BC_TATCA,
-    NUT_NHOM_THUCAN, NUT_NHOM_NUOC
+    NHAN_MON_CHON,
+    NHAN_GIO_TRONG,
+    NUT_LUU = 400,
+    NUT_MOI,
+    NUT_XOA,
+    NUT_NHAPKHO,
+    NUT_THEM_GIO,
+    NUT_XOA_GIO,
+    NUT_HUY_GIO,
+    NUT_THANHTOAN,
+    NUT_BAOCAO,
+    NUT_HOADON,
+    NUT_DANGNHAP,
+    NUT_TAOTAIKHOAN,
+    NUT_DOIMATKHAU,
+    NUT_MO_DANGKY,
+    NUT_DANGKY,
+    NUT_VE_DANGNHAP,
+    NUT_GUI_DON,
+    NUT_HUY_DON,
+    NUT_THANHTOAN_DON,
+    NUT_LAMMOI_DON,
+    NUT_BC_HOMNAY,
+    NUT_BC_THANG,
+    NUT_BC_TATCA,
+    NUT_NHOM_THUCAN,
+    NUT_NHOM_NUOC
 };
 
 wstring rong(const string& utf8);
@@ -52,7 +114,7 @@ class CuaSoNhaHang {
     HFONT fontChu = nullptr, fontNho = nullptr, fontDam = nullptr, fontLon = nullptr;
     HBITMAP logoBachKhoa = nullptr, logoCntt = nullptr;
     HBITMAP anhThucDon = nullptr;
-    map<string,HBITMAP> anhMonRieng;
+    map<string, HBITMAP> anhMonRieng;
     int nhomDatMon = 0;
     int nhomThucDon = 0;
     string maMonDangChon;
@@ -76,17 +138,15 @@ class CuaSoNhaHang {
     DoanhThuNam doanhThuNam;
     int thangDangXem = -1;
 
-    HWND tao(const wchar_t* lop, const wstring& chu, DWORD kieu,
-             int id, int x, int y, int w, int h, DWORD moRong = 0);
+    HWND tao(const wchar_t* lop, const wstring& chu, DWORD kieu, int id, int x, int y, int w, int h,
+             DWORD moRong = 0);
     void nhan(const wstring& chu, int x, int y, int w, bool dam = false);
     HWND nut(const wstring& chu, int id, int x, int y, int w, int kieu = 0);
-    HWND nhap(const wstring& ten, int id, int x, int y, int w,
-              const wstring& giaTri = L"", bool matKhau = false);
-    HWND chon(const wstring& ten, int id, int x, int y, int w,
-              const vector<wstring>& cacMuc);
+    HWND nhap(const wstring& ten, int id, int x, int y, int w, const wstring& giaTri = L"",
+              bool matKhau = false);
+    HWND chon(const wstring& ten, int id, int x, int y, int w, const vector<wstring>& cacMuc);
     void danhDau(const wstring& ten, int id, int x, int y, int w, bool giaTri = false);
-    HWND bang(int id, int x, int y, int w, int h,
-              const vector<pair<wstring, int>>& cot);
+    HWND bang(int id, int x, int y, int w, int h, const vector<pair<wstring, int>>& cot);
     void dongBang(int id, const vector<wstring>& cot, int giaTri);
     int dongChon(int id) const;
     HWND o(int id) const;
@@ -110,7 +170,7 @@ class CuaSoNhaHang {
     void napBieuDoDoanhThu();
     void veBieuDoDoanhThu(HDC dc);
     void capNhatGoiYDoanhThu();
-    void diChuyenBieuDo(int x,int y);
+    void diChuyenBieuDo(int x, int y);
     void trangDanhSach();
     void trangBanHang();
     void trangDatMon();
@@ -118,7 +178,7 @@ class CuaSoNhaHang {
     int monDatDaChon() const;
     void chonMonDat();
     void veMonDat(const DRAWITEMSTRUCT* dong);
-    void veAnhMon(HDC dc,const Mon& mon,RECT khung);
+    void veAnhMon(HDC dc, const Mon& mon, RECT khung);
     void napThucDonAnh();
     int monThucDonDaChon() const;
     void veMonThucDon(const DRAWITEMSTRUCT* dong);
@@ -154,7 +214,7 @@ class CuaSoNhaHang {
     bool xacNhan(const wstring& noiDung);
     static LRESULT CALLBACK thuTuc(HWND, UINT, WPARAM, LPARAM);
 
-public:
+   public:
     int chay(HINSTANCE ungDung, int cheDoHien);
 };
 

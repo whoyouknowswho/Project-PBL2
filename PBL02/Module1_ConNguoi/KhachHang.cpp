@@ -53,6 +53,6 @@ double KhachHang::getPhanTramGiam() const {
     return 0;
 }
 
-string KhachHang::toFile() const {
+string KhachHang::toDuLieu() const {
     return ma + '|' + ten + '|' + soDienThoai + '|' + gioiTinh + '|' + to_string(diemTichLuy);
 }
