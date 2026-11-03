@@ -1,0 +1,3 @@
+SeaSide HAItd2007
+seaside01 123456789
+seaside02 123456789
