@@ -16,6 +16,12 @@ Dùng tài khoản đã tạo trước đó. Nếu bảng tài khoản còn tr�
 
 Dữ liệu nghiệp vụ nằm trong **SQL Server**, mặc định `localhost\SQLEXPRESS`, database `QuanLyNhaHang`. File **DuLieu/sqlserver.ini** nằm cạnh exe để cấu hình kết nối. Ứng dụng dùng Windows Authentication và Microsoft ODBC Driver 18; không cần lưu mật khẩu SQL trong mã nguồn.
 
+## Bắt đầu học SQL trong dự án
+
+Mở `database/hoc-sql-co-ban.sql`, chọn từng câu lệnh rồi Execute. File đi từ SELECT, WHERE, ORDER BY đến COUNT, SUM và JOIN trên chính dữ liệu nhà hàng. Ví dụ INSERT, UPDATE, DELETE nằm trong phần chú thích để bạn chọn chạy khi cần.
+
+Thứ tự đọc: `xem-du-lieu.sql` (xem dữ liệu), `hoc-sql-co-ban.sql` (thực hành), `schema.sql` (hiểu bảng), rồi `du-lieu-ban-dau.sql` (hiểu dữ liệu mẫu). Phần đầu `SqlServer.cpp` mô tả luồng kết nối C++ với SQL.
+
 ## Thiết lập và nhập dữ liệu bằng SQL
 
 Dữ liệu ban đầu được viết thành các lệnh `INSERT INTO ... VALUES ...` trong **`database/du-lieu-ban-dau.sql`**. Bạn có thể sửa trực tiếp tên món, giá, tồn kho, hồ sơ và các dữ liệu khác trong file này. Không dùng file TXT hoặc công cụ C++ để nhập dữ liệu ban đầu.

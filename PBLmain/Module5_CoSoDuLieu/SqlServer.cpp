@@ -1,3 +1,12 @@
+// Luong chay de doc code:
+// 1. khoiTao(): doc cau hinh va ket noi SQL Server.
+// 2. taiLai() -> docTatCaBang(): SELECT du lieu tu cac bang.
+// 3. doc(): dua du lieu da doc cho cac module nghiep vu.
+// 4. luu() -> luuCacThayDoi(): INSERT / UPDATE / DELETE cac dong thay doi.
+// thucThiSQL() la ham chung gui lenh SQL va nhan ket qua qua ODBC.
+// Dau ? trong cau SQL la vi tri gia tri duoc truyen rieng (tham so).
+// Giao dich giup tranh luu nua chung khi mot cau lenh bi loi.
+
 #include "SqlServer.h"
 #include <windows.h>
 #include <sql.h>
