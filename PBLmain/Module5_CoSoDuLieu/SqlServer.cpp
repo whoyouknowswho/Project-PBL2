@@ -20,10 +20,12 @@
 
 using namespace std;
 namespace {
+
+// 1. DANH SACH BANG: cot khoa chinh luon nam o dau danh sach cot.
 struct CauTrucBang {
     string ten;
     vector<string> tenCot;
-    int soCotKhoa;
+    int soCotKhoa;  // 1: Ma; 2: MaHoaDon/MaDon va Dong.
 };
 const vector<CauTrucBang> CAC_BANG = {
     {"KhachHang", {"Ma", "HoTen", "DienThoai", "GioiTinh", "Diem", "Email"}, 1},
@@ -36,6 +38,8 @@ const vector<CauTrucBang> CAC_BANG = {
     {"ChiTietDuTinh", {"MaDon", "Dong", "MaMon", "TenMon", "SoLuong", "DonGia"}, 2},
     {"ChiTietDonDat", {"MaDon", "Dong", "MaMon", "SoLuong", "SizeLy", "CoDa"}, 2}};
 const vector<string> CAC_NHOM = {"Mon", "KhachHang", "NhanVien", "HoaDon", "DonDatMon", "TaiKhoan"};
+// 2. HAM ODBC: chuyen tieng Viet, gui lenh SQL va doc ket qua.
+// ODBC la thu vien giup C++ giao tiep voi SQL Server.
 wstring sangUnicode(const string& chuoi) {
     if (chuoi.empty()) {
         return {};
@@ -88,65 +92,97 @@ struct CauLenhSQL {
         }
     }
 };
-vector<DongDuLieu> thucThiSQL(SQLHDBC ketNoi, const string& sql, const DongDuLieu& thamSo = {}) {
-    CauLenhSQL cauLenh(ketNoi);
-    wstring sqlUnicode = sangUnicode(sql);
-    if (!thamSo.empty()) {
-        kiemTraLoiSQL(SQLPrepareW(cauLenh.maCauLenh, (SQLWCHAR*)sqlUnicode.c_str(), SQL_NTS),
-                      SQL_HANDLE_STMT, cauLenh.maCauLenh);
+// Doc mot o cua ket qua SELECT. ODBC danh so cot tu 1.
+string docMotO(SQLHSTMT cauLenh, SQLUSMALLINT cot) {
+    SQLWCHAR boDem[4096] = {};
+    SQLLEN doDai = 0;
+    SQLRETURN trangThai = SQLGetData(cauLenh, cot, SQL_C_WCHAR, boDem, sizeof(boDem), &doDai);
+    kiemTraLoiSQL(trangThai, SQL_HANDLE_STMT, cauLenh);
+
+    if (doDai == SQL_NULL_DATA) {
+        return "";
     }
+    if (doDai == SQL_NO_TOTAL || doDai >= (SQLLEN)sizeof(boDem)) {
+        throw runtime_error("Cot SQL vuot gioi han doc.");
+    }
+    return sangUtf8((wchar_t*)boDem);
+}
+
+// Moi lan SQLFetch thanh cong nghia la vua doc duoc mot dong.
+void docKetQua(SQLHSTMT cauLenh, vector<DongDuLieu>& ketQua) {
+    SQLSMALLINT soCot = 0;
+    kiemTraLoiSQL(SQLNumResultCols(cauLenh, &soCot), SQL_HANDLE_STMT, cauLenh);
+    if (soCot == 0) {
+        return;  // INSERT / UPDATE / DELETE thuong khong tra ve cot nao.
+    }
+
+    while (true) {
+        SQLRETURN trangThai = SQLFetch(cauLenh);
+        if (trangThai == SQL_NO_DATA) {
+            break;
+        }
+        kiemTraLoiSQL(trangThai, SQL_HANDLE_STMT, cauLenh);
+
+        DongDuLieu dong;
+        for (SQLUSMALLINT cot = 1; cot <= soCot; ++cot) {
+            dong.push_back(docMotO(cauLenh, cot));
+        }
+        ketQua.push_back(dong);
+    }
+}
+
+// Vi du: UPDATE dbo.Mon SET Gia=? WHERE Ma=?
+// thamSo = {"40000", "MA01"}; moi gia tri ung voi mot dau ? tu trai sang phai.
+vector<DongDuLieu> thucThiSQL(SQLHDBC ketNoi, const string& sql, const DongDuLieu& thamSo = {}) {
+    // 1. Tao cau lenh. CauLenhSQL tu giai phong tai nguyen khi ham ket thuc.
+    CauLenhSQL cauLenh(ketNoi);
+    SQLHSTMT maCauLenh = cauLenh.maCauLenh;
+    wstring sqlUnicode = sangUnicode(sql);
+
+    // 2. Chuyen tham so sang Unicode de giu duoc tieng Viet.
+    // Cac bien nay phai con ton tai den khi SQLExecute chay xong.
     vector<wstring> giaTriUnicode;
-    giaTriUnicode.reserve(thamSo.size());
-    vector<SQLLEN> doDaiThamSo(thamSo.size(), SQL_NTS);
     for (const string& giaTri : thamSo) {
         giaTriUnicode.push_back(sangUnicode(giaTri));
     }
-    for (size_t i = 0; i < giaTriUnicode.size(); ++i) {
-        kiemTraLoiSQL(
-            SQLBindParameter(
-                cauLenh.maCauLenh, (SQLUSMALLINT)i + 1, SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR,
-                max<size_t>(1, giaTriUnicode[i].size()), 0, (SQLPOINTER)giaTriUnicode[i].c_str(),
-                (SQLLEN)((giaTriUnicode[i].size() + 1) * sizeof(wchar_t)), &doDaiThamSo[i]),
-            SQL_HANDLE_STMT, cauLenh.maCauLenh);
-    }
+    vector<SQLLEN> doDaiThamSo(thamSo.size(), SQL_NTS);
+
+    // 3. Gui cau lenh. Du lieu nguoi dung duoc truyen rieng, khong noi vao SQL.
     if (thamSo.empty()) {
-        kiemTraLoiSQL(SQLExecDirectW(cauLenh.maCauLenh, (SQLWCHAR*)sqlUnicode.c_str(), SQL_NTS),
-                      SQL_HANDLE_STMT, cauLenh.maCauLenh);
+        kiemTraLoiSQL(SQLExecDirectW(maCauLenh, (SQLWCHAR*)sqlUnicode.c_str(), SQL_NTS),
+                      SQL_HANDLE_STMT, maCauLenh);
     } else {
-        kiemTraLoiSQL(SQLExecute(cauLenh.maCauLenh), SQL_HANDLE_STMT, cauLenh.maCauLenh);
-    }
-    vector<DongDuLieu> ketQua;
-    do {
-        SQLSMALLINT soCot = 0;
-        kiemTraLoiSQL(SQLNumResultCols(cauLenh.maCauLenh, &soCot), SQL_HANDLE_STMT,
-                      cauLenh.maCauLenh);
-        if (soCot) {
-            SQLRETURN trangThai;
-            while ((trangThai = SQLFetch(cauLenh.maCauLenh)) != SQL_NO_DATA) {
-                kiemTraLoiSQL(trangThai, SQL_HANDLE_STMT, cauLenh.maCauLenh);
-                DongDuLieu dong;
-                for (SQLUSMALLINT cot = 1; cot <= soCot; ++cot) {
-                    SQLWCHAR boDem[4096] = {};
-                    SQLLEN doDai = 0;
-                    trangThai = SQLGetData(cauLenh.maCauLenh, cot, SQL_C_WCHAR, boDem,
-                                           sizeof(boDem), &doDai);
-                    kiemTraLoiSQL(trangThai, SQL_HANDLE_STMT, cauLenh.maCauLenh);
-                    if (doDai == SQL_NO_TOTAL || doDai >= (SQLLEN)sizeof(boDem)) {
-                        throw runtime_error("Cot SQL vuot gioi han doc.");
-                    }
-                    dong.push_back(doDai == SQL_NULL_DATA ? "" : sangUtf8((wchar_t*)boDem));
-                }
-                ketQua.push_back(move(dong));
-            }
+        kiemTraLoiSQL(SQLPrepareW(maCauLenh, (SQLWCHAR*)sqlUnicode.c_str(), SQL_NTS),
+                      SQL_HANDLE_STMT, maCauLenh);
+        for (size_t i = 0; i < giaTriUnicode.size(); ++i) {
+            SQLUSMALLINT viTri = (SQLUSMALLINT)(i + 1);
+            SQLULEN soKyTu = max<size_t>(1, giaTriUnicode[i].size());
+            SQLLEN soByte = (SQLLEN)((giaTriUnicode[i].size() + 1) * sizeof(wchar_t));
+            SQLPOINTER giaTri = (SQLPOINTER)giaTriUnicode[i].c_str();
+
+            SQLRETURN trangThai =
+                SQLBindParameter(maCauLenh, viTri, SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR,
+                                 soKyTu, 0, giaTri, soByte, &doDaiThamSo[i]);
+            kiemTraLoiSQL(trangThai, SQL_HANDLE_STMT, maCauLenh);
         }
-        SQLRETURN ketQuaTiep = SQLMoreResults(cauLenh.maCauLenh);
-        if (ketQuaTiep == SQL_NO_DATA) {
+        kiemTraLoiSQL(SQLExecute(maCauLenh), SQL_HANDLE_STMT, maCauLenh);
+    }
+
+    // 4. Doc ket qua. Mot dot SQL co the chua nhieu lenh SELECT.
+    vector<DongDuLieu> ketQua;
+    while (true) {
+        docKetQua(maCauLenh, ketQua);
+        SQLRETURN trangThai = SQLMoreResults(maCauLenh);
+        if (trangThai == SQL_NO_DATA) {
             break;
         }
-        kiemTraLoiSQL(ketQuaTiep, SQL_HANDLE_STMT, cauLenh.maCauLenh);
-    } while (true);
+        kiemTraLoiSQL(trangThai, SQL_HANDLE_STMT, maCauLenh);
+    }
     return ketQua;
 }
+
+// 3. CHUYEN DOI DU LIEU: giua dong SQL va chuoi cac module dang dung.
+// Day la chuoi trong bo nho, khong phai file TXT.
 string ghepChuoi(const DongDuLieu& cacTruong, const string& dauPhanCach) {
     string ketQua;
     for (size_t i = 0; i < cacTruong.size(); ++i) {
@@ -328,17 +364,26 @@ DuLieuSQL tachCacBang(const map<string, string>& noiDungCacNhom) {
 }
 
 string ghepHoaDon(const DuLieuSQL& duLieu, const DongDuLieu& hoaDon, bool laDonDat) {
-    DongDuLieu thongTinChung =
-        laDonDat ? DongDuLieu{hoaDon[0], hoaDon[1], hoaDon[2], "", hoaDon[3]} : hoaDon;
+    DongDuLieu thongTinChung = hoaDon;
+    string tenBangChiTiet = "ChiTietHoaDon";
+    if (laDonDat) {
+        thongTinChung = {hoaDon[0], hoaDon[1], hoaDon[2], "", hoaDon[3]};
+        tenBangChiTiet = "ChiTietDuTinh";
+    }
+
     DongDuLieu cacChiTiet;
-    for (const auto& muc : duLieu.at(laDonDat ? "ChiTietDuTinh" : "ChiTietHoaDon")) {
+    for (const auto& muc : duLieu.at(tenBangChiTiet)) {
         const DongDuLieu& chiTiet = muc.second;
-        if (chiTiet[0] == hoaDon[0]) {
-            cacChiTiet.push_back(ghepChuoi({chiTiet[2], chiTiet[3], chiTiet[4], chiTiet[5]}, ","));
+        if (chiTiet[0] != hoaDon[0]) {
+            continue;  // Chi lay mon thuoc hoa don dang xet.
         }
+        // Ma mon, ten mon, so luong, don gia.
+        DongDuLieu mon = {chiTiet[2], chiTiet[3], chiTiet[4], chiTiet[5]};
+        cacChiTiet.push_back(ghepChuoi(mon, ","));
     }
     return ghepChuoi(thongTinChung, "|") + "|" + ghepChuoi(cacChiTiet, ";");
 }
+
 map<string, string> ghepCacBang(const DuLieuSQL& duLieu) {
     map<string, string> noiDungCacNhom;
     for (const auto& tenNhom : CAC_NHOM) {
@@ -386,17 +431,21 @@ map<string, string> ghepCacBang(const DuLieuSQL& duLieu) {
     }
     return noiDungCacNhom;
 }
+// 4. CAC THAO TAC SQL: SELECT, DELETE, INSERT, UPDATE.
 DuLieuSQL docTatCaBang(SQLHDBC ketNoi) {
     DuLieuSQL duLieu;
     for (const CauTrucBang& bang : CAC_BANG) {
         duLieu[bang.ten];
-        for (DongDuLieu dong : thucThiSQL(
-                 ketNoi, "SELECT " + ghepChuoi(bang.tenCot, ",") + " FROM dbo." + bang.ten)) {
-            themDong(duLieu, bang.ten, move(dong), bang.soCotKhoa);
+        string sql = "SELECT " + ghepChuoi(bang.tenCot, ",");
+        sql += " FROM dbo." + bang.ten;
+        vector<DongDuLieu> cacDong = thucThiSQL(ketNoi, sql);
+        for (const DongDuLieu& dong : cacDong) {
+            themDong(duLieu, bang.ten, dong, bang.soCotKhoa);
         }
     }
     // Dua so DECIMAL ve cung dinh dang de so sanh chinh xac cac ban ghi.
-    return tachCacBang(ghepCacBang(duLieu));
+    map<string, string> noiDung = ghepCacBang(duLieu);
+    return tachCacBang(noiDung);
 }
 string dieuKienKhoa(const CauTrucBang& bang) {
     DongDuLieu cacDieuKien;
@@ -472,6 +521,7 @@ void luuCacThayDoi(SQLHDBC ketNoi, const DuLieuSQL& duLieuCu, const DuLieuSQL& d
     }
 }
 
+// 5. CAU HINH KET NOI: doc tu DuLieu/sqlserver.ini.
 wstring docCauHinh(const wchar_t* tenMuc, const wchar_t* macDinh) {
     wchar_t duongDan[32768], giaTri[1024];
     GetFullPathNameW(L"DuLieu\\sqlserver.ini", 32768, duongDan, nullptr);
@@ -488,6 +538,7 @@ wstring baoGiaTriKetNoi(wstring giaTri) {
 }
 }  // namespace
 
+// 6. CAC HAM MA UNG DUNG GOI: khoiTao, taiLai, doc, luu.
 SqlServer::SqlServer() = default;
 
 SqlServer::~SqlServer() {
@@ -526,55 +577,64 @@ void SqlServer::khoiTao() {
     }
     dongKetNoi();
 
-    // 1. Tao moi truong ODBC va doi tuong ket noi.
-    kiemTraLoiSQL(SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &moiTruong), SQL_HANDLE_ENV,
-                  moiTruong);
-    kiemTraLoiSQL(SQLSetEnvAttr(moiTruong, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0),
-                  SQL_HANDLE_ENV, moiTruong);
-    kiemTraLoiSQL(SQLAllocHandle(SQL_HANDLE_DBC, moiTruong, &ketNoi), SQL_HANDLE_ENV, moiTruong);
-    SQLSetConnectAttr(ketNoi, SQL_LOGIN_TIMEOUT, (SQLPOINTER)5, 0);
-
-    // 2. Doc cau hinh va ket noi bang tai khoan Windows hien tai.
-    wstring driver = docCauHinh(L"Driver", L"ODBC Driver 18 for SQL Server");
-    wstring mayChu = docCauHinh(L"Server", L"localhost\\SQLEXPRESS");
-    wstring tenDatabase = docCauHinh(L"Database", L"QuanLyNhaHang");
-    wstring tinChungChi = docCauHinh(L"TrustServerCertificate", L"Yes");
-    wstring chuoiKetNoi = L"DRIVER=" + baoGiaTriKetNoi(driver);
-    chuoiKetNoi += L";SERVER=" + baoGiaTriKetNoi(mayChu);
-    chuoiKetNoi += L";DATABASE=" + baoGiaTriKetNoi(tenDatabase);
-    chuoiKetNoi += L";Trusted_Connection=Yes;Encrypt=Yes;TrustServerCertificate=";
-    chuoiKetNoi += tinChungChi + L";APP=PBL2 NhaHang;";
-
-    SQLRETURN ketQua = SQLDriverConnectW(ketNoi, nullptr, (SQLWCHAR*)chuoiKetNoi.c_str(), SQL_NTS,
-                                         nullptr, 0, nullptr, SQL_DRIVER_NOPROMPT);
     try {
-        kiemTraLoiSQL(ketQua, SQL_HANDLE_DBC, ketNoi);
-    } catch (const exception& loi) {
-        throw runtime_error(string("Khong ket noi duoc SQL Server. Kiem tra dich vu SQLEXPRESS va "
-                                   "DuLieu/sqlserver.ini. ") +
-                            loi.what());
-    }
+        // 1. Tao moi truong ODBC va doi tuong ket noi.
+        kiemTraLoiSQL(SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &moiTruong), SQL_HANDLE_ENV,
+                      moiTruong);
+        kiemTraLoiSQL(SQLSetEnvAttr(moiTruong, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0),
+                      SQL_HANDLE_ENV, moiTruong);
+        kiemTraLoiSQL(SQLAllocHandle(SQL_HANDLE_DBC, moiTruong, &ketNoi), SQL_HANDLE_ENV,
+                      moiTruong);
+        SQLSetConnectAttr(ketNoi, SQL_LOGIN_TIMEOUT, (SQLPOINTER)5, 0);
 
-    // 3. Thiet lap giao dich va gioi han mot cua so cho moi database.
-    thucThiSQL(
-        ketNoi,
-        "SET XACT_ABORT ON; SET TRANSACTION ISOLATION LEVEL SERIALIZABLE; SET LOCK_TIMEOUT 10000;");
-    vector<DongDuLieu> ketQuaKhoa =
+        // 2. Doc cau hinh va ket noi bang tai khoan Windows hien tai.
+        wstring driver = docCauHinh(L"Driver", L"ODBC Driver 18 for SQL Server");
+        wstring mayChu = docCauHinh(L"Server", L"localhost\\SQLEXPRESS");
+        wstring tenDatabase = docCauHinh(L"Database", L"QuanLyNhaHang");
+        wstring tinChungChi = docCauHinh(L"TrustServerCertificate", L"Yes");
+        wstring chuoiKetNoi = L"DRIVER=" + baoGiaTriKetNoi(driver);
+        chuoiKetNoi += L";SERVER=" + baoGiaTriKetNoi(mayChu);
+        chuoiKetNoi += L";DATABASE=" + baoGiaTriKetNoi(tenDatabase);
+        chuoiKetNoi += L";Trusted_Connection=Yes;Encrypt=Yes;TrustServerCertificate=";
+        chuoiKetNoi += tinChungChi + L";APP=PBL2 NhaHang;";
+
+        SQLRETURN ketQua = SQLDriverConnectW(ketNoi, nullptr, (SQLWCHAR*)chuoiKetNoi.c_str(),
+                                             SQL_NTS, nullptr, 0, nullptr, SQL_DRIVER_NOPROMPT);
+        try {
+            kiemTraLoiSQL(ketQua, SQL_HANDLE_DBC, ketNoi);
+        } catch (const exception& loi) {
+            throw runtime_error(
+                string("Khong ket noi duoc SQL Server. Kiem tra dich vu SQLEXPRESS va "
+                       "DuLieu/sqlserver.ini. ") +
+                loi.what());
+        }
+
+        // 3. Thiet lap giao dich va gioi han mot cua so cho moi database.
         thucThiSQL(ketNoi,
-                   "DECLARE @r int; EXEC @r=sys.sp_getapplock @Resource=N'PBL2_NhaHang_App', "
-                   "@LockMode='Exclusive', @LockOwner='Session', @LockTimeout=0; SELECT @r;");
-    if (ketQuaKhoa.empty() || stoi(ketQuaKhoa[0][0]) < 0) {
-        throw runtime_error(
-            "Database dang duoc mo boi mot cua so nha hang khac. Hay dong cua so do truoc.");
-    }
-    vector<DongDuLieu> phienBan = thucThiSQL(ketNoi, "SELECT PhienBan FROM dbo.CauHinh WHERE Id=1");
-    if (phienBan.size() != 1 || phienBan[0][0] != "1") {
-        throw runtime_error("Schema SQL Server khong tuong thich. Chay setup-sqlserver.ps1.");
-    }
+                   "SET XACT_ABORT ON; SET TRANSACTION ISOLATION LEVEL SERIALIZABLE; SET "
+                   "LOCK_TIMEOUT 10000;");
+        vector<DongDuLieu> ketQuaKhoa =
+            thucThiSQL(ketNoi,
+                       "DECLARE @r int; EXEC @r=sys.sp_getapplock @Resource=N'PBL2_NhaHang_App', "
+                       "@LockMode='Exclusive', @LockOwner='Session', @LockTimeout=0; SELECT @r;");
+        if (ketQuaKhoa.empty() || stoi(ketQuaKhoa[0][0]) < 0) {
+            throw runtime_error(
+                "Database dang duoc mo boi mot cua so nha hang khac. Hay dong cua so do truoc.");
+        }
+        vector<DongDuLieu> phienBan =
+            thucThiSQL(ketNoi, "SELECT PhienBan FROM dbo.CauHinh WHERE Id=1");
+        if (phienBan.size() != 1 || phienBan[0][0] != "1") {
+            throw runtime_error("Schema SQL Server khong tuong thich. Chay database/schema.sql.");
+        }
 
-    // 4. Tai du lieu vao bo nho de cac lop nghiep vu su dung.
-    daKetNoi = true;
-    taiLai();
+        // 4. Tai du lieu vao bo nho de cac lop nghiep vu su dung.
+        daKetNoi = true;
+        taiLai();
+    } catch (...) {
+        // Ket noi hoac doc du lieu that bai: dong tai nguyen de lan sau thu lai.
+        dongKetNoi();
+        throw;
+    }
 }
 
 void SqlServer::taiLai() {

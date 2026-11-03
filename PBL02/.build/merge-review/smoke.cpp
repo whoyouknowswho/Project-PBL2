@@ -24,6 +24,29 @@ int main() {
   loaded.luuKhachHang(KhachHang("OLD", "Old Customer", "0912345678", "Nam", 10), false);
   SqlServer::instance().taiLai();
   check(SqlServer::instance().doc("KhachHang").find("merge@example.com") != std::string::npos);
+  auto& sql = SqlServer::instance();
+  auto original = sql.doc("KhachHang");
+  std::string inserted = original + "CRUD_TEST|Nguyễn O'Brien|0901234000|Nam|0|crud@example.com\n";
+  sql.luu({{"KhachHang", inserted}});
+  sql.taiLai();
+  check(sql.doc("KhachHang").find("Nguyễn O'Brien") != std::string::npos);
+  auto updated = sql.doc("KhachHang");
+  auto namePos = updated.find("Nguyễn O'Brien");
+  updated.replace(namePos, std::string("Nguyễn O'Brien").size(), "Tên mới");
+  sql.luu({{"KhachHang", updated}});
+  sql.taiLai();
+  check(sql.doc("KhachHang").find("Tên mới") != std::string::npos);
+  sql.luu({{"KhachHang", original}});
+  sql.taiLai();
+  check(sql.doc("KhachHang") == original);
+  bool rolledBack = false;
+  try {
+   sql.luu({{"KhachHang", original + "AA_TEST|Valid|0901234001|Nam|0|\nZZ_TEST|Invalid|0901234002|Nam|-1|\n"}});
+  } catch (...) { rolledBack = true; }
+  check(rolledBack);
+  sql.taiLai();
+  check(sql.doc("KhachHang") == original);
+  std::cout << "PASS: insert, update, delete, Unicode, apostrophe and transaction rollback\n";
   std::cout << "PASS: registration, SQL email reload, duplicate email, legacy customer update\n";
  } catch (const std::exception& e) { std::cerr << e.what(); return 1; }
 }
