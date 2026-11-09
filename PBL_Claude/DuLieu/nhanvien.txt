@@ -1,0 +1,3 @@
+NV01|Le Minh Chau|0987654321|Nam|Phuc vu|7e+06|500000
+NV02|Pham Thu Dung|0976543210|Nu|Thu ngan|8.5e+06|700000
+NV03|To Dong Hai|0934967814|Nam|Giam Doc|200000|23000
