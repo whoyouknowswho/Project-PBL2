@@ -15,6 +15,6 @@ class Nguoi {
     const string& getTen() const;
     const string& getSoDienThoai() const;
     const string& getGioiTinh() const;
-    virtual string toFile() const = 0;
+    virtual string toDuLieu() const = 0;
 };
 #endif

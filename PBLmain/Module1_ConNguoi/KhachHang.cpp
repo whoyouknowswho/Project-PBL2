@@ -2,7 +2,8 @@
 
 using namespace std;
 
-KhachHang::KhachHang(string maKhach, string hoTen, string dienThoai, string gioiTinhMoi, int diem, string emailMoi)
+KhachHang::KhachHang(string maKhach, string hoTen, string dienThoai, string gioiTinhMoi, int diem,
+                     string emailMoi)
     : Nguoi(maKhach, hoTen, dienThoai, gioiTinhMoi), diemTichLuy(diem), email(emailMoi) {
     capNhatHangVip();
 }
@@ -57,8 +58,9 @@ double KhachHang::getPhanTramGiam() const {
     return 0;
 }
 
-string KhachHang::toFile() const {
-    string dong = ma + '|' + ten + '|' + soDienThoai + '|' + gioiTinh + '|' + to_string(diemTichLuy);
+string KhachHang::toDuLieu() const {
+    string dong =
+        ma + '|' + ten + '|' + soDienThoai + '|' + gioiTinh + '|' + to_string(diemTichLuy);
     if (!email.empty()) {
         dong += '|';
         dong += email;

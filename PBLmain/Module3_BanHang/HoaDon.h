@@ -29,7 +29,7 @@ class HoaDon {
     double tamTinh() const;
     double tienGiam() const;
     double tongTien() const;
-    string toFile() const;
-    static HoaDon fromFile(const string& dongDuLieu);
+    string toDuLieu() const;
+    static HoaDon fromDuLieu(const string& dongDuLieu);
 };
 #endif

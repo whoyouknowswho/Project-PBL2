@@ -21,6 +21,6 @@ class Mon {
     void congTonKho(int soLuong);
     virtual string getLoai() const = 0;
     virtual string hienThiChiTiet() const = 0;
-    virtual string toFile() const = 0;
+    virtual string toDuLieu() const = 0;
 };
 #endif

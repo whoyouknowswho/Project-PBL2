@@ -9,12 +9,11 @@ class MonAn : public Mon {
 
    public:
     MonAn() = default;
-    MonAn(string maMon, string tenMon, double giaMon, int soLuongTon,
-          int mucDoCay, bool laMonChay);
+    MonAn(string maMon, string tenMon, double giaMon, int soLuongTon, int mucDoCay, bool laMonChay);
     int getDoCay() const;
     bool laMonChay() const;
     string getLoai() const override;
     string hienThiChiTiet() const override;
-    string toFile() const override;
+    string toDuLieu() const override;
 };
 #endif

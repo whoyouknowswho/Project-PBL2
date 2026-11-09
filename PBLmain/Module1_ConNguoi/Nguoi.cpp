@@ -21,4 +21,3 @@ const string& Nguoi::getSoDienThoai() const {
 const string& Nguoi::getGioiTinh() const {
     return gioiTinh;
 }
-

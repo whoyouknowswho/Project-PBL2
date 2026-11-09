@@ -9,12 +9,12 @@ class NuocUong : public Mon {
 
    public:
     NuocUong() = default;
-    NuocUong(string maMon, string tenMon, double giaMon, int soLuongTon,
-             string kichCo, bool themDa);
+    NuocUong(string maMon, string tenMon, double giaMon, int soLuongTon, string kichCo,
+             bool themDa);
     const string& getSizeLy() const;
     bool getCoDa() const;
     string getLoai() const override;
     string hienThiChiTiet() const override;
-    string toFile() const override;
+    string toDuLieu() const override;
 };
 #endif

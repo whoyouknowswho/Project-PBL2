@@ -9,12 +9,12 @@ class NhanVien : public Nguoi {
 
    public:
     NhanVien() = default;
-    NhanVien(string maNhanVien, string hoTen, string dienThoai, string gioiTinh,
-             string chucVu, double luong, double phuCap = 0);
+    NhanVien(string maNhanVien, string hoTen, string dienThoai, string gioiTinh, string chucVu,
+             double luong, double phuCap = 0);
     const string& getChucVu() const;
     double getLuongCoBan() const;
     double getPhuCap() const;
     double tinhLuong() const;
-    string toFile() const override;
+    string toDuLieu() const override;
 };
 #endif

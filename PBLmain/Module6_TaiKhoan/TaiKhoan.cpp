@@ -1,5 +1,5 @@
 #include "TaiKhoan.h"
-#include <fstream>
+#include "../Module5_CoSoDuLieu/SqlServer.h"
 #include <sstream>
 #include <stdexcept>
 #include <windows.h>
@@ -8,7 +8,6 @@
 using namespace std;
 
 namespace {
-const char* TEP_TAI_KHOAN = "DuLieu/taikhoan.txt";
 const unsigned long long SO_VONG_BAM = 600000;
 
 // Phan ma hoa dung thu vien Windows, tach khoi logic dang nhap.
@@ -36,8 +35,7 @@ bool laHex(const string& chuoi, size_t doDai) {
 
 string taoMuoi() {
     vector<unsigned char> duLieu(16);
-    if (BCryptGenRandom(NULL, duLieu.data(), duLieu.size(),
-                        BCRYPT_USE_SYSTEM_PREFERRED_RNG) < 0) {
+    if (BCryptGenRandom(NULL, duLieu.data(), duLieu.size(), BCRYPT_USE_SYSTEM_PREFERRED_RNG) < 0) {
         throw runtime_error("Khong tao duoc du lieu bao mat.");
     }
     return sangHex(duLieu);
@@ -52,10 +50,9 @@ string bamMatKhau(const string& matKhau, const string& muoi) {
     vector<unsigned char> matKhauBytes(matKhau.begin(), matKhau.end());
     vector<unsigned char> muoiBytes(muoi.begin(), muoi.end());
     vector<unsigned char> ketQua(32);
-    NTSTATUS trangThai = BCryptDeriveKeyPBKDF2(
-        thuatToan, matKhauBytes.data(), matKhauBytes.size(),
-        muoiBytes.data(), muoiBytes.size(), SO_VONG_BAM,
-        ketQua.data(), ketQua.size(), 0);
+    NTSTATUS trangThai =
+        BCryptDeriveKeyPBKDF2(thuatToan, matKhauBytes.data(), matKhauBytes.size(), muoiBytes.data(),
+                              muoiBytes.size(), SO_VONG_BAM, ketQua.data(), ketQua.size(), 0);
     BCryptCloseAlgorithmProvider(thuatToan, 0);
     if (trangThai < 0) {
         throw runtime_error("Khong bam duoc mat khau.");
@@ -86,31 +83,28 @@ void kiemTraMatKhauMoi(const string& matKhau) {
 
 bool QuanLyTaiKhoan::docDuLieu() {
     danhSach.clear();
-    DWORD thuocTinh = GetFileAttributesA(TEP_TAI_KHOAN);
-    if (thuocTinh == INVALID_FILE_ATTRIBUTES) {
-        DWORD loi = GetLastError();
-        if (loi == ERROR_FILE_NOT_FOUND) {
-            return false;
-        }
-        throw runtime_error("Khong truy cap duoc DuLieu/taikhoan.txt. Hay chay tu thu muc du an.");
+    string noiDung = SqlServer::instance().doc("TaiKhoan");
+    if (noiDung.empty()) {
+        return false;
     }
-    ifstream tep(TEP_TAI_KHOAN);
+    istringstream luongDuLieu(noiDung);
     string dong;
     bool coQuanLy = false;
-    while (getline(tep, dong)) {
+    while (getline(luongDuLieu, dong)) {
         stringstream luong(dong);
         vector<string> truong;
         string giaTri;
         while (getline(luong, giaTri, '|')) {
             truong.push_back(giaTri);
         }
-        if (truong.size() != 6 || truong[0] != "PBKDF2-SHA256-600000" ||
-            !tenHopLe(truong[1]) || tim(truong[1]) != nullptr ||
+        if (truong.size() != 6 || truong[0] != "PBKDF2-SHA256-600000" || !tenHopLe(truong[1]) ||
+            tim(truong[1]) != nullptr ||
             (truong[2] != "QUANLY" && truong[2] != "NHANVIEN" && truong[2] != "KHACHHANG") ||
             ((truong[2] == "NHANVIEN" || truong[2] == "KHACHHANG") && !tenHopLe(truong[3])) ||
             !laHex(truong[4], 32) || !laHex(truong[5], 64) ||
             (!dong.empty() && dong.back() == '|')) {
-            throw runtime_error("Tep tai khoan khong hop le. Khong tu dong tao lai tai khoan.");
+            throw runtime_error(
+                "Du lieu tai khoan SQL khong hop le. Khong tu dong tao lai tai khoan.");
         }
         TaiKhoan taiKhoan = {truong[1], truong[2], truong[3], truong[4], truong[5], ""};
         // Giu dinh dang 6 cot de doc duoc tat ca tai khoan cu.
@@ -123,8 +117,9 @@ bool QuanLyTaiKhoan::docDuLieu() {
             coQuanLy = true;
         }
     }
-    if (!tep.eof() || !coQuanLy) {
-        throw runtime_error("Khong doc duoc tai khoan quan ly. Hay kiem tra tep tai khoan.");
+    if (!luongDuLieu.eof() || !coQuanLy) {
+        throw runtime_error(
+            "Khong doc duoc tai khoan quan ly. Hay kiem tra bang TaiKhoan trong SQL Server.");
     }
     return true;
 }
@@ -151,27 +146,21 @@ bool QuanLyTaiKhoan::kiemTraMatKhau(const string& tenDangNhap, const string& mat
     return khacNhau == 0;
 }
 
-string QuanLyTaiKhoan::noiDungTep(const vector<TaiKhoan>& duLieu) const {
+string QuanLyTaiKhoan::noiDungDuLieu(const vector<TaiKhoan>& duLieu) const {
     ostringstream noiDung;
     for (const TaiKhoan& taiKhoan : duLieu) {
         string maLienKet = taiKhoan.maNhanVien;
-        if (taiKhoan.vaiTro == "KHACHHANG") maLienKet = taiKhoan.maKhachHang;
-        noiDung << "PBKDF2-SHA256-600000|" << taiKhoan.tenDangNhap << '|'
-                << taiKhoan.vaiTro << '|' << maLienKet << '|'
-                << taiKhoan.muoi << '|' << taiKhoan.matKhauBam << '\n';
+        if (taiKhoan.vaiTro == "KHACHHANG") {
+            maLienKet = taiKhoan.maKhachHang;
+        }
+        noiDung << "PBKDF2-SHA256-600000|" << taiKhoan.tenDangNhap << '|' << taiKhoan.vaiTro << '|'
+                << maLienKet << '|' << taiKhoan.muoi << '|' << taiKhoan.matKhauBam << '\n';
     }
     return noiDung.str();
 }
 
 void QuanLyTaiKhoan::luu(const vector<TaiKhoan>& duLieu) const {
-    string tepTam = string(TEP_TAI_KHOAN) + ".tmp";
-    ofstream tep(tepTam, ios::trunc);
-    tep << noiDungTep(duLieu);
-    tep.close();
-    if (!tep || !MoveFileExA(tepTam.c_str(), TEP_TAI_KHOAN,
-                             MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
-        throw runtime_error("Khong luu duoc tai khoan. Thay doi chua duoc ap dung.");
-    }
+    SqlServer::instance().luu({{"TaiKhoan", noiDungDuLieu(duLieu)}});
 }
 
 TaiKhoan QuanLyTaiKhoan::chuanBi(const string& tenDangNhap, const string& matKhau,
@@ -197,15 +186,19 @@ TaiKhoan QuanLyTaiKhoan::chuanBi(const string& tenDangNhap, const string& matKha
     TaiKhoan taiKhoan;
     taiKhoan.tenDangNhap = tenDangNhap;
     taiKhoan.vaiTro = vaiTro;
-    if (vaiTro == "NHANVIEN") taiKhoan.maNhanVien = maLienKet;
-    if (vaiTro == "KHACHHANG") taiKhoan.maKhachHang = maLienKet;
+    if (vaiTro == "NHANVIEN") {
+        taiKhoan.maNhanVien = maLienKet;
+    }
+    if (vaiTro == "KHACHHANG") {
+        taiKhoan.maKhachHang = maLienKet;
+    }
     taiKhoan.muoi = taoMuoi();
     taiKhoan.matKhauBam = bamMatKhau(matKhau, taiKhoan.muoi);
     return taiKhoan;
 }
 
-void QuanLyTaiKhoan::tao(const string& tenDangNhap, const string& matKhau,
-                         const string& vaiTro, const string& maLienKet) {
+void QuanLyTaiKhoan::tao(const string& tenDangNhap, const string& matKhau, const string& vaiTro,
+                         const string& maLienKet) {
     TaiKhoan taiKhoan = chuanBi(tenDangNhap, matKhau, vaiTro, maLienKet);
     vector<TaiKhoan> banMoi = danhSach;
     banMoi.push_back(taiKhoan);

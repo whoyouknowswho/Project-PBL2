@@ -1,11 +1,12 @@
 #include "NhanVien.h"
 
 #include <sstream>
+#include <iomanip>
 
 using namespace std;
 
-NhanVien::NhanVien(string maNhanVien, string hoTen, string dienThoai, string gioiTinhMoi, string chucVuMoi,
-                   double luong, double tienPhuCap)
+NhanVien::NhanVien(string maNhanVien, string hoTen, string dienThoai, string gioiTinhMoi,
+                   string chucVuMoi, double luong, double tienPhuCap)
     : Nguoi(maNhanVien, hoTen, dienThoai, gioiTinhMoi)
     , chucVu(chucVuMoi)
     , luongCoBan(luong)
@@ -28,9 +29,10 @@ double NhanVien::tinhLuong() const {
     return luongCoBan + phuCap;
 }
 
-string NhanVien::toFile() const {
+string NhanVien::toDuLieu() const {
     ostringstream dongDuLieu;
+    dongDuLieu << fixed << setprecision(4);
     dongDuLieu << ma << '|' << ten << '|' << soDienThoai << '|' << gioiTinh << '|' << chucVu << '|'
-      << luongCoBan << '|' << phuCap;
+               << luongCoBan << '|' << phuCap;
     return dongDuLieu.str();
 }
