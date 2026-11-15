@@ -95,6 +95,10 @@ void KhoAnh::giaiPhong() {
     delete bachKhoa; bachKhoa = nullptr;
     delete cntt; cntt = nullptr;
     delete minhHoa; minhHoa = nullptr;
+    xoaDemRieng();
+}
+
+void KhoAnh::xoaDemRieng() {
     for (auto& muc : rieng) delete muc.second;
     rieng.clear();
 }
@@ -113,9 +117,15 @@ void KhoAnh::veLogo(HDC dc, int maTaiNguyen, RECT vung) const {
     g.DrawImage(anh, Gdiplus::RectF(vung.left + (vw - rw) / 2, vung.top + (vh - rh) / 2, rw, rh));
 }
 
-void KhoAnh::veAnhMon(HDC dc, const string& ma, const string& loai, const string& tenMon, RECT vung, int banKinh) {
-    if (!rieng.count(ma)) rieng[ma] = maAnhHopLe(ma) ? taiTuTep(L"DuLieu/AnhMon/" + rong(ma) + L".png") : nullptr;
-    Gdiplus::Bitmap* anh = rieng[ma];
+void KhoAnh::veAnhMon(HDC dc, const string& ma, const string& loai, const string& tenMon,
+                      const string& hinhAnh, RECT vung, int banKinh) {
+    string khoa = ma + "|" + hinhAnh;
+    if (!rieng.count(khoa)) {
+        Gdiplus::Bitmap* bmp = !hinhAnh.empty() ? taiTuTep(rong(hinhAnh)) : nullptr;
+        if (!bmp && maAnhHopLe(ma)) bmp = taiTuTep(L"DuLieu/AnhMon/" + rong(ma) + L".png");
+        rieng[khoa] = bmp;
+    }
+    Gdiplus::Bitmap* anh = rieng[khoa];
     if (anh) {
         veCat(dc, anh, Gdiplus::RectF(0, 0, static_cast<float>(anh->GetWidth()), static_cast<float>(anh->GetHeight())),
               vung, banKinh);

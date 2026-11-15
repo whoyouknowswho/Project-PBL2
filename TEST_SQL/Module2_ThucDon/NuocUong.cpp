@@ -25,5 +25,5 @@ string NuocUong::hienThiChiTiet() const {
 }
 
 vector<string> NuocUong::cacCot() const {
-    return {"NUOC", ma, ten, to_string(gia), to_string(tonKho), sizeLy, to_string(coDa)};
+    return {"NUOC", ma, ten, to_string(gia), to_string(tonKho), sizeLy, to_string(coDa), hinhAnh};
 }

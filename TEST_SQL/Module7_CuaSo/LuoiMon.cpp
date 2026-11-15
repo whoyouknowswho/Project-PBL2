@@ -102,7 +102,7 @@ void veLuoi(HWND h, HDC dc, TrangThaiLuoi& tt) {
         if (chon) veHinhBoGoc(dc, o, 14, Mau::CHINH_NHAT, Mau::CHINH, 2.0f);
         else if (re) veVienBoGoc(dc, o, 14, Mau::CHINH_RE, 1.5f);
         RECT anh = {o.left + 10, o.top + 10, o.right - 10, o.bottom - 98};
-        if (tt.anh && !t.maMon.empty()) tt.anh->veAnhMon(dc, t.maMon, t.loaiMon, t.tenMon, anh, 10);
+        if (tt.anh && !t.maMon.empty()) tt.anh->veAnhMon(dc, t.maMon, t.loaiMon, t.tenMon, t.hinhAnh, anh, 10);
         if (t.mo) phuMo(dc, anh, 10, RGB(255,255,255), 140);
         if (!t.huyHieu.empty()) {
             int w = min(doRongHuyHieu(dc, t.huyHieu, f.nhoDam), static_cast<int>(anh.right - anh.left) - 16);

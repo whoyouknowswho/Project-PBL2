@@ -118,7 +118,7 @@ void CuaSoNhaHang::hienTrang(int trangMoi, bool giuNhap) {
     map<int, bool> danhDauCu;
     if (giuNhap) {
         const vector<int> cacO = {TIM_KIEM, LOC_BAO_CAO, O_MA, O_TEN, O_SDT, O_DIEM, O_CHUCVU,
-            O_LUONG, O_PHUCAP, O_GIA, O_TON, O_CAY, O_NHAPKHO, O_NGAY, O_SOLUONG,
+            O_LUONG, O_PHUCAP, O_GIA, O_TON, O_CAY, O_NHAPKHO, O_ANH, O_NGAY, O_SOLUONG,
             O_USER, O_PASS, O_CONFIRM, O_OLDPASS, O_EMAIL};
         for (int id : cacO) if (o(id)) nhapCu[id] = chu(id);
         for (int id : {LOC_LOAI, SAP_XEP, O_GIOITINH, O_LOAI, O_SIZE, O_KHACH, O_NHANVIEN, O_ROLE})
@@ -128,7 +128,7 @@ void CuaSoNhaHang::hienTrang(int trangMoi, bool giuNhap) {
     dangVeBang = true;
     SendMessageW(cuaSo, WM_SETREDRAW, FALSE, 0);
     xoaDieuKhien();
-    if (!giuNhap) maDangSua.clear();
+    if (!giuNhap) { maDangSua.clear(); anhDangChon.clear(); }
     trangHienTai = trangMoi;
     if (!dichVu.daDangNhap()) {
         if (dangDangKy && !thietLap) trangDangKy();
@@ -156,6 +156,7 @@ void CuaSoNhaHang::hienTrang(int trangMoi, bool giuNhap) {
     if (dichVu.daDangNhap() && (trangHienTai == KHACH_HANG || trangHienTai == NHAN_VIEN || trangHienTai == THUC_DON)) {
         napBang();
         doiLoaiMon();
+        capNhatNutAnh();
     }
     if (dichVu.daDangNhap() && (trangHienTai == BAN_HANG || trangHienTai == DAT_MON)) {
         napMonDat();
@@ -243,6 +244,7 @@ void CuaSoNhaHang::ve(HDC dc) {
 
 void CuaSoNhaHang::xuLyNut(int id, int suKien) {
     if (suKien == BN_CLICKED && danhDauGiaTri.count(id)) datDanhDau(id, !daDanhDau(id));
+    if (suKien == CBN_SELCHANGE && id == O_ROLE) { vaiTroTao = luaChon(O_ROLE); hienTrang(TAI_KHOAN, true); return; }
     if (suKien == EN_CHANGE && id == TIM_KIEM) {
         if (trangHienTai == BAN_HANG || trangHienTai == DAT_MON) napMonDat();
         else napBang();
@@ -333,8 +335,9 @@ void CuaSoNhaHang::xuLyNut(int id, int suKien) {
     }
     switch (id) {
         case NUT_LUU: luuBieuMau(); break;
-        case NUT_MOI: hienTrang(trangHienTai); SetFocus(o(O_MA)); break;
+        case NUT_MOI: hienTrang(trangHienTai); SetFocus(o(O_TEN)); break;
         case NUT_XOA: xoaBanGhi(); break;
+        case NUT_CHON_ANH: chonAnhMon(); break;
         case CON_HANG: napBang(); break;
         case NUT_NHOM_THUCAN: case NUT_NHOM_NUOC:
             if (trangHienTai == THUC_DON) {
@@ -387,11 +390,25 @@ void CuaSoNhaHang::xuLyNut(int id, int suKien) {
             thanhCong(L"Đã nhập thêm tồn kho cho " + rong(ma));
             break;
         }
-        case NUT_TAOTAIKHOAN:
-            dichVu.taoTaiKhoan(duLieu(O_USER), duLieu(O_PASS), duLieu(O_CONFIRM), vaiTroDuocChon());
+        case NUT_TAOTAIKHOAN: {
+            string vaiTro = vaiTroDuocChon();
+            wstring tb = L"Đã tạo tài khoản quản lý thành công.";
+            if (vaiTro == "QUANLY") {
+                dichVu.taoTaiKhoan(duLieu(O_USER), duLieu(O_PASS), duLieu(O_CONFIRM), "QUANLY");
+            } else if (vaiTro == "NHANVIEN") {
+                double luong = soNhap(O_LUONG, "Lương"), phuCap = soNhap(O_PHUCAP, "Phụ cấp");
+                string ma = dichVu.taoTaiKhoanNhanVien(duLieu(O_USER), duLieu(O_PASS), duLieu(O_CONFIRM),
+                    duLieu(O_TEN), duLieu(O_SDT), duLieu(O_GIOITINH), duLieu(O_CHUCVU), luong, phuCap);
+                tb = L"Đã tạo tài khoản và hồ sơ nhân viên (Mã tự động: " + rong(ma) + L").";
+            } else {
+                string ma = dichVu.taoTaiKhoanKhachHang(duLieu(O_USER), duLieu(O_PASS), duLieu(O_CONFIRM),
+                    duLieu(O_TEN), duLieu(O_SDT), duLieu(O_GIOITINH), duLieu(O_EMAIL));
+                tb = L"Đã tạo tài khoản và hồ sơ khách hàng (Mã tự động: " + rong(ma) + L").";
+            }
             hienTrang(TAI_KHOAN);
-            thanhCong(L"Đã tạo tài khoản thành công.");
+            thanhCong(tb);
             break;
+        }
         case NUT_DOIMATKHAU:
             dichVu.doiMatKhau(duLieu(O_OLDPASS), duLieu(O_PASS), duLieu(O_CONFIRM));
             hienTrang(MAT_KHAU);

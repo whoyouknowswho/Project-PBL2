@@ -2,7 +2,11 @@
 #include "LuoiMon.h"
 #include "../Module2_ThucDon/MonAn.h"
 #include "../Module2_ThucDon/NuocUong.h"
+#include <commdlg.h>
+#include <objidl.h>
+#include <gdiplus.h>
 #include <algorithm>
+#include <stdexcept>
 
 using namespace std;
 
@@ -40,25 +44,27 @@ void CuaSoNhaHang::trangThucDon() {
 
     if (!quanLy) return;
     int fx = xForm + 24, w = rongForm - 48, nua = (w - 16) / 2;
-    themThe({xForm, y, phai, y + 540});
-    themDauThe(fx, y + 20, w, Icon::THUC_DON, L"Thông tin món", L"Chọn thẻ món để sửa hoặc nhập kho.");
-    nhap(L"Mã món", O_MA, fx, y + 70, nua);
-    chon(L"Loại", O_LOAI, fx + nua + 16, y + 70, w - nua - 16, {L"Món ăn", L"Nước uống"});
-    nhap(L"Tên món", O_TEN, fx, y + 138, w);
-    nhap(L"Giá bán (đ)", O_GIA, fx, y + 206, nua, L"0");
-    nhap(L"Tồn kho", O_TON, fx + nua + 16, y + 206, w - nua - 16, L"0");
-    nhap(L"Độ cay (0–5)", O_CAY, fx, y + 274, nua, L"0");
-    HWND nhanSize = nhan(L"Size nước", fx + nua + 16, y + 274, w - nua - 16, false, NHAN_SIZE);
+    themThe({xForm, y, phai, y + 568});
+    themDauThe(fx, y + 20, w, Icon::THUC_DON, L"Thông tin món", L"Chọn thẻ món để sửa hoặc thêm mới.");
+    nhap(L"Mã món (tự động)", O_MA, fx, y + 68, nua);
+    SendMessageW(o(O_MA), EM_SETREADONLY, TRUE, 0);
+    chon(L"Loại", O_LOAI, fx + nua + 16, y + 68, w - nua - 16, {L"Món ăn", L"Nước uống"});
+    nhap(L"Tên món", O_TEN, fx, y + 134, w);
+    nhap(L"Giá bán (đ)", O_GIA, fx, y + 200, nua, L"0");
+    nhap(L"Tồn kho", O_TON, fx + nua + 16, y + 200, w - nua - 16, L"0");
+    nhap(L"Độ cay (0–5)", O_CAY, fx, y + 266, nua, L"0");
+    HWND nhanSize = nhan(L"Size nước", fx + nua + 16, y + 266, w - nua - 16, false, NHAN_SIZE);
     SendMessageW(nhanSize, WM_SETFONT, reinterpret_cast<WPARAM>(font.nhoDam), TRUE);
     mauChuNhan[nhanSize] = Mau::CHU_NHAN;
-    chon(L"", O_SIZE, fx + nua + 16, y + 274, w - nua - 16, {L"S", L"M", L"L"});
+    chon(L"", O_SIZE, fx + nua + 16, y + 266, w - nua - 16, {L"S", L"M", L"L"});
     chonMuc(O_SIZE, 1);
-    danhDau(L"Món chay", O_CHAY, fx + nua + 16, y + 304, w - nua - 16);
-    nut(L"Lưu thông tin", NUT_LUU, fx, y + 356, w - 112, KieuNut::Chinh, Icon::LUU);
-    nut(L"Xóa", NUT_XOA, fx + w - 100, y + 356, 100, KieuNut::NguyHiem, Icon::XOA);
-    nut(L"Thêm mới / Làm trống", NUT_MOI, fx, y + 406, w, KieuNut::Phu, Icon::THEM);
-    nhap(L"Nhập thêm tồn kho", O_NHAPKHO, fx, y + 456, nua, L"1");
-    nut(L"Nhập kho", NUT_NHAPKHO, fx + nua + 16, y + 480, w - nua - 16, KieuNut::Phu, Icon::THEM);
+    danhDau(L"Món chay", O_CHAY, fx + nua + 16, y + 296, w - nua - 16);
+    nut(L"Chọn hình ảnh cho món...", NUT_CHON_ANH, fx, y + 340, w, KieuNut::Phu, Icon::THEM);
+    nut(L"Lưu thông tin", NUT_LUU, fx, y + 392, w - 112, KieuNut::Chinh, Icon::LUU);
+    nut(L"Xóa", NUT_XOA, fx + w - 100, y + 392, 100, KieuNut::NguyHiem, Icon::XOA);
+    nut(L"Thêm mới / Làm trống", NUT_MOI, fx, y + 440, w, KieuNut::Phu, Icon::THEM);
+    nhap(L"Nhập thêm tồn kho", O_NHAPKHO, fx, y + 488, nua, L"1");
+    nut(L"Nhập kho", NUT_NHAPKHO, fx + nua + 16, y + 512, w - nua - 16, KieuNut::Phu, Icon::THEM);
     EnableWindow(o(NUT_XOA), !maDangSua.empty());
 }
 
@@ -71,6 +77,10 @@ int CuaSoNhaHang::monThucDonDaChon() const {
 void CuaSoNhaHang::doiLoaiMon() {
     if (trangHienTai != THUC_DON || !dichVu.laQuanLy()) return;
     bool monAn = luaChon(O_LOAI) == 0;
+    if (maDangSua.empty() && o(O_MA)) {
+        gan(O_MA, rong(dichVu.maMonMoi(monAn ? "Mon an" : "Nuoc uong")));
+        SendMessageW(o(O_MA), EM_SETREADONLY, TRUE, 0);
+    }
     EnableWindow(o(O_CAY), monAn);
     EnableWindow(o(O_CHAY), monAn);
     EnableWindow(o(O_SIZE), !monAn);
@@ -80,6 +90,37 @@ void CuaSoNhaHang::doiLoaiMon() {
     ShowWindow(o(O_SIZE), monAn ? SW_HIDE : SW_SHOW);
     EnableWindow(o(NUT_NHAPKHO), !maDangSua.empty());
     InvalidateRect(cuaSo, nullptr, FALSE);
+}
+
+void CuaSoNhaHang::capNhatNutAnh() {
+    if (!o(NUT_CHON_ANH)) return;
+    if (anhDangChon.empty()) {
+        gan(NUT_CHON_ANH, L"Chọn hình ảnh cho món...");
+        return;
+    }
+    wstring tenTep = rong(anhDangChon);
+    size_t viTri = tenTep.find_last_of(L"\\/");
+    if (viTri != wstring::npos) tenTep = tenTep.substr(viTri + 1);
+    gan(NUT_CHON_ANH, L"Ảnh: " + tenTep);
+}
+
+void CuaSoNhaHang::chonAnhMon() {
+    if (trangHienTai != THUC_DON || !dichVu.laQuanLy()) return;
+    wchar_t duongDan[MAX_PATH] = {};
+    OPENFILENAMEW hop = {};
+    hop.lStructSize = sizeof(hop);
+    hop.hwndOwner = cuaSo;
+    hop.lpstrFilter = L"Tệp hình ảnh (*.png;*.jpg;*.jpeg;*.bmp)\0*.png;*.jpg;*.jpeg;*.bmp\0Tất cả tệp (*.*)\0*.*\0";
+    hop.lpstrFile = duongDan;
+    hop.nMaxFile = MAX_PATH;
+    hop.lpstrTitle = L"Chọn hình ảnh cho món ăn / thức uống";
+    hop.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
+    if (!GetOpenFileNameW(&hop)) return;
+    Gdiplus::Bitmap bmp(duongDan);
+    if (bmp.GetLastStatus() != Gdiplus::Ok || bmp.GetWidth() == 0 || bmp.GetHeight() == 0)
+        throw runtime_error("Tệp hình ảnh không hợp lệ hoặc không thể đọc được.");
+    anhDangChon = hep(duongDan);
+    capNhatNutAnh();
 }
 
 void CuaSoNhaHang::napThucDonAnh() {
@@ -114,6 +155,7 @@ void CuaSoNhaHang::napThucDonAnh() {
         t.maMon = mon.getMa();
         t.loaiMon = mon.getLoai();
         t.tenMon = mon.getTen();
+        t.hinhAnh = mon.getHinhAnh();
         t.ten = rong(mon.getTen());
         t.gia = tien(mon.getGia());
         const MonAn* thucAn = dynamic_cast<const MonAn*>(&mon);

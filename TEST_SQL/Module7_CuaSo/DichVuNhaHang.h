@@ -9,7 +9,7 @@ using namespace std;
 
 // Du lieu cua bieu mau; khong chua bat ky thanh phan Win32 nao.
 struct DuLieuMon {
-    string ma, ten, loai = "Mon an", sizeLy = "M";
+    string ma, ten, loai = "Mon an", sizeLy = "M", hinhAnh;
     double gia = 0;
     int tonKho = 0, doCay = 0;
     bool monChay = false, coDa = false;
@@ -73,7 +73,13 @@ public:
     bool laKhachHang() const;
     const TaiKhoan& phien() const;
     void taoTaiKhoan(const string& ten, const string& matKhau,
-                    const string& xacNhan, const string& vaiTro);
+                    const string& xacNhan, const string& vaiTro, const string& maHoSo = "");
+    string taoTaiKhoanNhanVien(const string& tenDangNhap, const string& matKhau, const string& xacNhan,
+                               const string& hoTen, const string& dienThoai, const string& gioiTinh,
+                               const string& chucVu, double luong, double phuCap);
+    string taoTaiKhoanKhachHang(const string& tenDangNhap, const string& matKhau, const string& xacNhan,
+                                const string& hoTen, const string& dienThoai, const string& gioiTinh,
+                                const string& email);
     void doiMatKhau(const string& cu, const string& moi, const string& xacNhan);
     string dangKyKhachHang(const string& hoTen, const string& dienThoai, const string& email,
                           const string& gioiTinh, const string& tenDangNhap,
@@ -87,7 +93,8 @@ public:
     HoaDon hoaDonDuocXem(const string& maHoaDon) const;
     void luuKhachHang(const KhachHang& khach, bool themMoi);
     void luuNhanVien(const NhanVien& nhanVien, bool themMoi);
-    void luuMon(const DuLieuMon& mon, bool themMoi);
+    string maMonMoi(const string& loai) const;
+    string luuMon(const DuLieuMon& mon, bool themMoi);
     void xoaKhachHang(const string& ma);
     void xoaNhanVien(const string& ma);
     void xoaMon(const string& ma);

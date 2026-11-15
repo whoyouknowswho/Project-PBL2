@@ -27,8 +27,8 @@ bool QuanLyTaiKhoan::docDuLieu() {
     if (cacDong.empty()) return false;
 
     for (const auto& cot : cacDong) {
-        if (cot.size() < 3 || cot[0].empty()) continue;
-        danhSach.push_back({cot[0], cot[1], cot[2]});
+        if (cot.size() < 4 || cot[0].empty()) continue;
+        danhSach.push_back({cot[0], cot[1], cot[2], cot[3]});
     }
     return !danhSach.empty();
 }
@@ -48,7 +48,7 @@ bool QuanLyTaiKhoan::kiemTraMatKhau(const string& tenDangNhap, const string& mat
 vector<vector<string>> QuanLyTaiKhoan::cacDongTaiKhoan(const vector<TaiKhoan>& duLieu) const {
     vector<vector<string>> noiDung;
     for (const TaiKhoan& tk : duLieu) {
-        noiDung.push_back({tk.tenDangNhap, tk.matKhau, tk.vaiTro});
+        noiDung.push_back({tk.tenDangNhap, tk.matKhau, tk.vaiTro, tk.maLienKet});
     }
     return noiDung;
 }
@@ -58,20 +58,26 @@ void QuanLyTaiKhoan::luu(const vector<TaiKhoan>& duLieu) const {
 }
 
 TaiKhoan QuanLyTaiKhoan::chuanBi(const string& tenDangNhap, const string& matKhau,
-                                 const string& vaiTro) const {
+                                 const string& vaiTro, const string& maLienKet) const {
     if (!tenHopLe(tenDangNhap))
         throw runtime_error("Tên đăng nhập: 1-32 chữ cái, chữ số, _ hoặc -.");
     if (tim(tenDangNhap) != nullptr)
         throw runtime_error("Tên đăng nhập đã tồn tại.");
     if (vaiTro != "QUANLY" && vaiTro != "NHANVIEN" && vaiTro != "KHACHHANG")
         throw runtime_error("Vai trò không hợp lệ.");
+    if (vaiTro == "KHACHHANG" && !maLienKet.empty()) {
+        for (const TaiKhoan& cu : danhSach) {
+            if (cu.vaiTro == "KHACHHANG" && cu.maLienKet == maLienKet)
+                throw runtime_error("Khách hàng này đã có tài khoản.");
+        }
+    }
     kiemTraMatKhauMoi(matKhau);
-    return {tenDangNhap, matKhau, vaiTro};
+    return {tenDangNhap, matKhau, vaiTro, maLienKet};
 }
 
 void QuanLyTaiKhoan::tao(const string& tenDangNhap, const string& matKhau,
-                         const string& vaiTro) {
-    TaiKhoan tk = chuanBi(tenDangNhap, matKhau, vaiTro);
+                         const string& vaiTro, const string& maLienKet) {
+    TaiKhoan tk = chuanBi(tenDangNhap, matKhau, vaiTro, maLienKet);
     vector<TaiKhoan> banMoi = danhSach;
     banMoi.push_back(tk);
     luu(banMoi);

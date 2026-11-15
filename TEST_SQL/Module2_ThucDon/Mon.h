@@ -6,7 +6,7 @@
 using namespace std;
 class Mon {
    protected:
-    string ma, ten;
+    string ma, ten, hinhAnh;
     double gia = 0;
     int tonKho = 0;
 
@@ -16,6 +16,8 @@ class Mon {
     virtual ~Mon() = default;
     const string& getMa() const;
     const string& getTen() const;
+    const string& getHinhAnh() const;
+    void setHinhAnh(const string& duongDan);
     double getGia() const;
     int getTonKho() const;
     bool truTonKho(int soLuong);

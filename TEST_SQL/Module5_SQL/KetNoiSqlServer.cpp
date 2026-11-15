@@ -16,12 +16,12 @@ struct BangSql {
 
 // Danh sach 6 bang trong SQL Server va cac cot tuong ung.
 const BangSql cacBang[] = {
-    {L"dbo.ThucDon",   L"loai,ma,ten,gia,tonKho,doCayHoacSize,monChayHoacCoDa", L"ma"},
-    {L"dbo.KhachHang", L"ma,ten,dienThoai,gioiTinh,diem,email",                 L"ma"},
-    {L"dbo.NhanVien",  L"ma,ten,dienThoai,gioiTinh,chucVu,luong,phuCap",        L"ma"},
-    {L"dbo.HoaDon",    L"ma,ngay,maKhach,maNhanVien,giamGia,chiTiet",           L"ma"},
-    {L"dbo.DonDat",    L"noiDung",                                              L"thuTu"},
-    {L"dbo.TaiKhoan",  L"tenDangNhap,matKhau,vaiTro",                             L"tenDangNhap"}
+    {L"dbo.ThucDon",   L"loai,ma,ten,gia,tonKho,doCayHoacSize,monChayHoacCoDa,hinhAnh", L"ma"},
+    {L"dbo.KhachHang", L"ma,ten,dienThoai,gioiTinh,diem,email",                         L"ma"},
+    {L"dbo.NhanVien",  L"ma,ten,dienThoai,gioiTinh,chucVu,luong,phuCap",                L"ma"},
+    {L"dbo.HoaDon",    L"ma,ngay,maKhach,maNhanVien,giamGia,chiTiet",                   L"ma"},
+    {L"dbo.DonDat",    L"noiDung",                                                      L"thuTu"},
+    {L"dbo.TaiKhoan",  L"tenDangNhap,matKhau,vaiTro,maLienKet",                         L"tenDangNhap"}
 };
 
 string layLoiOdbc(SQLSMALLINT loai, SQLHANDLE handle) {
@@ -87,12 +87,19 @@ struct KetNoi {
 
 Sql::CacDong Sql::doc(Bang bang) {
     KetNoi kn;
+    if (bang == ThucDon) {
+        kn.chay(L"IF COL_LENGTH('dbo.ThucDon','hinhAnh') IS NULL "
+                L"ALTER TABLE dbo.ThucDon ADD hinhAnh nvarchar(500);");
+    }
     if (bang == TaiKhoan) {
         kn.chay(L"IF COL_LENGTH('dbo.TaiKhoan','matKhau') IS NULL BEGIN "
                 L"DROP TABLE IF EXISTS dbo.TaiKhoan; "
-                L"CREATE TABLE dbo.TaiKhoan(tenDangNhap varchar(50) PRIMARY KEY, matKhau nvarchar(100), vaiTro varchar(20)); END "
-                L"ELSE IF COL_LENGTH('dbo.TaiKhoan','maLienKet') IS NOT NULL "
-                L"ALTER TABLE dbo.TaiKhoan DROP COLUMN maLienKet;");
+                L"CREATE TABLE dbo.TaiKhoan(tenDangNhap varchar(50) PRIMARY KEY, matKhau nvarchar(100), vaiTro varchar(20), maLienKet varchar(50)); END "
+                L"ELSE BEGIN "
+                L"IF COL_LENGTH('dbo.TaiKhoan','maLienKet') IS NULL ALTER TABLE dbo.TaiKhoan ADD maLienKet varchar(50); "
+                L"IF COL_LENGTH('dbo.TaiKhoan','maNhanVien') IS NOT NULL ALTER TABLE dbo.TaiKhoan DROP COLUMN maNhanVien; "
+                L"IF COL_LENGTH('dbo.TaiKhoan','maKhachHang') IS NOT NULL ALTER TABLE dbo.TaiKhoan DROP COLUMN maKhachHang; "
+                L"END");
     }
     const BangSql& b = cacBang[bang];
     kn.chay(wstring(L"SELECT ") + b.cot + L" FROM " + b.ten + L" ORDER BY " + b.sapXep);

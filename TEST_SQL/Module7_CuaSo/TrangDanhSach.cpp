@@ -29,15 +29,16 @@ void CuaSoNhaHang::trangDanhSach() {
     else canCot(BANG_CHINH, 4, LVCFMT_RIGHT);
 
     int x = xForm + 24, w = rongForm - 48, nua = (w - 16) / 2, y = BoCuc::Y0;
-    themThe({xForm, y, phai, y + 524});
-    themDauThe(x, y + 20, w, Icon::HO_SO, L"Thông tin chi tiết", L"Chọn dòng để sửa hoặc nhập bản ghi mới.");
+    themThe({xForm, y, phai, y + 480});
+    themDauThe(x, y + 20, w, Icon::HO_SO, L"Sửa / Xóa thông tin", L"Chọn một dòng bên trái để chỉnh sửa hoặc xóa.");
     if (khach) {
-        nhap(L"Mã khách hàng", O_MA, x, y + 76, nua);
+        nhap(L"Mã khách hàng (tự động)", O_MA, x, y + 76, nua);
         nhap(L"Điểm tích lũy", O_DIEM, x + nua + 16, y + 76, w - nua - 16, L"0");
     } else {
-        nhap(L"Mã nhân viên", O_MA, x, y + 76, nua);
+        nhap(L"Mã nhân viên (tự động)", O_MA, x, y + 76, nua);
         nhap(L"Chức vụ", O_CHUCVU, x + nua + 16, y + 76, w - nua - 16);
     }
+    SendMessageW(o(O_MA), EM_SETREADONLY, TRUE, 0);
     nhap(L"Họ và tên", O_TEN, x, y + 148, w);
     nhap(L"Điện thoại", O_SDT, x, y + 220, nua);
     chon(L"Giới tính", O_GIOITINH, x + nua + 16, y + 220, w - nua - 16, {L"Nam", L"Nữ", L"Khác"});
@@ -47,10 +48,10 @@ void CuaSoNhaHang::trangDanhSach() {
         nhap(L"Lương cơ bản (đ)", O_LUONG, x, y + 292, nua, L"0");
         nhap(L"Phụ cấp (đ)", O_PHUCAP, x + nua + 16, y + 292, w - nua - 16, L"0");
     }
-    nut(L"Lưu thông tin", NUT_LUU, x, y + 380, w - 112, KieuNut::Chinh, Icon::LUU);
+    nut(L"Lưu sửa đổi", NUT_LUU, x, y + 380, w - 112, KieuNut::Chinh, Icon::LUU);
     nut(L"Xóa", NUT_XOA, x + w - 100, y + 380, 100, KieuNut::NguyHiem, Icon::XOA);
-    nut(L"Thêm mới / Làm trống", NUT_MOI, x, y + 432, w, KieuNut::Phu, Icon::THEM);
-    nhan(L"Mã được giữ cố định khi sửa bản ghi.", x, y + 486, w);
+    nhan(L"Thêm mới nhân viên/khách hàng tại mục Tạo tài khoản.", x, y + 436, w);
+    EnableWindow(o(NUT_LUU), !maDangSua.empty());
     EnableWindow(o(NUT_XOA), !maDangSua.empty());
 }
 
@@ -109,10 +110,12 @@ void CuaSoNhaHang::chonDong() {
     } else if (trangHienTai == THUC_DON) {
         const Mon& m = *dichVu.thucDon().at(viTri);
         maDangSua = m.getMa();
+        anhDangChon = m.getHinhAnh();
         gan(O_MA, rong(maDangSua));
         gan(O_TEN, rong(m.getTen()));
         gan(O_GIA, so(m.getGia()));
         gan(O_TON, so(m.getTonKho()));
+        capNhatNutAnh();
         const MonAn* a = dynamic_cast<const MonAn*>(&m);
         if (a) {
             chonMuc(O_LOAI, 0);
@@ -137,6 +140,7 @@ void CuaSoNhaHang::chonDong() {
         return;
     }
     SendMessageW(o(O_MA), EM_SETREADONLY, TRUE, 0);
+    EnableWindow(o(NUT_LUU), TRUE);
     EnableWindow(o(NUT_XOA), TRUE);
     InvalidateRect(cuaSo, nullptr, FALSE);
 }
@@ -144,6 +148,8 @@ void CuaSoNhaHang::chonDong() {
 void CuaSoNhaHang::luuBieuMau() {
     bool themMoi = maDangSua.empty();
     string ma = duLieu(O_MA);
+    if ((trangHienTai == KHACH_HANG || trangHienTai == NHAN_VIEN) && themMoi)
+        throw runtime_error("Hãy chọn một dòng trong bảng để sửa thông tin.");
     if (!themMoi && ma != maDangSua) throw runtime_error("Không thể thay đổi mã của bản ghi đang sửa.");
     if (trangHienTai == KHACH_HANG) {
         int diem = static_cast<int>(soNhap(O_DIEM, "Điểm tích lũy", true));
@@ -167,7 +173,10 @@ void CuaSoNhaHang::luuBieuMau() {
         }
         m.sizeLy = duLieu(O_SIZE);
         m.monChay = daDanhDau(O_CHAY);
-        dichVu.luuMon(m, themMoi);
+        m.hinhAnh = anhDangChon;
+        ma = dichVu.luuMon(m, themMoi);
+        gan(O_MA, rong(ma));
+        anh.xoaDemRieng();
     }
     maDangSua = ma;
     napBang();

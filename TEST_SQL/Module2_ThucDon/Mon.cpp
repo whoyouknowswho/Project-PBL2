@@ -14,6 +14,14 @@ const string& Mon::getTen() const {
     return ten;
 }
 
+const string& Mon::getHinhAnh() const {
+    return hinhAnh;
+}
+
+void Mon::setHinhAnh(const string& duongDan) {
+    hinhAnh = duongDan;
+}
+
 double Mon::getGia() const {
     return gia;
 }

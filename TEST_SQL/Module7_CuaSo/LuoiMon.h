@@ -17,7 +17,7 @@ struct TheMon {
     COLORREF mauHuyHieu = Mau::CHU, nenHuyHieu = Mau::PHU_NEN;
     bool mo = false;
     // Chep thong tin can de ve anh, khong giu con tro toi Mon (thuc don co the duoc nap lai).
-    string maMon, loaiMon, tenMon;
+    string maMon, loaiMon, tenMon, hinhAnh;
 };
 
 HWND taoLuoiMon(HWND cha, int id, RECT vung, const BoFont* font, KhoAnh* anh);

@@ -5,16 +5,39 @@
 using namespace std;
 
 void CuaSoNhaHang::trangTaiKhoan() {
-    int x = BoCuc::X0 + 28, w = 504, y = BoCuc::Y0;
-    themThe({BoCuc::X0, y, BoCuc::X0 + 560, y + 440});
-    themDauThe(x, y + 24, w, Icon::TAI_KHOAN, L"Cấp tài khoản mới", L"Tạo tài khoản cho nhân viên, quản lý hoặc khách hàng.");
-    nhap(L"Tên đăng nhập", O_USER, x, y + 88, w);
-    chon(L"Vai trò", O_ROLE, x, y + 168, w, {L"Nhân viên", L"Quản lý", L"Khách hàng"});
+    int x = BoCuc::X0 + 28, w = 524, y = BoCuc::Y0;
     int nua = (w - 16) / 2;
-    nhap(L"Mật khẩu", O_PASS, x, y + 248, nua, L"", true);
-    nhap(L"Nhập lại mật khẩu", O_CONFIRM, x + nua + 16, y + 248, w - nua - 16, L"", true);
-    nut(L"Tạo tài khoản", NUT_TAOTAIKHOAN, x, y + 336, w, KieuNut::Chinh, Icon::TAI_KHOAN, 44);
-    nhan(L"Tên gồm chữ không dấu, chữ số, _ hoặc - (tối đa 32).", x, y + 392, w);
+    int caoThe = vaiTroTao == 1 ? 376 : 560;
+    themThe({BoCuc::X0, y, BoCuc::X0 + 580, y + caoThe});
+    themDauThe(x, y + 20, w, Icon::TAI_KHOAN, L"Cấp tài khoản mới",
+               L"Mã nhân viên (NV...) và mã khách hàng (KH...) được tạo tự động.");
+    nhap(L"Tên đăng nhập", O_USER, x, y + 76, nua);
+    chon(L"Vai trò", O_ROLE, x + nua + 16, y + 76, w - nua - 16, {L"Nhân viên", L"Quản lý", L"Khách hàng"});
+    chonMuc(O_ROLE, vaiTroTao);
+    nhap(L"Mật khẩu", O_PASS, x, y + 148, nua, L"", true);
+    nhap(L"Nhập lại mật khẩu", O_CONFIRM, x + nua + 16, y + 148, w - nua - 16, L"", true);
+
+    if (vaiTroTao == 0) {
+        nhap(L"Họ và tên nhân viên", O_TEN, x, y + 220, w);
+        nhap(L"Số điện thoại (9–15 chữ số)", O_SDT, x, y + 292, nua);
+        chon(L"Giới tính", O_GIOITINH, x + nua + 16, y + 292, w - nua - 16, {L"Nam", L"Nữ", L"Khác"});
+        int ba = (w - 24) / 3;
+        nhap(L"Chức vụ", O_CHUCVU, x, y + 364, ba);
+        nhap(L"Lương cơ bản (đ)", O_LUONG, x + ba + 12, y + 364, ba, L"0");
+        nhap(L"Phụ cấp (đ)", O_PHUCAP, x + 2 * (ba + 12), y + 364, w - 2 * (ba + 12), L"0");
+        nut(L"Tạo tài khoản & hồ sơ nhân viên", NUT_TAOTAIKHOAN, x, y + 452, w, KieuNut::Chinh, Icon::TAI_KHOAN, 44);
+        nhan(L"Mã nhân viên sẽ được cấp tự động (NV0001, NV0002...).", x, y + 508, w);
+    } else if (vaiTroTao == 2) {
+        nhap(L"Họ và tên khách hàng", O_TEN, x, y + 220, w);
+        nhap(L"Số điện thoại (9–15 chữ số)", O_SDT, x, y + 292, nua);
+        chon(L"Giới tính", O_GIOITINH, x + nua + 16, y + 292, w - nua - 16, {L"Nam", L"Nữ", L"Khác"});
+        nhap(L"Email", O_EMAIL, x, y + 364, w);
+        nut(L"Tạo tài khoản & hồ sơ khách hàng", NUT_TAOTAIKHOAN, x, y + 452, w, KieuNut::Chinh, Icon::TAI_KHOAN, 44);
+        nhan(L"Mã khách hàng sẽ được cấp tự động (KH0001, KH0002...).", x, y + 508, w);
+    } else {
+        nut(L"Tạo tài khoản quản lý", NUT_TAOTAIKHOAN, x, y + 240, w, KieuNut::Chinh, Icon::TAI_KHOAN, 44);
+        nhan(L"Tài khoản quản lý không cần tạo hồ sơ nhân viên hay khách hàng.", x, y + 296, w);
+    }
 }
 
 void CuaSoNhaHang::trangMatKhau() {

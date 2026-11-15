@@ -98,18 +98,31 @@ void DichVuNhaHang::yeuCauNhanVien() const {
 bool DichVuNhaHang::dangNhap(const string& ten, const string& matKhau) {
     dangXuat();
     if (!duLieu.quanLyTaiKhoan.kiemTraMatKhau(ten, matKhau)) return false;
-    duLieu.taiKhoanHienTai = *duLieu.quanLyTaiKhoan.tim(ten);
+    const TaiKhoan* taiKhoan = duLieu.quanLyTaiKhoan.tim(ten);
+    if (taiKhoan->vaiTro == "NHANVIEN" && !taiKhoan->maLienKet.empty() && duLieu.timNhanVien(taiKhoan->maLienKet) == nullptr) return false;
+    if (taiKhoan->vaiTro == "KHACHHANG" && !taiKhoan->maLienKet.empty() && duLieu.timKhach(taiKhoan->maLienKet) == nullptr) return false;
+    duLieu.taiKhoanHienTai = *taiKhoan;
     return true;
 }
 void DichVuNhaHang::dangXuat() { duLieu.taiKhoanHienTai = TaiKhoan(); }
 
 void DichVuNhaHang::taoTaiKhoan(const string& ten, const string& matKhau,
-                               const string& xacNhan, const string& vaiTro) {
+                               const string& xacNhan, const string& vaiTro, const string& maHoSo) {
     if (!canThietLap) yeuCauQuanLy();
     if (ten == "0") throw runtime_error("Tên đăng nhập không được là 0.");
     if (matKhau != xacNhan) throw runtime_error("Hai mật khẩu không trùng nhau.");
     if (canThietLap && vaiTro != "QUANLY") throw runtime_error("Tài khoản đầu tiên phải là quản lý.");
-    duLieu.quanLyTaiKhoan.tao(ten, matKhau, vaiTro);
+    string maLienKet;
+    if (vaiTro == "NHANVIEN") {
+        if (duLieu.timNhanVien(maHoSo) == nullptr)
+            throw runtime_error("Mã nhân viên không tồn tại. Hãy thêm hồ sơ nhân viên trước.");
+        maLienKet = maHoSo;
+    } else if (vaiTro == "KHACHHANG") {
+        if (duLieu.timKhach(maHoSo) == nullptr)
+            throw runtime_error("Mã khách hàng không tồn tại. Hãy thêm hồ sơ khách hàng trước.");
+        maLienKet = maHoSo;
+    }
+    duLieu.quanLyTaiKhoan.tao(ten, matKhau, vaiTro, maLienKet);
     canThietLap = false;
 }
 
@@ -181,23 +194,41 @@ void DichVuNhaHang::luuNhanVien(const NhanVien& nv, bool themMoi) {
     else duLieu.dsNhanVien.push_back(nv);
     luuThayDoi();
 }
-void DichVuNhaHang::luuMon(const DuLieuMon& mon, bool themMoi) {
+string DichVuNhaHang::maMonMoi(const string& loai) const {
+    string tienTo = (loai == "Nuoc uong" || loai == "NUOC") ? "NU" : "MA";
+    for (int i = 1; i < 1000000; i++) {
+        ostringstream ma;
+        ma << tienTo << setfill('0') << setw(4) << i;
+        string ungVien = ma.str();
+        bool trung = false;
+        for (const auto& m : duLieu.dsMon) {
+            if (m->getMa() == ungVien) { trung = true; break; }
+        }
+        if (!trung) return ungVien;
+    }
+    return tienTo + "0001";
+}
+
+string DichVuNhaHang::luuMon(const DuLieuMon& mon, bool themMoi) {
     yeuCauQuanLy();
-    kiemTraChuoi(mon.ma, "Mã món", true);
+    string maLuu = themMoi ? maMonMoi(mon.loai) : mon.ma;
+    kiemTraChuoi(maLuu, "Mã món", true);
     kiemTraChuoi(mon.ten, "Tên món");
     kiemTraSo(mon.gia, "Giá");
     kiemTraSo(mon.tonKho, "Tồn kho");
+    if (mon.hinhAnh.size() > 500) throw runtime_error("Đường dẫn hình ảnh quá dài (tối đa 500 ký tự).");
     unique_ptr<Mon> moi;
     if (mon.loai == "Mon an") {
         if (mon.doCay < 0 || mon.doCay > 5) throw runtime_error("Độ cay phải từ 0 đến 5.");
-        moi = make_unique<MonAn>(mon.ma, mon.ten, mon.gia, mon.tonKho, mon.doCay, mon.monChay);
+        moi = make_unique<MonAn>(maLuu, mon.ten, mon.gia, mon.tonKho, mon.doCay, mon.monChay);
     } else if (mon.loai == "Nuoc uong") {
         if (mon.sizeLy != "S" && mon.sizeLy != "M" && mon.sizeLy != "L") throw runtime_error("Size phải là S, M hoặc L.");
-        moi = make_unique<NuocUong>(mon.ma, mon.ten, mon.gia, mon.tonKho, mon.sizeLy, mon.coDa);
+        moi = make_unique<NuocUong>(maLuu, mon.ten, mon.gia, mon.tonKho, mon.sizeLy, mon.coDa);
     } else throw runtime_error("Loại món không hợp lệ.");
+    moi->setHinhAnh(mon.hinhAnh);
     bool timThay = false;
     for (unique_ptr<Mon>& cu : duLieu.dsMon) {
-        if (cu->getMa() == mon.ma) {
+        if (cu->getMa() == maLuu) {
             if (themMoi) throw runtime_error("Mã món đã tồn tại.");
             cu = move(moi);
             timThay = true;
@@ -209,13 +240,18 @@ void DichVuNhaHang::luuMon(const DuLieuMon& mon, bool themMoi) {
         duLieu.dsMon.push_back(move(moi));
     }
     luuThayDoi();
+    return maLuu;
 }
 void DichVuNhaHang::xoaKhachHang(const string& ma) {
     yeuCauNhanSu();
     for (size_t i = 0; i < duLieu.dsKhachHang.size(); i++) {
         if (duLieu.dsKhachHang[i].getMa() == ma) {
             duLieu.dsKhachHang.erase(duLieu.dsKhachHang.begin() + i);
-            luuThayDoi(); return;
+            auto& dsTK = duLieu.quanLyTaiKhoan.danhSach;
+            dsTK.erase(remove_if(dsTK.begin(), dsTK.end(),
+                [&](const TaiKhoan& tk) { return tk.vaiTro == "KHACHHANG" && tk.maLienKet == ma; }), dsTK.end());
+            luuThayDoi(true);
+            return;
         }
     }
     throw runtime_error("Không tìm thấy khách hàng.");
@@ -225,7 +261,11 @@ void DichVuNhaHang::xoaNhanVien(const string& ma) {
     for (size_t i = 0; i < duLieu.dsNhanVien.size(); i++) {
         if (duLieu.dsNhanVien[i].getMa() == ma) {
             duLieu.dsNhanVien.erase(duLieu.dsNhanVien.begin() + i);
-            luuThayDoi(); return;
+            auto& dsTK = duLieu.quanLyTaiKhoan.danhSach;
+            dsTK.erase(remove_if(dsTK.begin(), dsTK.end(),
+                [&](const TaiKhoan& tk) { return tk.vaiTro == "NHANVIEN" && tk.maLienKet == ma; }), dsTK.end());
+            luuThayDoi(true);
+            return;
         }
     }
     throw runtime_error("Không tìm thấy nhân viên.");
@@ -257,7 +297,7 @@ HoaDon DichVuNhaHang::xemTruocHoaDon(const string& ma, const string& ngay, const
     for (const HoaDon& hd : duLieu.dsHoaDon) {
         if (hd.getMa() == ma) throw runtime_error("Mã hóa đơn đã tồn tại.");
     }
-    string nguoiBan = phien().tenDangNhap;
+    string nguoiBan = phien().maLienKet.empty() ? phien().tenDangNhap : phien().maLienKet;
     HoaDon duTinh = lapDuTinh(ma, ngay, khach, gioHang);
     HoaDon hoaDon(ma, ngay, khach, nguoiBan);
     for (const ChiTietHoaDon& ct : duTinh.getGioHang()) hoaDon.themMon(ct);
@@ -359,11 +399,12 @@ DoanhThuNam DichVuNhaHang::doanhThuTheoNam(int nam) const {
 // Cac API nay khong nhan ma khach tu giao dien: luon lay tu phien dang nhap.
 const KhachHang& DichVuNhaHang::hoSoCuaToi() const {
     if (!laKhachHang()) throw runtime_error("Bạn cần đăng nhập tài khoản khách hàng.");
+    string maCanTim = phien().maLienKet.empty() ? phien().tenDangNhap : phien().maLienKet;
     for (const KhachHang& khach : duLieu.dsKhachHang) {
-        if (khach.getMa() == phien().tenDangNhap) return khach;
+        if (khach.getMa() == maCanTim) return khach;
     }
     static KhachHang macDinh;
-    macDinh = KhachHang(phien().tenDangNhap, phien().tenDangNhap, "", "Khác", 0, "");
+    macDinh = KhachHang(maCanTim, phien().tenDangNhap, "", "Khác", 0, "");
     return macDinh;
 }
 
@@ -379,38 +420,77 @@ vector<HoaDon> DichVuNhaHang::hoaDonCuaToi() const {
 HoaDon DichVuNhaHang::hoaDonDuocXem(const string& maHoaDon) const {
     yeuCauDangNhap();
     if (!laQuanLy() && !laKhachHang()) throw runtime_error("Bạn không có quyền xem lịch sử hóa đơn.");
+    string maKH = laKhachHang() ? hoSoCuaToi().getMa() : "";
     for (const HoaDon& hoaDon : duLieu.dsHoaDon) {
         if (hoaDon.getMa() != maHoaDon) continue;
-        if (laQuanLy() || hoaDon.getMaKhachHang() == phien().tenDangNhap) return hoaDon;
+        if (laQuanLy() || hoaDon.getMaKhachHang() == maKH) return hoaDon;
         break;
     }
     throw runtime_error("Không tìm thấy hóa đơn hoặc bạn không có quyền xem hóa đơn này.");
 }
 
-string DichVuNhaHang::dangKyKhachHang(const string& hoTen, const string& dienThoai, const string& email,
-                                     const string& gioiTinh, const string& tenDangNhap,
-                                     const string& matKhau, const string& xacNhan) {
-    if (canThietLap || duLieu.quanLyTaiKhoan.danhSach.empty()) throw runtime_error("Nhà hàng cần tạo tài khoản quản lý đầu tiên trước.");
-    if (daDangNhap()) throw runtime_error("Hãy đăng xuất trước khi đăng ký tài khoản mới.");
+string DichVuNhaHang::taoTaiKhoanNhanVien(const string& tenDangNhap, const string& matKhau, const string& xacNhan,
+                                          const string& hoTen, const string& dienThoai, const string& gioiTinh,
+                                          const string& chucVu, double luong, double phuCap) {
+    yeuCauQuanLy();
+    if (matKhau != xacNhan) throw runtime_error("Hai mật khẩu không trùng nhau.");
+    if (tenDangNhap == "0") throw runtime_error("Tên đăng nhập không được là 0.");
+    kiemTraChuoi(hoTen, "Họ và tên");
+    if (!dienThoaiHopLe(dienThoai)) throw runtime_error("Số điện thoại cần có từ 9 đến 15 chữ số.");
+    kiemTraChuoi(gioiTinh, "Giới tính");
+    kiemTraChuoi(chucVu, "Chức vụ");
+    kiemTraSo(luong, "Lương");
+    kiemTraSo(phuCap, "Phụ cấp");
+
+    string maMoi;
+    for (int i = 1; i < 1000000; i++) {
+        ostringstream ma;
+        ma << "NV" << setfill('0') << setw(4) << i;
+        string ungVien = ma.str();
+        if (duLieu.timNhanVien(ungVien) == nullptr) { maMoi = ungVien; break; }
+    }
+    TaiKhoan taiKhoan = duLieu.quanLyTaiKhoan.chuanBi(tenDangNhap, matKhau, "NHANVIEN", maMoi);
+    vector<NhanVien> nvCu = duLieu.dsNhanVien;
+    vector<TaiKhoan> taiKhoanCu = duLieu.quanLyTaiKhoan.danhSach;
+    try {
+        duLieu.dsNhanVien.push_back(NhanVien(maMoi, hoTen, dienThoai, gioiTinh, chucVu, luong, phuCap));
+        duLieu.quanLyTaiKhoan.danhSach.push_back(taiKhoan);
+        luuThayDoi(true);
+    } catch (...) {
+        duLieu.dsNhanVien = nvCu;
+        duLieu.quanLyTaiKhoan.danhSach = taiKhoanCu;
+        throw;
+    }
+    return maMoi;
+}
+
+string DichVuNhaHang::taoTaiKhoanKhachHang(const string& tenDangNhap, const string& matKhau, const string& xacNhan,
+                                           const string& hoTen, const string& dienThoai, const string& gioiTinh,
+                                           const string& email) {
     if (matKhau != xacNhan) throw runtime_error("Hai mật khẩu không trùng nhau.");
     if (tenDangNhap == "0") throw runtime_error("Tên đăng nhập không được là 0.");
     size_t dau = hoTen.find_first_not_of(" \t");
     size_t cuoi = hoTen.find_last_not_of(" \t");
     string tenSach;
-    if (dau != string::npos) tenSach = hoTen.substr(dau, cuoi-dau+1);
+    if (dau != string::npos) tenSach = hoTen.substr(dau, cuoi - dau + 1);
     kiemTraChuoi(tenSach, "Họ và tên");
     if (!dienThoaiHopLe(dienThoai)) throw runtime_error("Số điện thoại cần có từ 9 đến 15 chữ số.");
-    if (!emailHopLe(email)) throw runtime_error("Email cần có ký tự @ (ví dụ: ten@gmail.com).");
+    if (!email.empty() && !emailHopLe(email)) throw runtime_error("Email cần có ký tự @ (ví dụ: ten@gmail.com).");
     if (gioiTinh != "Nam" && gioiTinh != "Nữ" && gioiTinh != "Nu" && gioiTinh != "Khác") {
         throw runtime_error("Hãy chọn giới tính hợp lệ.");
     }
-    if (duLieu.timKhach(tenDangNhap) != nullptr)
-        throw runtime_error("Tên đăng nhập đã trùng với mã khách hàng hiện có.");
-    TaiKhoan taiKhoan = duLieu.quanLyTaiKhoan.chuanBi(tenDangNhap, matKhau, "KHACHHANG");
+    string maMoi;
+    for (int i = 1; i < 1000000; i++) {
+        ostringstream ma;
+        ma << "KH" << setfill('0') << setw(4) << i;
+        string ungVien = ma.str();
+        if (duLieu.timKhach(ungVien) == nullptr) { maMoi = ungVien; break; }
+    }
+    TaiKhoan taiKhoan = duLieu.quanLyTaiKhoan.chuanBi(tenDangNhap, matKhau, "KHACHHANG", maMoi);
     vector<KhachHang> khachCu = duLieu.dsKhachHang;
     vector<TaiKhoan> taiKhoanCu = duLieu.quanLyTaiKhoan.danhSach;
     try {
-        duLieu.dsKhachHang.push_back(KhachHang(tenDangNhap, tenSach, dienThoai, gioiTinh, 0, email));
+        duLieu.dsKhachHang.push_back(KhachHang(maMoi, tenSach, dienThoai, gioiTinh, 0, email));
         duLieu.quanLyTaiKhoan.danhSach.push_back(taiKhoan);
         luuThayDoi(true);
     } catch (...) {
@@ -418,7 +498,16 @@ string DichVuNhaHang::dangKyKhachHang(const string& hoTen, const string& dienTho
         duLieu.quanLyTaiKhoan.danhSach = taiKhoanCu;
         throw;
     }
-    return tenDangNhap;
+    return maMoi;
+}
+
+string DichVuNhaHang::dangKyKhachHang(const string& hoTen, const string& dienThoai, const string& email,
+                                     const string& gioiTinh, const string& tenDangNhap,
+                                     const string& matKhau, const string& xacNhan) {
+    if (canThietLap || duLieu.quanLyTaiKhoan.danhSach.empty()) throw runtime_error("Nhà hàng cần tạo tài khoản quản lý đầu tiên trước.");
+    if (daDangNhap()) throw runtime_error("Hãy đăng xuất trước khi đăng ký tài khoản mới.");
+    if (!emailHopLe(email)) throw runtime_error("Email cần có ký tự @ (ví dụ: ten@gmail.com).");
+    return taoTaiKhoanKhachHang(tenDangNhap, matKhau, xacNhan, hoTen, dienThoai, gioiTinh, email);
 }
 
 int soNguyen(const string& s) {
@@ -436,10 +525,13 @@ void DichVuNhaHang::docDuLieuSql() {
     duLieu.dsHoaDon.clear();
     for (const auto& c : Sql::doc(Sql::ThucDon)) {
         if (c.size() < 7 || c[1].empty()) continue;
+        unique_ptr<Mon> m;
         if (c[0] == "NUOC")
-            duLieu.dsMon.push_back(make_unique<NuocUong>(c[1], c[2], soThuc(c[3]), soNguyen(c[4]), c[5].empty() ? "M" : c[5], soNguyen(c[6])));
+            m = make_unique<NuocUong>(c[1], c[2], soThuc(c[3]), soNguyen(c[4]), c[5].empty() ? "M" : c[5], soNguyen(c[6]));
         else
-            duLieu.dsMon.push_back(make_unique<MonAn>(c[1], c[2], soThuc(c[3]), soNguyen(c[4]), soNguyen(c[5]), soNguyen(c[6])));
+            m = make_unique<MonAn>(c[1], c[2], soThuc(c[3]), soNguyen(c[4]), soNguyen(c[5]), soNguyen(c[6]));
+        if (c.size() >= 8) m->setHinhAnh(c[7]);
+        duLieu.dsMon.push_back(move(m));
     }
     for (const auto& c : Sql::doc(Sql::KhachHang)) {
         if (c.size() < 6 || c[0].empty()) continue;

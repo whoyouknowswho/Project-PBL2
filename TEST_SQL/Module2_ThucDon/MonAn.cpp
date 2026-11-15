@@ -29,5 +29,5 @@ string MonAn::hienThiChiTiet() const {
 }
 
 vector<string> MonAn::cacCot() const {
-    return {"MONAN", ma, ten, to_string(gia), to_string(tonKho), to_string(doCay), to_string(monChay)};
+    return {"MONAN", ma, ten, to_string(gia), to_string(tonKho), to_string(doCay), to_string(monChay), hinhAnh};
 }

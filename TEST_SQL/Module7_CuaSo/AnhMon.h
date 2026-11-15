@@ -26,8 +26,10 @@ public:
     ~KhoAnh();
     void napTaiNguyen();
     void giaiPhong();
+    void xoaDemRieng();
     void veLogo(HDC dc, int maTaiNguyen, RECT vung) const;
-    void veAnhMon(HDC dc, const string& maMon, const string& loai, const string& tenMon, RECT vung, int banKinh);
+    void veAnhMon(HDC dc, const string& maMon, const string& loai, const string& tenMon,
+                  const string& hinhAnh, RECT vung, int banKinh);
 };
 
 #endif
