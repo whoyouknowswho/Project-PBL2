@@ -52,7 +52,7 @@ DonDatMon& DichVuNhaHang::timDonDat(const string& ma) {
     yeuCauDangNhap();
     for (DonDatMon& don : cacDonDat) {
         if (don.duTinh.getMa() != ma) continue;
-        if (laKhachHang() && don.duTinh.getMaKhachHang() != phien().maKhachHang) break;
+        if (laKhachHang() && don.duTinh.getMaKhachHang() != phien().tenDangNhap) break;
         return don;
     }
     throw runtime_error("Không tìm thấy đơn đặt hoặc bạn không có quyền xem đơn này.");
@@ -62,7 +62,7 @@ vector<DonDatMon> DichVuNhaHang::danhSachDonDat() const {
     yeuCauDangNhap();
     vector<DonDatMon> ketQua;
     for (const DonDatMon& don : cacDonDat)
-        if (!laKhachHang() || don.duTinh.getMaKhachHang() == phien().maKhachHang)
+        if (!laKhachHang() || don.duTinh.getMaKhachHang() == phien().tenDangNhap)
             ketQua.push_back(don);
     return ketQua;
 }
@@ -85,7 +85,7 @@ string DichVuNhaHang::datMon(const string& ngay, const vector<YeuCauMon>& gioHan
     // Dung chung kiem tra ngay cua hoa don qua ham duoc tach rieng.
     if (!ngayDatHopLe(ngay)) throw runtime_error("Ngày đặt không hợp lệ (dd/mm/yyyy).");
     DonDatMon don;
-    don.duTinh = HoaDon(ma, ngay, phien().maKhachHang, "");
+    don.duTinh = HoaDon(ma, ngay, phien().tenDangNhap, "");
     for (const ChiTietHoaDon& ct : duTinh.getGioHang()) don.duTinh.themMon(ct);
     don.duTinh.setGiamGia(hoSoCuaToi().getPhanTramGiam());
     don.cacMon = gioHang;
@@ -117,7 +117,8 @@ HoaDon DichVuNhaHang::thanhToanDonDat(const string& ma, const string& ngay, cons
     DonDatMon& don = timDonDat(ma);
     string khach = don.duTinh.getMaKhachHang();
     for (const YeuCauMon& mon : don.cacMon) duLieu.timMon(mon.maMon)->truTonKho(mon.soLuong);
-    duLieu.timKhach(khach)->congDiem(static_cast<int>(hoaDon.tongTien() / 10000));
+    if (KhachHang* kh = duLieu.timKhach(khach))
+        kh->congDiem(static_cast<int>(hoaDon.tongTien() / 10000));
     duLieu.dsHoaDon.push_back(hoaDon);
     don.trangThai = "XONG";
     don.maHoaDon = hoaDon.getMa();

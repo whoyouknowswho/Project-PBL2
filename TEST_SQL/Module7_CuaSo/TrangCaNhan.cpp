@@ -6,17 +6,15 @@ using namespace std;
 
 void CuaSoNhaHang::trangTaiKhoan() {
     int x = BoCuc::X0 + 28, w = 504, y = BoCuc::Y0;
-    themThe({BoCuc::X0, y, BoCuc::X0 + 560, y + 520});
-    themDauThe(x, y + 24, w, Icon::TAI_KHOAN, L"Cấp tài khoản mới", L"Liên kết đúng hồ sơ nhân viên hoặc khách hàng.");
+    themThe({BoCuc::X0, y, BoCuc::X0 + 560, y + 440});
+    themDauThe(x, y + 24, w, Icon::TAI_KHOAN, L"Cấp tài khoản mới", L"Tạo tài khoản cho nhân viên, quản lý hoặc khách hàng.");
     nhap(L"Tên đăng nhập", O_USER, x, y + 88, w);
     chon(L"Vai trò", O_ROLE, x, y + 168, w, {L"Nhân viên", L"Quản lý", L"Khách hàng"});
-    chon(L"Hồ sơ liên kết (nhân viên hoặc khách hàng)", O_NHANVIEN, x, y + 248, w, {});
-    capNhatHoSoTaiKhoan();
     int nua = (w - 16) / 2;
-    nhap(L"Mật khẩu (8–128 byte)", O_PASS, x, y + 328, nua, L"", true);
-    nhap(L"Nhập lại mật khẩu", O_CONFIRM, x + nua + 16, y + 328, w - nua - 16, L"", true);
-    nut(L"Tạo tài khoản", NUT_TAOTAIKHOAN, x, y + 416, w, KieuNut::Chinh, Icon::TAI_KHOAN, 44);
-    nhan(L"Tên gồm chữ không dấu, chữ số, _ hoặc - (tối đa 32).", x, y + 472, w);
+    nhap(L"Mật khẩu", O_PASS, x, y + 248, nua, L"", true);
+    nhap(L"Nhập lại mật khẩu", O_CONFIRM, x + nua + 16, y + 248, w - nua - 16, L"", true);
+    nut(L"Tạo tài khoản", NUT_TAOTAIKHOAN, x, y + 336, w, KieuNut::Chinh, Icon::TAI_KHOAN, 44);
+    nhan(L"Tên gồm chữ không dấu, chữ số, _ hoặc - (tối đa 32).", x, y + 392, w);
 }
 
 void CuaSoNhaHang::trangMatKhau() {
@@ -27,7 +25,6 @@ void CuaSoNhaHang::trangMatKhau() {
     nhap(L"Mật khẩu mới", O_PASS, x, y + 168, w, L"", true);
     nhap(L"Nhập lại mật khẩu mới", O_CONFIRM, x, y + 248, w, L"", true);
     nut(L"Cập nhật mật khẩu", NUT_DOIMATKHAU, x, y + 340, w, KieuNut::Chinh, Icon::LUU, 44);
-    nhan(L"Mật khẩu mới từ 8 đến 128 byte.", x, y + 396, w);
 }
 
 void CuaSoNhaHang::trangHoSoKhachHang() {
@@ -99,30 +96,4 @@ string CuaSoNhaHang::vaiTroDuocChon() const {
     if (vaiTro == 1) return "QUANLY";
     if (vaiTro == 2) return "KHACHHANG";
     throw runtime_error("Hãy chọn vai trò tài khoản.");
-}
-
-void CuaSoNhaHang::capNhatHoSoTaiKhoan() {
-    string vaiTro = vaiTroDuocChon();
-    SendMessageW(o(O_NHANVIEN), CB_RESETCONTENT, 0, 0);
-    vector<wstring> ds;
-    if (vaiTro == "NHANVIEN") {
-        for (const NhanVien& n : dichVu.nhanVien()) ds.push_back(rong(n.getMa() + " - " + n.getTen()));
-    } else if (vaiTro == "KHACHHANG") {
-        for (const KhachHang& k : dichVu.khachHang()) ds.push_back(rong(k.getMa() + " - " + k.getTen()));
-    } else {
-        ds.push_back(L"Không cần liên kết hồ sơ");
-    }
-    for (const wstring& muc : ds) SendMessageW(o(O_NHANVIEN), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(muc.c_str()));
-    if (!ds.empty()) chonMuc(O_NHANVIEN, 0);
-    EnableWindow(o(O_NHANVIEN), vaiTro != "QUANLY");
-    InvalidateRect(o(O_NHANVIEN), nullptr, FALSE);
-}
-
-string CuaSoNhaHang::maLienKetDuocChon() const {
-    string vaiTro = vaiTroDuocChon();
-    if (vaiTro == "QUANLY") return "";
-    int i = luaChon(O_NHANVIEN);
-    if (i < 0) throw runtime_error("Chưa có hồ sơ liên kết. Hãy thêm khách hàng hoặc nhân viên trước.");
-    if (vaiTro == "NHANVIEN") return dichVu.nhanVien().at(i).getMa();
-    return dichVu.khachHang().at(i).getMa();
 }

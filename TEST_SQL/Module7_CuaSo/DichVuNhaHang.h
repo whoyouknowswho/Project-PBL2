@@ -73,7 +73,7 @@ public:
     bool laKhachHang() const;
     const TaiKhoan& phien() const;
     void taoTaiKhoan(const string& ten, const string& matKhau,
-                    const string& xacNhan, const string& vaiTro, const string& maLienKet);
+                    const string& xacNhan, const string& vaiTro);
     void doiMatKhau(const string& cu, const string& moi, const string& xacNhan);
     string dangKyKhachHang(const string& hoTen, const string& dienThoai, const string& email,
                           const string& gioiTinh, const string& tenDangNhap,

@@ -82,7 +82,7 @@ HoaDon HoaDon::tuCacCot(const vector<string>& cacTruong) {
     if (cacTruong.size() < 6)
         return HoaDon();
     HoaDon hoaDon(cacTruong[0], cacTruong[1], cacTruong[2], cacTruong[3]);
-    hoaDon.setGiamGia(stod(cacTruong[4]));
+    try { if (!cacTruong[4].empty()) hoaDon.setGiamGia(stod(cacTruong[4])); } catch (...) {}
     for (const string& dongChiTiet : tach(cacTruong[5], ';')) {
         vector<string> truongChiTiet = tach(dongChiTiet, ',');
         if (truongChiTiet.size() >= 4) {
@@ -91,8 +91,10 @@ HoaDon HoaDon::tuCacCot(const vector<string>& cacTruong) {
                 tenMon += "," + truongChiTiet[i];
             }
             size_t cuoi = truongChiTiet.size();
-            hoaDon.themMon({truongChiTiet[0], tenMon, stoi(truongChiTiet[cuoi - 2]),
-                            stod(truongChiTiet[cuoi - 1])});
+            try {
+                hoaDon.themMon({truongChiTiet[0], tenMon, stoi(truongChiTiet[cuoi - 2]),
+                                stod(truongChiTiet[cuoi - 1])});
+            } catch (...) {}
         }
     }
     return hoaDon;

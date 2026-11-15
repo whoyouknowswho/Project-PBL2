@@ -157,9 +157,7 @@ class CuaSoNhaHang {
     void trangHoSoKhachHang();
     void veHoSoKhachHang(HDC dc);
     void trangLichSuKhachHang();
-    void capNhatHoSoTaiKhoan();
     string vaiTroDuocChon() const;
-    string maLienKetDuocChon() const;
 
     // TrangDanhSach.cpp
     void trangDanhSach();

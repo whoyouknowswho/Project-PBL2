@@ -1,65 +1,61 @@
-SET NOCOUNT ON; SET XACT_ABORT ON;
-IF DB_ID(N'QuanLyNhaHang_PBL2') IS NULL EXEC(N'CREATE DATABASE QuanLyNhaHang_PBL2');
+IF DB_ID('QuanLyNhaHang_PBL2') IS NULL
+    CREATE DATABASE QuanLyNhaHang_PBL2;
 GO
+
 USE QuanLyNhaHang_PBL2;
 GO
-BEGIN TRAN;
-IF OBJECT_ID(N'dbo.ThucDon', N'U') IS NULL
+
+IF OBJECT_ID('dbo.ThucDon', 'U') IS NULL
 CREATE TABLE dbo.ThucDon (
-    loai nvarchar(255),
-    ma nvarchar(160) COLLATE Latin1_General_100_BIN2 PRIMARY KEY,
+    loai nvarchar(50),
+    ma varchar(50) PRIMARY KEY,
     ten nvarchar(255),
-    gia decimal(28,6),
+    gia float,
     tonKho int,
-    doCayHoacSize nvarchar(255),
+    doCayHoacSize nvarchar(50),
     monChayHoacCoDa int
 );
 
-IF OBJECT_ID(N'dbo.KhachHang', N'U') IS NULL
+IF OBJECT_ID('dbo.KhachHang', 'U') IS NULL
 CREATE TABLE dbo.KhachHang (
-    ma nvarchar(160) COLLATE Latin1_General_100_BIN2 PRIMARY KEY,
+    ma varchar(50) PRIMARY KEY,
     ten nvarchar(255),
-    dienThoai nvarchar(255),
-    gioiTinh nvarchar(255),
+    dienThoai varchar(20),
+    gioiTinh nvarchar(20),
     diem int,
-    email nvarchar(255)
+    email varchar(255)
 );
 
-IF OBJECT_ID(N'dbo.NhanVien', N'U') IS NULL
+IF OBJECT_ID('dbo.NhanVien', 'U') IS NULL
 CREATE TABLE dbo.NhanVien (
-    ma nvarchar(160) COLLATE Latin1_General_100_BIN2 PRIMARY KEY,
+    ma varchar(50) PRIMARY KEY,
     ten nvarchar(255),
-    dienThoai nvarchar(255),
-    gioiTinh nvarchar(255),
-    chucVu nvarchar(255),
-    luong decimal(28,6),
-    phuCap decimal(28,6)
+    dienThoai varchar(20),
+    gioiTinh nvarchar(20),
+    chucVu nvarchar(100),
+    luong float,
+    phuCap float
 );
 
-IF OBJECT_ID(N'dbo.HoaDon', N'U') IS NULL
+IF OBJECT_ID('dbo.HoaDon', 'U') IS NULL
 CREATE TABLE dbo.HoaDon (
-    ma nvarchar(160) COLLATE Latin1_General_100_BIN2 PRIMARY KEY,
-    ngay nvarchar(255),
-    maKhach nvarchar(255),
-    maNhanVien nvarchar(255),
-    giamGia decimal(28,6),
+    ma varchar(50) PRIMARY KEY,
+    ngay varchar(20),
+    maKhach varchar(50),
+    maNhanVien varchar(50),
+    giamGia float,
     chiTiet nvarchar(max)
 );
 
-IF OBJECT_ID(N'dbo.DonDat', N'U') IS NULL
+IF OBJECT_ID('dbo.DonDat', 'U') IS NULL
 CREATE TABLE dbo.DonDat (
-    thuTu bigint IDENTITY PRIMARY KEY,
+    thuTu int IDENTITY(1,1) PRIMARY KEY,
     noiDung nvarchar(max)
 );
 
-IF OBJECT_ID(N'dbo.TaiKhoan', N'U') IS NULL
+IF OBJECT_ID('dbo.TaiKhoan', 'U') IS NULL
 CREATE TABLE dbo.TaiKhoan (
-    thuatToan nvarchar(255),
-    tenDangNhap nvarchar(160) COLLATE Latin1_General_100_BIN2 PRIMARY KEY,
-    vaiTro nvarchar(255),
-    maLienKet nvarchar(255),
-    muoi nvarchar(255),
-    matKhauBam nvarchar(255)
+    tenDangNhap varchar(50) PRIMARY KEY,
+    matKhau nvarchar(100),
+    vaiTro varchar(20)
 );
-
-COMMIT;

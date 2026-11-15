@@ -1,9 +1,8 @@
 #include "KetNoiSqlServer.h"
 #include "../Module7_CuaSo/TienIch.h"
+#include <windows.h>
 #include <sqlext.h>
-#include <algorithm>
 #include <cstdlib>
-#include <memory>
 #include <stdexcept>
 
 using namespace std;
@@ -14,132 +13,126 @@ struct BangSql {
     const wchar_t* cot;
     const wchar_t* sapXep;
 };
+
+// Danh sach 6 bang trong SQL Server va cac cot tuong ung.
 const BangSql cacBang[] = {
-    {L"dbo.ThucDon", L"loai,ma,ten,gia,tonKho,doCayHoacSize,monChayHoacCoDa", L"ma"},
-    {L"dbo.KhachHang", L"ma,ten,dienThoai,gioiTinh,diem,email", L"ma"},
-    {L"dbo.NhanVien", L"ma,ten,dienThoai,gioiTinh,chucVu,luong,phuCap", L"ma"},
-    {L"dbo.HoaDon", L"ma,ngay,maKhach,maNhanVien,giamGia,chiTiet", L"ma"},
-    {L"dbo.DonDat", L"noiDung", L"thuTu"},
-    {L"dbo.TaiKhoan", L"thuatToan,tenDangNhap,vaiTro,maLienKet,muoi,matKhauBam", L"tenDangNhap"}
+    {L"dbo.ThucDon",   L"loai,ma,ten,gia,tonKho,doCayHoacSize,monChayHoacCoDa", L"ma"},
+    {L"dbo.KhachHang", L"ma,ten,dienThoai,gioiTinh,diem,email",                 L"ma"},
+    {L"dbo.NhanVien",  L"ma,ten,dienThoai,gioiTinh,chucVu,luong,phuCap",        L"ma"},
+    {L"dbo.HoaDon",    L"ma,ngay,maKhach,maNhanVien,giamGia,chiTiet",           L"ma"},
+    {L"dbo.DonDat",    L"noiDung",                                              L"thuTu"},
+    {L"dbo.TaiKhoan",  L"tenDangNhap,matKhau,vaiTro",                             L"tenDangNhap"}
 };
 
-void kiemTraOdbc(SQLRETURN kq, SQLSMALLINT loai, SQLHANDLE handle) {
-    if (SQL_SUCCEEDED(kq)) return;
+string layLoiOdbc(SQLSMALLINT loai, SQLHANDLE handle) {
     SQLWCHAR trangThai[6] = {}, thongBao[1024] = {};
-    SQLINTEGER ma;
-    SQLSMALLINT dai;
-    SQLGetDiagRecW(loai, handle, 1, trangThai, &ma, thongBao, 1024, &dai);
-    throw runtime_error("Lỗi SQL Server: " + hep(thongBao));
+    SQLINTEGER ma = 0;
+    SQLSMALLINT doDai = 0;
+    SQLGetDiagRecW(loai, handle, 1, trangThai, &ma, thongBao, 1024, &doDai);
+    return "Lỗi SQL Server: " + hep(thongBao);
 }
 
-struct TaiNguyenOdbc {
-    SQLSMALLINT loai;
-    SQLHANDLE handle = SQL_NULL_HANDLE;
-    TaiNguyenOdbc(SQLSMALLINT kieu, SQLHANDLE cha) : loai(kieu) {
-        if (!SQL_SUCCEEDED(SQLAllocHandle(loai, cha, &handle)))
-            throw runtime_error("Không cấp phát được kết nối ODBC.");
+// Chuyen chuoi C++ sang chuoi N'...' an toan trong SQL Server.
+wstring chuoiSql(const string& s) {
+    wstring kq = L"N'";
+    for (wchar_t c : rong(s)) {
+        if (c == L'\'') kq += L"''";
+        else kq += c;
     }
-    ~TaiNguyenOdbc() { SQLFreeHandle(loai, handle); }
-    TaiNguyenOdbc(const TaiNguyenOdbc&) = delete;
-};
+    return kq + L"'";
+}
 
+// Quan ly 1 phien ket noi ODBC: tu mo khi khoi tao va tu dong khi ra khoi ham.
 struct KetNoi {
-    TaiNguyenOdbc moiTruong{SQL_HANDLE_ENV, SQL_NULL_HANDLE};
-    unique_ptr<TaiNguyenOdbc> ketNoi;
+    SQLHENV env = SQL_NULL_HENV;
     SQLHDBC db = SQL_NULL_HDBC;
+    SQLHSTMT lenh = SQL_NULL_HSTMT;
+
     KetNoi() {
-        kiemTraOdbc(SQLSetEnvAttr(moiTruong.handle, SQL_ATTR_ODBC_VERSION,
-                                  (SQLPOINTER)SQL_OV_ODBC3, 0), SQL_HANDLE_ENV, moiTruong.handle);
-        ketNoi = make_unique<TaiNguyenOdbc>(SQL_HANDLE_DBC, moiTruong.handle);
-        db = ketNoi->handle;
+        SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
+        SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0);
+        SQLAllocHandle(SQL_HANDLE_DBC, env, &db);
+
         wstring chuoi = L"Driver={ODBC Driver 18 for SQL Server};Server=.\\SQLEXPRESS;"
-                        L"Database=QuanLyNhaHang_PBL2;Trusted_Connection=yes;Encrypt=yes;TrustServerCertificate=yes;";
-        if (const wchar_t* cauHinh = _wgetenv(L"PBL2_SQL_CONNECTION")) chuoi = cauHinh;
-        kiemTraOdbc(SQLDriverConnectW(db, nullptr, &chuoi[0], SQL_NTS, nullptr, 0, nullptr,
-                                     SQL_DRIVER_NOPROMPT), SQL_HANDLE_DBC, db);
+                        L"Database=QuanLyNhaHang_PBL2;Trusted_Connection=yes;TrustServerCertificate=yes;";
+        if (const wchar_t* cauHinh = _wgetenv(L"PBL2_SQL_CONNECTION"))
+            chuoi = cauHinh;
+
+        SQLRETURN kq = SQLDriverConnectW(db, nullptr, (SQLWCHAR*)chuoi.c_str(), SQL_NTS,
+                                         nullptr, 0, nullptr, SQL_DRIVER_NOPROMPT);
+        if (!SQL_SUCCEEDED(kq)) {
+            string loi = layLoiOdbc(SQL_HANDLE_DBC, db);
+            dong();
+            throw runtime_error(loi);
+        }
+        SQLAllocHandle(SQL_HANDLE_STMT, db, &lenh);
     }
-    ~KetNoi() { if (db) SQLDisconnect(db); }
+
+    ~KetNoi() { dong(); }
+
+    void dong() {
+        if (lenh) { SQLFreeHandle(SQL_HANDLE_STMT, lenh); lenh = SQL_NULL_HSTMT; }
+        if (db)   { SQLDisconnect(db); SQLFreeHandle(SQL_HANDLE_DBC, db); db = SQL_NULL_HDBC; }
+        if (env)  { SQLFreeHandle(SQL_HANDLE_ENV, env); env = SQL_NULL_HENV; }
+    }
+
+    void chay(const wstring& sql) {
+        SQLFreeStmt(lenh, SQL_CLOSE);
+        SQLRETURN kq = SQLExecDirectW(lenh, (SQLWCHAR*)sql.c_str(), SQL_NTS);
+        if (!SQL_SUCCEEDED(kq) && kq != SQL_NO_DATA)
+            throw runtime_error(layLoiOdbc(SQL_HANDLE_STMT, lenh));
+    }
 };
-
-void chay(SQLHSTMT lenh, const wstring& sql) {
-    kiemTraOdbc(SQLExecDirectW(lenh, (SQLWCHAR*)sql.c_str(), SQL_NTS), SQL_HANDLE_STMT, lenh);
-}
-
-string docCot(SQLHSTMT lenh, SQLUSMALLINT cot) {
-    wstring giaTri;
-    SQLWCHAR phan[1024];
-    SQLLEN dai;
-    for (;;) {
-        SQLRETURN kq = SQLGetData(lenh, cot, SQL_C_WCHAR, phan, sizeof(phan), &dai);
-        if (kq == SQL_NO_DATA) break;
-        kiemTraOdbc(kq, SQL_HANDLE_STMT, lenh);
-        if (dai == SQL_NULL_DATA) break;
-        giaTri += phan;
-        if (kq == SQL_SUCCESS) break;
-    }
-    return hep(giaTri);
-}
-}
-
-void Sql::khoiTao() {
-    // Các danh sách được nạp một lần vào bộ nhớ. Chỉ một ứng dụng được sửa cùng database.
-    static KetNoi phien;
-    TaiNguyenOdbc lenh(SQL_HANDLE_STMT, phien.db);
-    chay(lenh.handle, L"DECLARE @k int; EXEC @k=sys.sp_getapplock @Resource='PBL2_GUI', "
-                       L"@LockMode='Exclusive', @LockOwner='Session', @LockTimeout=0; "
-                       L"IF @k<0 THROW 50001, 'Database dang mo o mot phien khac.', 1;");
 }
 
 Sql::CacDong Sql::doc(Bang bang) {
     KetNoi kn;
-    TaiNguyenOdbc lenh(SQL_HANDLE_STMT, kn.db);
-    const auto& b = cacBang[bang];
-    chay(lenh.handle, wstring(L"SELECT ") + b.cot + L" FROM " + b.ten + L" ORDER BY " + b.sapXep);
-    SQLSMALLINT soCot;
-    kiemTraOdbc(SQLNumResultCols(lenh.handle, &soCot), SQL_HANDLE_STMT, lenh.handle);
+    if (bang == TaiKhoan) {
+        kn.chay(L"IF COL_LENGTH('dbo.TaiKhoan','matKhau') IS NULL BEGIN "
+                L"DROP TABLE IF EXISTS dbo.TaiKhoan; "
+                L"CREATE TABLE dbo.TaiKhoan(tenDangNhap varchar(50) PRIMARY KEY, matKhau nvarchar(100), vaiTro varchar(20)); END "
+                L"ELSE IF COL_LENGTH('dbo.TaiKhoan','maLienKet') IS NOT NULL "
+                L"ALTER TABLE dbo.TaiKhoan DROP COLUMN maLienKet;");
+    }
+    const BangSql& b = cacBang[bang];
+    kn.chay(wstring(L"SELECT ") + b.cot + L" FROM " + b.ten + L" ORDER BY " + b.sapXep);
+
+    SQLSMALLINT soCot = 0;
+    SQLNumResultCols(kn.lenh, &soCot);
+
     CacDong ketQua;
-    SQLRETURN kq;
-    while ((kq = SQLFetch(lenh.handle)) != SQL_NO_DATA) {
-        kiemTraOdbc(kq, SQL_HANDLE_STMT, lenh.handle);
+    while (SQL_SUCCEEDED(SQLFetch(kn.lenh))) {
         Dong dong;
-        for (int i = 1; i <= soCot; ++i) dong.push_back(docCot(lenh.handle, i));
-        ketQua.push_back(std::move(dong));
+        for (int i = 1; i <= soCot; ++i) {
+            SQLWCHAR boDem[8192] = {};
+            SQLLEN doDai = 0;
+            SQLGetData(kn.lenh, i, SQL_C_WCHAR, boDem, sizeof(boDem), &doDai);
+            dong.push_back(doDai == SQL_NULL_DATA ? "" : hep(boDem));
+        }
+        ketQua.push_back(dong);
     }
     return ketQua;
 }
 
 void Sql::luu(const vector<pair<Bang, CacDong>>& thayDoi) {
     KetNoi kn;
-    kiemTraOdbc(SQLSetConnectAttr(kn.db, SQL_ATTR_AUTOCOMMIT, (SQLPOINTER)SQL_AUTOCOMMIT_OFF, 0),
-                SQL_HANDLE_DBC, kn.db);
+    kn.chay(L"BEGIN TRAN");
     try {
         for (const auto& muc : thayDoi) {
-            const auto& b = cacBang[muc.first];
-            TaiNguyenOdbc lenh(SQL_HANDLE_STMT, kn.db);
-            chay(lenh.handle, wstring(L"DELETE FROM ") + b.ten);
-            SQLFreeStmt(lenh.handle, SQL_CLOSE);
-            wstring cot = b.cot, thamSo = L"?";
-            for (wchar_t c : cot) if (c == L',') thamSo += L",?";
-            wstring sql = wstring(L"INSERT INTO ") + b.ten + L" (" + cot + L") VALUES (" + thamSo + L")";
-            kiemTraOdbc(SQLPrepareW(lenh.handle, &sql[0], SQL_NTS), SQL_HANDLE_STMT, lenh.handle);
-            for (const auto& dong : muc.second) {
-                vector<wstring> giaTri;
-                for (const string& v : dong) giaTri.push_back(rong(v));
-                vector<SQLLEN> doDai(dong.size(), SQL_NTS);
+            const BangSql& b = cacBang[muc.first];
+            kn.chay(wstring(L"DELETE FROM ") + b.ten);
+            for (const Dong& dong : muc.second) {
+                wstring giaTri;
                 for (size_t i = 0; i < dong.size(); ++i) {
-                    auto& v = giaTri[i];
-                    kiemTraOdbc(SQLBindParameter(lenh.handle, i + 1, SQL_PARAM_INPUT, SQL_C_WCHAR,
-                        SQL_WVARCHAR, v.size() > 4000 ? 0 : max<size_t>(1, v.size()), 0,
-                        (SQLPOINTER)v.c_str(), (v.size() + 1) * sizeof(wchar_t), &doDai[i]),
-                        SQL_HANDLE_STMT, lenh.handle);
+                    if (i > 0) giaTri += L", ";
+                    giaTri += chuoiSql(dong[i]);
                 }
-                kiemTraOdbc(SQLExecute(lenh.handle), SQL_HANDLE_STMT, lenh.handle);
-                SQLFreeStmt(lenh.handle, SQL_CLOSE);
+                kn.chay(wstring(L"INSERT INTO ") + b.ten + L" (" + b.cot + L") VALUES (" + giaTri + L")");
             }
         }
-        kiemTraOdbc(SQLEndTran(SQL_HANDLE_DBC, kn.db, SQL_COMMIT), SQL_HANDLE_DBC, kn.db);
+        kn.chay(L"COMMIT");
     } catch (...) {
-        SQLEndTran(SQL_HANDLE_DBC, kn.db, SQL_ROLLBACK);
+        try { kn.chay(L"IF @@TRANCOUNT > 0 ROLLBACK"); } catch (...) {}
         throw;
     }
 }

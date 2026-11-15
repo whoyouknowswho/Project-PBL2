@@ -153,10 +153,6 @@ void CuaSoNhaHang::hienTrang(int trangMoi, bool giuNhap) {
     for (const auto& muc : nhapCu) if (o(muc.first)) gan(muc.first, muc.second);
     for (const auto& muc : chonCu) if (o(muc.first)) chonMuc(muc.first, muc.second);
     for (const auto& muc : danhDauCu) if (o(muc.first) && danhDauGiaTri.count(muc.first)) danhDauGiaTri[muc.first] = muc.second;
-    if (dichVu.daDangNhap() && trangHienTai == TAI_KHOAN) {
-        capNhatHoSoTaiKhoan();
-        if (giuNhap && chonCu.count(O_NHANVIEN)) chonMuc(O_NHANVIEN, chonCu[O_NHANVIEN]);
-    }
     if (dichVu.daDangNhap() && (trangHienTai == KHACH_HANG || trangHienTai == NHAN_VIEN || trangHienTai == THUC_DON)) {
         napBang();
         doiLoaiMon();
@@ -247,7 +243,6 @@ void CuaSoNhaHang::ve(HDC dc) {
 
 void CuaSoNhaHang::xuLyNut(int id, int suKien) {
     if (suKien == BN_CLICKED && danhDauGiaTri.count(id)) datDanhDau(id, !daDanhDau(id));
-    if (suKien == CBN_SELCHANGE && id == O_ROLE) { capNhatHoSoTaiKhoan(); return; }
     if (suKien == EN_CHANGE && id == TIM_KIEM) {
         if (trangHienTai == BAN_HANG || trangHienTai == DAT_MON) napMonDat();
         else napBang();
@@ -288,7 +283,7 @@ void CuaSoNhaHang::xuLyNut(int id, int suKien) {
     if (id == NUT_DANGNHAP && !dichVu.daDangNhap() && !dangDangKy) {
         string ten = duLieu(O_USER);
         if (thietLap) {
-            dichVu.taoTaiKhoan(ten, duLieu(O_PASS), duLieu(O_CONFIRM), "QUANLY", "");
+            dichVu.taoTaiKhoan(ten, duLieu(O_PASS), duLieu(O_CONFIRM), "QUANLY");
             thietLap = false;
             hienTrang(TRANG_CHU);
             gan(O_USER, rong(ten));
@@ -303,7 +298,7 @@ void CuaSoNhaHang::xuLyNut(int id, int suKien) {
                     baoLoi("Đăng nhập sai 3 lần. Hãy mở lại ứng dụng để thử lại.");
                     DestroyWindow(cuaSo);
                 } else {
-                    baoLoi("Sai tài khoản, mật khẩu hoặc hồ sơ liên kết không còn tồn tại.");
+                    baoLoi("Sai tài khoản hoặc mật khẩu.");
                     SetFocus(o(O_PASS));
                 }
                 return;
@@ -393,7 +388,7 @@ void CuaSoNhaHang::xuLyNut(int id, int suKien) {
             break;
         }
         case NUT_TAOTAIKHOAN:
-            dichVu.taoTaiKhoan(duLieu(O_USER), duLieu(O_PASS), duLieu(O_CONFIRM), vaiTroDuocChon(), maLienKetDuocChon());
+            dichVu.taoTaiKhoan(duLieu(O_USER), duLieu(O_PASS), duLieu(O_CONFIRM), vaiTroDuocChon());
             hienTrang(TAI_KHOAN);
             thanhCong(L"Đã tạo tài khoản thành công.");
             break;

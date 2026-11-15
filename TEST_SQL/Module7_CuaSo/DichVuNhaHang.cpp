@@ -43,35 +43,7 @@ bool dienThoaiHopLe(const string& dienThoai) {
 }
 
 bool emailHopLe(const string& email) {
-    if (email.empty() || email.size() > 254 || email.find_first_of(" \t\r\n|;,") != string::npos) return false;
-    size_t at = email.find('@');
-    if (at == string::npos || at == 0 || at != email.rfind('@') || at > 64 || at + 1 >= email.size()) return false;
-    string local = email.substr(0, at), domain = email.substr(at + 1);
-    if (local.front() == '.' || local.back() == '.' || local.find("..") != string::npos) return false;
-    if (domain.find('.') == string::npos || domain.front() == '.' || domain.back() == '.' || domain.find("..") != string::npos) return false;
-    const string kyTuLocal = ".!#$%&'*+-/=?^_{|}~";
-    for (unsigned char c : local) {
-        if (c > 127 || (!isalnum(c) && kyTuLocal.find(static_cast<char>(c)) == string::npos)) return false;
-    }
-    size_t batDau = 0;
-    while (batDau < domain.size()) {
-        size_t ketThuc = domain.find('.', batDau);
-        if (ketThuc == string::npos) ketThuc = domain.size();
-        if (ketThuc == batDau || domain[batDau] == '-' || domain[ketThuc - 1] == '-') return false;
-        for (size_t i = batDau; i < ketThuc; i++) {
-            unsigned char c = static_cast<unsigned char>(domain[i]);
-            if (c > 127 || (!isalnum(c) && c != '-')) return false;
-        }
-        batDau = ketThuc + 1;
-    }
-    size_t chamCuoi = domain.rfind('.');
-    return domain.size() - chamCuoi - 1 >= 2;
-}
-
-string emailThuong(const string& email) {
-    string ketQua = email;
-    transform(ketQua.begin(), ketQua.end(), ketQua.begin(), [](unsigned char c) { return static_cast<char>(tolower(c)); });
-    return ketQua;
+    return email.find('@') != string::npos;
 }
 
 bool ngayHopLe(const string& ngay) {
@@ -90,7 +62,6 @@ bool ngayHopLe(const string& ngay) {
 }
 
 bool DichVuNhaHang::khoiTao() {
-    Sql::khoiTao();
     docDuLieuSql();
     docDonDat();
     canThietLap = !duLieu.quanLyTaiKhoan.docDuLieu();
@@ -127,29 +98,18 @@ void DichVuNhaHang::yeuCauNhanVien() const {
 bool DichVuNhaHang::dangNhap(const string& ten, const string& matKhau) {
     dangXuat();
     if (!duLieu.quanLyTaiKhoan.kiemTraMatKhau(ten, matKhau)) return false;
-    const TaiKhoan* taiKhoan = duLieu.quanLyTaiKhoan.tim(ten);
-    if (taiKhoan->vaiTro == "NHANVIEN" && duLieu.timNhanVien(taiKhoan->maNhanVien) == nullptr) return false;
-    if (taiKhoan->vaiTro == "KHACHHANG" && duLieu.timKhach(taiKhoan->maKhachHang) == nullptr) return false;
-    duLieu.taiKhoanHienTai = *taiKhoan;
+    duLieu.taiKhoanHienTai = *duLieu.quanLyTaiKhoan.tim(ten);
     return true;
 }
 void DichVuNhaHang::dangXuat() { duLieu.taiKhoanHienTai = TaiKhoan(); }
 
 void DichVuNhaHang::taoTaiKhoan(const string& ten, const string& matKhau,
-                               const string& xacNhan, const string& vaiTro, const string& maLienKet) {
+                               const string& xacNhan, const string& vaiTro) {
     if (!canThietLap) yeuCauQuanLy();
     if (ten == "0") throw runtime_error("Tên đăng nhập không được là 0.");
     if (matKhau != xacNhan) throw runtime_error("Hai mật khẩu không trùng nhau.");
     if (canThietLap && vaiTro != "QUANLY") throw runtime_error("Tài khoản đầu tiên phải là quản lý.");
-    if (vaiTro == "NHANVIEN" && duLieu.timNhanVien(maLienKet) == nullptr) {
-        throw runtime_error("Mã nhân viên không tồn tại. Hãy thêm hồ sơ nhân viên trước.");
-    }
-    if (vaiTro == "KHACHHANG" && duLieu.timKhach(maLienKet) == nullptr) {
-        throw runtime_error("Mã khách hàng không tồn tại. Hãy thêm hồ sơ khách hàng trước.");
-    }
-    string ma = maLienKet;
-    if (vaiTro == "QUANLY") ma.clear();
-    duLieu.quanLyTaiKhoan.tao(ten, matKhau, vaiTro, ma);
+    duLieu.quanLyTaiKhoan.tao(ten, matKhau, vaiTro);
     canThietLap = false;
 }
 
@@ -194,12 +154,7 @@ void DichVuNhaHang::luuKhachHang(const KhachHang& khach, bool themMoi) {
     kiemTraChuoi(khach.getSoDienThoai(), "Điện thoại");
     if ((themMoi || !cu || cu->getSoDienThoai() != khach.getSoDienThoai()) &&
         !dienThoaiHopLe(khach.getSoDienThoai())) throw runtime_error("Điện thoại cần có từ 9 đến 15 chữ số.");
-    if (!khach.getEmail().empty() && !emailHopLe(khach.getEmail())) throw runtime_error("Email không hợp lệ.");
-    for (const KhachHang& khac : duLieu.dsKhachHang) {
-        if (khac.getMa() != khach.getMa() && !khac.getEmail().empty() &&
-            emailThuong(khac.getEmail()) == emailThuong(khach.getEmail()))
-            throw runtime_error("Email đã được dùng cho hồ sơ khách hàng khác.");
-    }
+    if (!khach.getEmail().empty() && !emailHopLe(khach.getEmail())) throw runtime_error("Email cần có ký tự @.");
     kiemTraChuoi(khach.getGioiTinh(), "Giới tính");
     kiemTraSo(khach.getDiemTichLuy(), "Điểm tích lũy");
     if (themMoi && cu != nullptr) throw runtime_error("Mã khách hàng đã tồn tại.");
@@ -302,8 +257,7 @@ HoaDon DichVuNhaHang::xemTruocHoaDon(const string& ma, const string& ngay, const
     for (const HoaDon& hd : duLieu.dsHoaDon) {
         if (hd.getMa() == ma) throw runtime_error("Mã hóa đơn đã tồn tại.");
     }
-    string nguoiBan = phien().maNhanVien;
-    if (!duLieu.timNhanVien(nguoiBan)) throw runtime_error("Cần chọn nhân viên bán hàng hợp lệ.");
+    string nguoiBan = phien().tenDangNhap;
     HoaDon duTinh = lapDuTinh(ma, ngay, khach, gioHang);
     HoaDon hoaDon(ma, ngay, khach, nguoiBan);
     for (const ChiTietHoaDon& ct : duTinh.getGioHang()) hoaDon.themMon(ct);
@@ -406,9 +360,11 @@ DoanhThuNam DichVuNhaHang::doanhThuTheoNam(int nam) const {
 const KhachHang& DichVuNhaHang::hoSoCuaToi() const {
     if (!laKhachHang()) throw runtime_error("Bạn cần đăng nhập tài khoản khách hàng.");
     for (const KhachHang& khach : duLieu.dsKhachHang) {
-        if (khach.getMa() == phien().maKhachHang) return khach;
+        if (khach.getMa() == phien().tenDangNhap) return khach;
     }
-    throw runtime_error("Hồ sơ khách hàng không còn tồn tại.");
+    static KhachHang macDinh;
+    macDinh = KhachHang(phien().tenDangNhap, phien().tenDangNhap, "", "Khác", 0, "");
+    return macDinh;
 }
 
 vector<HoaDon> DichVuNhaHang::hoaDonCuaToi() const {
@@ -423,17 +379,14 @@ vector<HoaDon> DichVuNhaHang::hoaDonCuaToi() const {
 HoaDon DichVuNhaHang::hoaDonDuocXem(const string& maHoaDon) const {
     yeuCauDangNhap();
     if (!laQuanLy() && !laKhachHang()) throw runtime_error("Bạn không có quyền xem lịch sử hóa đơn.");
-    if (laKhachHang()) hoSoCuaToi();
     for (const HoaDon& hoaDon : duLieu.dsHoaDon) {
         if (hoaDon.getMa() != maHoaDon) continue;
-        if (laQuanLy() || hoaDon.getMaKhachHang() == phien().maKhachHang) return hoaDon;
+        if (laQuanLy() || hoaDon.getMaKhachHang() == phien().tenDangNhap) return hoaDon;
         break;
     }
     throw runtime_error("Không tìm thấy hóa đơn hoặc bạn không có quyền xem hóa đơn này.");
 }
 
-// Dang ky cong khai chi tao ho so MOI va quyen KHACHHANG.
-// Ma khach, diem va vai tro khong lay tu bieu mau.
 string DichVuNhaHang::dangKyKhachHang(const string& hoTen, const string& dienThoai, const string& email,
                                      const string& gioiTinh, const string& tenDangNhap,
                                      const string& matKhau, const string& xacNhan) {
@@ -447,43 +400,17 @@ string DichVuNhaHang::dangKyKhachHang(const string& hoTen, const string& dienTho
     if (dau != string::npos) tenSach = hoTen.substr(dau, cuoi-dau+1);
     kiemTraChuoi(tenSach, "Họ và tên");
     if (!dienThoaiHopLe(dienThoai)) throw runtime_error("Số điện thoại cần có từ 9 đến 15 chữ số.");
-    if (!emailHopLe(email)) throw runtime_error("Email không hợp lệ. Hãy nhập địa chỉ như ten@example.com.");
+    if (!emailHopLe(email)) throw runtime_error("Email cần có ký tự @ (ví dụ: ten@gmail.com).");
     if (gioiTinh != "Nam" && gioiTinh != "Nữ" && gioiTinh != "Nu" && gioiTinh != "Khác") {
         throw runtime_error("Hãy chọn giới tính hợp lệ.");
     }
-    for (const KhachHang& khach : duLieu.dsKhachHang) {
-        string soCu;
-        for (char c : khach.getSoDienThoai()) if (c >= '0' && c <= '9') soCu += c;
-        if (soCu == dienThoai) {
-            throw runtime_error("Số điện thoại đã có hồ sơ. Liên hệ nhân viên để được cấp hoặc hỗ trợ tài khoản.");
-        }
-        if (!khach.getEmail().empty() && emailThuong(khach.getEmail()) == emailThuong(email))
-            throw runtime_error("Email đã có hồ sơ. Hãy dùng email khác hoặc liên hệ nhà hàng.");
-    }
-    string maMoi;
-    for (int i = 1; i < 1000000000; i++) {
-        ostringstream ma;
-        ma << "KH" << setfill('0') << setw(4) << i;
-        string ungVien = ma.str();
-        bool daDung = duLieu.timKhach(ungVien) != nullptr;
-        // Khong tai su dung ma cua khach da xoa, tranh lo hoa don cu.
-        for (const HoaDon& hd : duLieu.dsHoaDon) {
-            if (hd.getMaKhachHang() == ungVien) { daDung = true; break; }
-        }
-        for (const TaiKhoan& tk : duLieu.quanLyTaiKhoan.danhSach) {
-            if (tk.maKhachHang == ungVien) { daDung = true; break; }
-        }
-        for (const DonDatMon& don : cacDonDat) {
-            if (don.duTinh.getMaKhachHang() == ungVien) { daDung = true; break; }
-        }
-        if (!daDung) { maMoi = ungVien; break; }
-    }
-    if (maMoi.empty()) throw runtime_error("Không tạo được mã khách hàng mới.");
-    TaiKhoan taiKhoan = duLieu.quanLyTaiKhoan.chuanBi(tenDangNhap, matKhau, "KHACHHANG", maMoi);
+    if (duLieu.timKhach(tenDangNhap) != nullptr)
+        throw runtime_error("Tên đăng nhập đã trùng với mã khách hàng hiện có.");
+    TaiKhoan taiKhoan = duLieu.quanLyTaiKhoan.chuanBi(tenDangNhap, matKhau, "KHACHHANG");
     vector<KhachHang> khachCu = duLieu.dsKhachHang;
     vector<TaiKhoan> taiKhoanCu = duLieu.quanLyTaiKhoan.danhSach;
     try {
-        duLieu.dsKhachHang.push_back(KhachHang(maMoi, tenSach, dienThoai, gioiTinh, 0, email));
+        duLieu.dsKhachHang.push_back(KhachHang(tenDangNhap, tenSach, dienThoai, gioiTinh, 0, email));
         duLieu.quanLyTaiKhoan.danhSach.push_back(taiKhoan);
         luuThayDoi(true);
     } catch (...) {
@@ -491,7 +418,15 @@ string DichVuNhaHang::dangKyKhachHang(const string& hoTen, const string& dienTho
         duLieu.quanLyTaiKhoan.danhSach = taiKhoanCu;
         throw;
     }
-    return maMoi;
+    return tenDangNhap;
+}
+
+int soNguyen(const string& s) {
+    try { return s.empty() ? 0 : stoi(s); } catch (...) { return 0; }
+}
+
+double soThuc(const string& s) {
+    try { return s.empty() ? 0.0 : stod(s); } catch (...) { return 0.0; }
 }
 
 void DichVuNhaHang::docDuLieuSql() {
@@ -500,15 +435,22 @@ void DichVuNhaHang::docDuLieuSql() {
     duLieu.dsMon.clear();
     duLieu.dsHoaDon.clear();
     for (const auto& c : Sql::doc(Sql::ThucDon)) {
-        if (c[0] == "MONAN")
-            duLieu.dsMon.push_back(make_unique<MonAn>(c[1], c[2], stod(c[3]), stoi(c[4]), stoi(c[5]), stoi(c[6])));
-        else if (c[0] == "NUOC")
-            duLieu.dsMon.push_back(make_unique<NuocUong>(c[1], c[2], stod(c[3]), stoi(c[4]), c[5], stoi(c[6])));
+        if (c.size() < 7 || c[1].empty()) continue;
+        if (c[0] == "NUOC")
+            duLieu.dsMon.push_back(make_unique<NuocUong>(c[1], c[2], soThuc(c[3]), soNguyen(c[4]), c[5].empty() ? "M" : c[5], soNguyen(c[6])));
+        else
+            duLieu.dsMon.push_back(make_unique<MonAn>(c[1], c[2], soThuc(c[3]), soNguyen(c[4]), soNguyen(c[5]), soNguyen(c[6])));
     }
-    for (const auto& c : Sql::doc(Sql::KhachHang))
-        duLieu.dsKhachHang.emplace_back(c[0], c[1], c[2], c[3], stoi(c[4]), c[5]);
-    for (const auto& c : Sql::doc(Sql::NhanVien))
-        duLieu.dsNhanVien.emplace_back(c[0], c[1], c[2], c[3], c[4], stod(c[5]), stod(c[6]));
-    for (const auto& c : Sql::doc(Sql::HoaDon))
+    for (const auto& c : Sql::doc(Sql::KhachHang)) {
+        if (c.size() < 6 || c[0].empty()) continue;
+        duLieu.dsKhachHang.emplace_back(c[0], c[1], c[2], c[3].empty() ? "Khác" : c[3], soNguyen(c[4]), c[5]);
+    }
+    for (const auto& c : Sql::doc(Sql::NhanVien)) {
+        if (c.size() < 7 || c[0].empty()) continue;
+        duLieu.dsNhanVien.emplace_back(c[0], c[1], c[2], c[3].empty() ? "Khác" : c[3], c[4], soThuc(c[5]), soThuc(c[6]));
+    }
+    for (const auto& c : Sql::doc(Sql::HoaDon)) {
+        if (c.size() < 6 || c[0].empty()) continue;
         duLieu.dsHoaDon.push_back(HoaDon::tuCacCot(c));
+    }
 }

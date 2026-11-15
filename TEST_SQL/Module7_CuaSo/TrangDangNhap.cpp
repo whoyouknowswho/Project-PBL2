@@ -49,7 +49,7 @@ void CuaSoNhaHang::trangDangKy() {
     chonMuc(O_GIOITINH, 2);
     nhap(L"Email", O_EMAIL, x, y + 232, w);
     nhap(L"Tên đăng nhập", O_USER, x, y + 308, w);
-    nhap(L"Mật khẩu (8–128 byte)", O_PASS, x, y + 384, nuaO, L"", true);
+    nhap(L"Mật khẩu", O_PASS, x, y + 384, nuaO, L"", true);
     nhap(L"Nhập lại mật khẩu", O_CONFIRM, x + nuaO + 16, y + 384, w - nuaO - 16, L"", true);
     nut(L"Tạo tài khoản khách hàng", NUT_DANGKY, x, y + 468, w, KieuNut::Chinh, 0, 44);
     nut(L"Quay lại đăng nhập", NUT_VE_DANGNHAP, x, y + 520, w, KieuNut::Phu, 0, 40);

@@ -23,7 +23,7 @@ string CuaSoNhaHang::khachDaChon() const {
     return "";
 }
 
-string CuaSoNhaHang::nhanVienDaChon() const { return dichVu.phien().maNhanVien; }
+string CuaSoNhaHang::nhanVienDaChon() const { return dichVu.phien().tenDangNhap; }
 
 // Cot trai (tim, nhom, luoi mon, so luong) va the gio hang ben phai; dung chung cho Ban hang va Dat mon.
 void CuaSoNhaHang::dungLuoiDatMon(int x, int y, int w, int h) {
@@ -102,7 +102,7 @@ void CuaSoNhaHang::trangBanHang() {
     chon(L"Khách hàng", O_KHACH, x + 24 + 2 * (o4 + 16), y + 8, o4, kh);
     chonMuc(O_KHACH, chonKhach);
     nhap(L"Nhân viên bán hàng", O_NHANVIEN, x + 24 + 3 * (o4 + 16), y + 8, w - 48 - 3 * (o4 + 16),
-         rong(dichVu.phien().maNhanVien));
+         rong(dichVu.phien().tenDangNhap));
     SendMessageW(o(O_NHANVIEN), EM_SETREADONLY, TRUE, 0);
     int top = y + 100;
     dungLuoiDatMon(x, top, phaiNoiDung() - RONG_GIO - BoCuc::KHOANG - x, dayNoiDung() - top);
