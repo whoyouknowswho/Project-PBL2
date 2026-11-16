@@ -1,6 +1,8 @@
 ﻿# Thay database QuanLyNhaHang_PBL2 tren may nay bang du lieu trong database.sql (thu muc goc repo).
-# Cach chay (PowerShell, tai thu muc TEST_SQL):
-#     powershell -ExecutionPolicy Bypass -File Module5_SQL\nhap_du_lieu_cua_ban.ps1
+# Nhan ca file do xuat_du_lieu.ps1 tao lan file Generate Scripts cua SSMS.
+#
+#   powershell -ExecutionPolicy Bypass -File TEST_SQL\Module5_SQL\nhap_du_lieu_cua_ban.ps1
+#
 # Cac buoc:
 #   1. Dong QuanLyNhaHangGUI.exe neu dang mo (app ghi lai toan bo bang khi luu, se de mat du lieu moi).
 #   2. Sao luu database hien tai ra file .bak trong thu muc Backup cua SQL Server.
@@ -11,52 +13,56 @@ param(
     [string]$TepSql = (Join-Path $PSScriptRoot '..\..\database.sql')
 )
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'SqlTienIch.ps1')
 $Ten = 'QuanLyNhaHang_PBL2'
-$Tam = 'QuanLyNhaHang_PBL2_DangNhap'
-
-function Sql([string]$lenh, [string]$db = 'master') {
-    $kq = & sqlcmd -S $Server -E -C -b -f 65001 -d $db -h -1 -W -Q "SET NOCOUNT ON; $lenh" 2>&1
-    if ($LASTEXITCODE -ne 0) { throw "Lỗi SQL: $kq" }
-    return $kq
-}
+# Ten tam doi theo thoi gian: file .mdf/.ldf mang ten database luc tao, doi ten database khong doi ten file.
+$Tam = 'QuanLyNhaHang_PBL2_Nap{0:yyyyMMddHHmmss}' -f (Get-Date)
+$xoaTam = "IF DB_ID(N'$Tam') IS NOT NULL BEGIN ALTER DATABASE [$Tam] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [$Tam]; END"
 
 $TepSql = (Resolve-Path $TepSql).Path
-Write-Host "Nguồn dữ liệu: $TepSql"
+Write-Host "Nguon du lieu: $TepSql"
 
 # 1. Dong app
 $app = Get-Process QuanLyNhaHangGUI -ErrorAction SilentlyContinue
-if ($app) { Write-Host 'Đang đóng QuanLyNhaHangGUI.exe...'; $app | Stop-Process -Force; Start-Sleep -Milliseconds 500 }
+if ($app) { Write-Host 'Dang dong QuanLyNhaHangGUI.exe...'; $app | Stop-Process -Force; Start-Sleep -Milliseconds 500 }
+
+$cn = Mo-KetNoi $Server
 
 # 2. Sao luu
-$coSan = (Sql "SELECT COUNT(*) FROM sys.databases WHERE name = N'$Ten'").Trim()
-if ($coSan -eq '1') {
-    $thuMuc = (Sql "SELECT CAST(SERVERPROPERTY('InstanceDefaultBackupPath') AS nvarchar(400))").Trim()
-    $tep = Join-Path $thuMuc ("{0}_{1:yyyyMMdd_HHmmss}.bak" -f $Ten, (Get-Date))
-    Sql "BACKUP DATABASE [$Ten] TO DISK = N'$tep' WITH COPY_ONLY, INIT" | Out-Null
-    Write-Host "Đã sao lưu database cũ: $tep"
+if ([int](Lay-GiaTri $cn "SELECT COUNT(*) FROM sys.databases WHERE name = N'$Ten'") -eq 1) {
+    $thuMuc = [string](Lay-GiaTri $cn "SELECT CAST(SERVERPROPERTY('InstanceDefaultBackupPath') AS nvarchar(400))")
+    $tep = Join-Path $thuMuc ('{0}_{1:yyyyMMdd_HHmmss}.bak' -f $Ten, (Get-Date))
+    Chay-Sql $cn "BACKUP DATABASE [$Ten] TO DISK = N'$tep' WITH COPY_ONLY, INIT"
+    Write-Host "Da sao luu database cu: $tep"
 }
 
-# 3. Nap vao database tam (bo duong dan file .mdf/.ldf ghi cung theo may nguoi xuat)
-$noiDung = Get-Content -LiteralPath $TepSql -Raw   # tu nhan UTF-16/UTF-8 co BOM
+# 3. Nap vao database tam (bo duong dan .mdf/.ldf ma SSMS ghi cung theo may nguoi xuat)
+$noiDung = [IO.File]::ReadAllText($TepSql)   # tu nhan BOM UTF-8/UTF-16, mac dinh UTF-8
+if ($noiDung -notmatch "CREATE DATABASE \[$Ten\]") { throw "File khong co lenh CREATE DATABASE [$Ten]." }
 $noiDung = [regex]::Replace($noiDung, "(?s)(CREATE DATABASE \[$Ten\]).*?(\r?\nGO)", '$1$2')
 $noiDung = [regex]::Replace($noiDung, "(?m)^ALTER DATABASE \[$Ten\] SET COMPATIBILITY_LEVEL = \d+\s*$", '')
 $noiDung = $noiDung.Replace("[$Ten]", "[$Tam]")
-$tepTam = Join-Path $env:TEMP 'pbl2_nhap_du_lieu.sql'
-[IO.File]::WriteAllText($tepTam, $noiDung, (New-Object Text.UTF8Encoding $true))
 
-Sql "IF DB_ID(N'$Tam') IS NOT NULL BEGIN ALTER DATABASE [$Tam] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [$Tam]; END" | Out-Null
-$kq = & sqlcmd -S $Server -E -C -b -f 65001 -i $tepTam 2>&1
-if ($LASTEXITCODE -ne 0) {
-    Sql "IF DB_ID(N'$Tam') IS NOT NULL BEGIN ALTER DATABASE [$Tam] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [$Tam]; END" | Out-Null
-    throw "Không nạp được database.sql, database cũ vẫn giữ nguyên.`n$kq"
+Chay-Sql $cn $xoaTam
+try {
+    $i = 0
+    foreach ($lo in (Tach-Lo $noiDung)) { $i++; Chay-Sql $cn $lo }
+    Chay-Sql $cn 'USE [master]'
+} catch {
+    try { Chay-Sql $cn 'USE [master]'; Chay-Sql $cn $xoaTam } catch {}
+    throw "Khong nap duoc database.sql (lo lenh thu $i), database cu van giu nguyen.`n$($_.Exception.Message)"
 }
-Remove-Item $tepTam -ErrorAction SilentlyContinue
+$cn.Close()
+[System.Data.SqlClient.SqlConnection]::ClearAllPools()
 
 # 4. Thay database cu
-Sql "IF DB_ID(N'$Ten') IS NOT NULL BEGIN ALTER DATABASE [$Ten] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [$Ten]; END" | Out-Null
-Sql "ALTER DATABASE [$Tam] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; ALTER DATABASE [$Tam] MODIFY NAME = [$Ten]; ALTER DATABASE [$Ten] SET MULTI_USER;" | Out-Null
-
-Write-Host "Xong. Số dòng trong $Ten`:"
-Sql "SELECT 'ThucDon', COUNT(*) FROM dbo.ThucDon UNION ALL SELECT 'KhachHang', COUNT(*) FROM dbo.KhachHang
-     UNION ALL SELECT 'NhanVien', COUNT(*) FROM dbo.NhanVien UNION ALL SELECT 'HoaDon', COUNT(*) FROM dbo.HoaDon
-     UNION ALL SELECT 'DonDat', COUNT(*) FROM dbo.DonDat UNION ALL SELECT 'TaiKhoan', COUNT(*) FROM dbo.TaiKhoan" $Ten
+$cn = Mo-KetNoi $Server
+Chay-Sql $cn "IF DB_ID(N'$Ten') IS NOT NULL BEGIN ALTER DATABASE [$Ten] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [$Ten]; END"
+Chay-Sql $cn "ALTER DATABASE [$Tam] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; ALTER DATABASE [$Tam] MODIFY NAME = [$Ten]; ALTER DATABASE [$Ten] SET MULTI_USER;"
+$dem = Lay-Bang $cn @"
+SELECT 'ThucDon' AS bang, COUNT(*) AS so FROM [$Ten].dbo.ThucDon UNION ALL SELECT 'KhachHang', COUNT(*) FROM [$Ten].dbo.KhachHang
+UNION ALL SELECT 'NhanVien', COUNT(*) FROM [$Ten].dbo.NhanVien UNION ALL SELECT 'HoaDon', COUNT(*) FROM [$Ten].dbo.HoaDon
+UNION ALL SELECT 'DonDat', COUNT(*) FROM [$Ten].dbo.DonDat UNION ALL SELECT 'TaiKhoan', COUNT(*) FROM [$Ten].dbo.TaiKhoan
+"@
+$cn.Close()
+Write-Host ("Xong. $Ten co: " + (($dem.Rows | ForEach-Object { "$($_.bang) $($_.so)" }) -join ', '))

@@ -1,0 +1,13 @@
+#!/bin/sh
+# May "nguon" (nguoi nhap du lieu): truoc moi lan commit, tu xuat SQL Server ra database.sql
+# va dua vao commit cung voi anh mon. Cai bang: TEST_SQL/Module5_SQL/cai_dong_bo.ps1 -VaiTro nguon
+[ "$(git config --get pbl2.dongbo)" = "nguon" ] || exit 0
+[ -n "$PBL2_BO_QUA_HOOK" ] && exit 0
+goc=$(git rev-parse --show-toplevel)
+echo "[dong bo] Xuat du lieu SQL Server ra database.sql..."
+if powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$goc/TEST_SQL/Module5_SQL/xuat_du_lieu.ps1"; then
+    git add -- "$goc/database.sql" "$goc/TEST_SQL/DuLieu/AnhMon"
+else
+    echo "[dong bo] Khong xuat duoc du lieu (SQL Server chua chay?). Van commit, database.sql giu ban cu."
+fi
+exit 0

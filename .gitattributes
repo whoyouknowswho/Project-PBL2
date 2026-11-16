@@ -1,0 +1,2 @@
+# Git hook chay bang sh: phai giu xuong dong LF ke ca tren Windows.
+.githooks/* text eol=lf

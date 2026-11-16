@@ -1,0 +1,10 @@
+#!/bin/sh
+# May "nhan": sau moi lan pull/sync, neu database.sql thay doi thi tu nap vao SQL Server
+# (co sao luu .bak truoc khi de). Cai bang: TEST_SQL/Module5_SQL/cai_dong_bo.ps1 -VaiTro nhan
+[ "$(git config --get pbl2.dongbo)" = "nhan" ] || exit 0
+git diff --quiet ORIG_HEAD HEAD -- database.sql 2>/dev/null && exit 0
+goc=$(git rev-parse --show-toplevel)
+echo "[dong bo] database.sql vua thay doi, dang nap vao SQL Server..."
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$goc/TEST_SQL/Module5_SQL/nhap_du_lieu_cua_ban.ps1" \
+    || echo "[dong bo] Nap du lieu that bai, database cu van giu nguyen. Chay tay nhap_du_lieu_cua_ban.ps1 de xem loi."
+exit 0
