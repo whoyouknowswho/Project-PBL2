@@ -59,6 +59,29 @@ bool ngayHopLe(const string& ngay) {
     if (y % 400 == 0 || (y % 4 == 0 && y % 100 != 0)) soNgay[1] = 29;
     return d >= 1 && d <= soNgay[m - 1];
 }
+
+string luuAnhVaoThuMucDuLieu(const string& duongDan) {
+    if (duongDan.empty()) return "";
+    wstring nguon = rong(duongDan);
+    size_t viTri = nguon.find_last_of(L"\\/");
+    wstring tenTep = (viTri == wstring::npos) ? nguon : nguon.substr(viTri + 1);
+    if (tenTep.empty()) return duongDan;
+    CreateDirectoryW(L"DuLieu", nullptr);
+    CreateDirectoryW(L"DuLieu\\AnhMon", nullptr);
+    wstring dich = L"DuLieu\\AnhMon\\" + tenTep;
+    if (GetFileAttributesW(nguon.c_str()) != INVALID_FILE_ATTRIBUTES) {
+        wchar_t dayDuNguon[MAX_PATH] = {}, dayDuDich[MAX_PATH] = {};
+        GetFullPathNameW(nguon.c_str(), MAX_PATH, dayDuNguon, nullptr);
+        GetFullPathNameW(dich.c_str(), MAX_PATH, dayDuDich, nullptr);
+        if (_wcsicmp(dayDuNguon, dayDuDich) != 0) {
+            CopyFileW(nguon.c_str(), dich.c_str(), FALSE);
+        }
+    }
+    if (GetFileAttributesW(dich.c_str()) != INVALID_FILE_ATTRIBUTES) {
+        return "DuLieu/AnhMon/" + hep(tenTep);
+    }
+    return duongDan;
+}
 }
 
 bool DichVuNhaHang::khoiTao() {
@@ -225,7 +248,7 @@ string DichVuNhaHang::luuMon(const DuLieuMon& mon, bool themMoi) {
         if (mon.sizeLy != "S" && mon.sizeLy != "M" && mon.sizeLy != "L") throw runtime_error("Size phải là S, M hoặc L.");
         moi = make_unique<NuocUong>(maLuu, mon.ten, mon.gia, mon.tonKho, mon.sizeLy, mon.coDa);
     } else throw runtime_error("Loại món không hợp lệ.");
-    moi->setHinhAnh(mon.hinhAnh);
+    moi->setHinhAnh(luuAnhVaoThuMucDuLieu(mon.hinhAnh));
     bool timThay = false;
     for (unique_ptr<Mon>& cu : duLieu.dsMon) {
         if (cu->getMa() == maLuu) {
@@ -530,7 +553,7 @@ void DichVuNhaHang::docDuLieuSql() {
             m = make_unique<NuocUong>(c[1], c[2], soThuc(c[3]), soNguyen(c[4]), c[5].empty() ? "M" : c[5], soNguyen(c[6]));
         else
             m = make_unique<MonAn>(c[1], c[2], soThuc(c[3]), soNguyen(c[4]), soNguyen(c[5]), soNguyen(c[6]));
-        if (c.size() >= 8) m->setHinhAnh(c[7]);
+        if (c.size() >= 8) m->setHinhAnh(luuAnhVaoThuMucDuLieu(c[7]));
         duLieu.dsMon.push_back(move(m));
     }
     for (const auto& c : Sql::doc(Sql::KhachHang)) {

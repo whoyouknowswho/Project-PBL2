@@ -122,6 +122,11 @@ void KhoAnh::veAnhMon(HDC dc, const string& ma, const string& loai, const string
     string khoa = ma + "|" + hinhAnh;
     if (!rieng.count(khoa)) {
         Gdiplus::Bitmap* bmp = !hinhAnh.empty() ? taiTuTep(rong(hinhAnh)) : nullptr;
+        if (!bmp && !hinhAnh.empty()) {
+            wstring w = rong(hinhAnh);
+            size_t p = w.find_last_of(L"\\/");
+            if (p != wstring::npos) bmp = taiTuTep(L"DuLieu/AnhMon/" + w.substr(p + 1));
+        }
         if (!bmp && maAnhHopLe(ma)) bmp = taiTuTep(L"DuLieu/AnhMon/" + rong(ma) + L".png");
         rieng[khoa] = bmp;
     }

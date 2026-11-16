@@ -1,5 +1,5 @@
 // Tai nguyen Windows: bat giao dien Common Controls 6 cho bang va nut chon.
 1 24 "UngDung.manifest"
-101 10 "Anh/logo_bach_khoa.png"
-102 10 "Anh/logo_cntt.png"
-103 10 "Anh/anh_mon_an.png"
+101 10 "../DuLieu/AnhMon/logo_bach_khoa.png"
+102 10 "../DuLieu/AnhMon/logo_cntt.png"
+103 10 "../DuLieu/AnhMon/anh_mon_an.png"

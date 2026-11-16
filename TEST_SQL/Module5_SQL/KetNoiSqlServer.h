@@ -3,12 +3,14 @@
 #include <utility>
 #include <vector>
 
+using namespace std;
+
 namespace Sql {
 enum Bang { ThucDon, KhachHang, NhanVien, HoaDon, DonDat, TaiKhoan };
 
-using Dong = std::vector<std::string>;
-using CacDong = std::vector<Dong>;
+using Dong = vector<string>;
+using CacDong = vector<Dong>;
 
 CacDong doc(Bang bang);
-void luu(const std::vector<std::pair<Bang, CacDong>>& thayDoi);
+void luu(const vector<pair<Bang, CacDong>>& thayDoi);
 }
