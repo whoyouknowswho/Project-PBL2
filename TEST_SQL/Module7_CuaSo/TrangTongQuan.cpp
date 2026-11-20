@@ -91,17 +91,17 @@ void CuaSoNhaHang::veThongKeTongQuan(HDC dc) {
         const KhachHang& k = dichVu.hoSoCuaToi();
         RECT chao = {x, y, phai, y + CAO_CHAO};
         int luu = SaveDC(dc);
-        veHinhBoGoc(dc, chao, 16, Mau::THANH_BEN);
+        veHinhBoGoc(dc, chao, 16, Mau::NEN_TOI);
         HRGN vung = CreateRoundRectRgn(chao.left, chao.top, chao.right + 1, chao.bottom + 1, 32, 32);
         SelectClipRgn(dc, vung);
-        veChuyenSac(dc, chao, Mau::THANH_BEN, RGB(150,62,26), true);
+        veChuyenSac(dc, chao, Mau::NEN_TOI, Mau::CHINH_NHAN, true);
         veVongTron(dc, chao.right - 60, chao.top + 10, 90, Mau::CHINH, 60);
         veVongTron(dc, chao.right - 190, chao.bottom + 10, 50, RGB(255,255,255), 18);
         RestoreDC(dc, luu);
         DeleteObject(vung);
-        veChu(dc, L"Xin chào, " + rong(k.getTen()) + L"!", {x + 28, y + 18, phai - 220, y + 52}, font.tieuDe, RGB(255,255,255));
+        veChu(dc, L"Xin chào, " + rong(k.getTen()) + L"!", {x + 28, y + 18, phai - 220, y + 52}, font.tieuDe, Mau::CHU_TREN_TOI);
         veChu(dc, L"Cùng khám phá thực đơn hôm nay và tích điểm để nhận thêm ưu đãi thành viên.",
-              {x + 28, y + 56, phai - 220, y + 80}, font.thuong, RGB(240,222,208));
+              {x + 28, y + 56, phai - 220, y + 80}, font.thuong, Mau::CHU_TREN_TOI_MO);
         y += CAO_CHAO + 16;
         ten = {L"ĐIỂM TÍCH LŨY", L"HẠNG THÀNH VIÊN", L"ƯU ĐÃI HIỆN TẠI", L"HÓA ĐƠN CỦA BẠN"};
         giaTri = {so(k.getDiemTichLuy()), tenHangVip(k.getHangVip()), so(k.getPhanTramGiam()) + L"%",
@@ -262,10 +262,10 @@ void CuaSoNhaHang::veBieuDoDoanhThu(HDC dc) {
         int x = max(static_cast<int>(the.left) + 14, min(static_cast<int>(p.x) - 100, static_cast<int>(the.right) - 224));
         int y = max(static_cast<int>(k.truc.top) - 8, static_cast<int>(p.y) - 80);
         RECT hop = {x, y, x + 210, y + 62};
-        veHinhBoGoc(dc, hop, 12, Mau::THANH_BEN);
+        veHinhBoGoc(dc, hop, 12, Mau::NEN_TOI);
         veChu(dc, L"Tháng " + to_wstring(thangDangXem + 1) + L"/" + to_wstring(namBieuDo), {x + 14, y + 6, x + 200, y + 28},
-              font.nho, Mau::CHU_THANH_BEN);
-        veChu(dc, tien(doanhThuNam.cacThang[thangDangXem]), {x + 14, y + 28, x + 200, y + 56}, font.dam, RGB(255,255,255));
+              font.nho, Mau::CHU_TREN_TOI_MO);
+        veChu(dc, tien(doanhThuNam.cacThang[thangDangXem]), {x + 14, y + 28, x + 200, y + 56}, font.dam, Mau::CHU_TREN_TOI);
     }
     wstring ghiChu = to_wstring(doanhThuNam.soHoaDon) + L" hóa đơn đã thanh toán trong năm";
     if (doanhThuNam.soHoaDonBoQua > 0)

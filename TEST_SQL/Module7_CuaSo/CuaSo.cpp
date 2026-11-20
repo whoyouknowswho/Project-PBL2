@@ -176,25 +176,27 @@ void CuaSoNhaHang::hienTrang(int trangMoi, bool giuNhap) {
 void CuaSoNhaHang::veThanhBen(HDC dc) {
     RECT ben = {0, 0, BoCuc::THANH_BEN, caoCuaSo};
     toNen(dc, ben, Mau::THANH_BEN);
+    RECT mepPhai = {BoCuc::THANH_BEN - 1, 0, BoCuc::THANH_BEN, caoCuaSo};
+    toNen(dc, mepPhai, Mau::VIEN);
     veVongTron(dc, 44, 50, 22, Mau::CHINH);
     RECT oIcon = {22, 28, 66, 72};
     veIcon(dc, Icon::NHA_HANG, oIcon, font.iconLon, RGB(255,255,255));
-    veChu(dc, L"NHÀ HÀNG", {78, 28, 236, 50}, font.dam, RGB(255,255,255));
+    veChu(dc, L"NHÀ HÀNG", {78, 28, 236, 50}, font.dam, Mau::CHU);
     veChu(dc, dichVu.laKhachHang() ? L"Không gian khách hàng" : L"Không gian làm việc",
-          {78, 50, 236, 72}, font.nho, Mau::CHU_THANH_BEN);
+          {78, 50, 236, 72}, font.nho, Mau::CHU_MO);
     RECT ke = {20, 94, BoCuc::THANH_BEN - 20, 95};
-    toNen(dc, ke, Mau::THANH_BEN_RE);
+    toNen(dc, ke, Mau::VIEN);
 
     RECT the = {16, caoCuaSo - 140, BoCuc::THANH_BEN - 16, caoCuaSo - 80};
-    veHinhBoGoc(dc, the, 12, Mau::THANH_BEN_RE);
+    veHinhBoGoc(dc, the, 12, Mau::THE, Mau::VIEN);
     wstring ten = rong(dichVu.phien().tenDangNhap);
     wstring chuDau = ten.empty() ? L"?" : ten.substr(0, 1);
     CharUpperBuffW(&chuDau[0], 1);
     veVongTron(dc, 48, the.top + 30, 18, Mau::CHINH);
     veChu(dc, chuDau, {30, the.top + 12, 66, the.top + 48}, font.dam, RGB(255,255,255), DT_CENTER);
-    veChu(dc, ten, {76, the.top + 9, the.right - 10, the.top + 31}, font.nut, RGB(255,255,255));
+    veChu(dc, ten, {76, the.top + 9, the.right - 10, the.top + 31}, font.nut, Mau::CHU);
     wstring vaiTro = dichVu.laQuanLy() ? L"Quản lý" : dichVu.laKhachHang() ? L"Khách hàng" : L"Nhân viên";
-    veChu(dc, vaiTro, {76, the.top + 31, the.right - 10, the.top + 51}, font.nho, Mau::CHU_THANH_BEN);
+    veChu(dc, vaiTro, {76, the.top + 31, the.right - 10, the.top + 51}, font.nho, Mau::CHU_MO);
 }
 
 void CuaSoNhaHang::veDauTrang(HDC dc) {

@@ -3,11 +3,6 @@
 
 using namespace std;
 
-namespace {
-const COLORREF NAU_DO = RGB(122,52,24);
-const COLORREF CHU_SANG = RGB(240,222,208);
-}
-
 void CuaSoNhaHang::trangDangNhap() {
     int nua = rongCuaSo / 2;
     int w = min(440, nua - 128);
@@ -61,10 +56,10 @@ void CuaSoNhaHang::veManDangNhap(HDC dc) {
     RECT trai = {0, 0, nua, caoCuaSo};
     int luu = SaveDC(dc);
     IntersectClipRect(dc, 0, 0, nua, caoCuaSo);
-    veChuyenSac(dc, trai, Mau::THANH_BEN, NAU_DO);
+    veChuyenSac(dc, trai, Mau::NEN_TOI, Mau::CHINH_NHAN);
     veVongTron(dc, nua - 30, 70, 180, Mau::CHINH, 40);
     veVongTron(dc, 30, caoCuaSo - 40, 140, RGB(255,255,255), 12);
-    veVongTron(dc, nua - 110, caoCuaSo - 150, 56, RGB(255,196,150), 26);
+    veVongTron(dc, nua - 110, caoCuaSo - 150, 56, Mau::CHINH, 26);
 
     int rongThe = min(nua - 96, 520);
     int x = (nua - rongThe) / 2;
@@ -72,8 +67,8 @@ void CuaSoNhaHang::veManDangNhap(HDC dc) {
     // Thuong hieu.
     veVongTron(dc, x + 22, tren + 22, 22, Mau::CHINH);
     veIcon(dc, Icon::NHA_HANG, {x, tren, x + 44, tren + 44}, font.iconLon, RGB(255,255,255));
-    veChu(dc, L"NHÀ HÀNG", {x + 56, tren + 1, x + rongThe, tren + 23}, font.dam, RGB(255,255,255));
-    veChu(dc, L"Quản lý & bán hàng", {x + 56, tren + 23, x + rongThe, tren + 43}, font.nho, CHU_SANG);
+    veChu(dc, L"NHÀ HÀNG", {x + 56, tren + 1, x + rongThe, tren + 23}, font.dam, Mau::CHU_TREN_TOI);
+    veChu(dc, L"Quản lý & bán hàng", {x + 56, tren + 23, x + rongThe, tren + 43}, font.nho, Mau::CHU_TREN_TOI_MO);
 
     // The logo truong va khoa.
     int dinh = tren + 76;
@@ -92,10 +87,10 @@ void CuaSoNhaHang::veManDangNhap(HDC dc) {
     // Tieu de he thong.
     int yChu = the.bottom + 36;
     veChu(dc, L"Hệ thống quản lý nhà hàng", {x - 20, yChu, x + rongThe + 20, yChu + 40}, font.tieuDe,
-          RGB(255,255,255), DT_CENTER);
+          Mau::CHU_TREN_TOI, DT_CENTER);
     RECT vach = {nua / 2 - 28, yChu + 52, nua / 2 + 28, yChu + 56};
     veHinhBoGoc(dc, vach, 2, Mau::CHINH);
     veChu(dc, L"Khách hàng, thực đơn, bán hàng và báo cáo — gọn gàng trong một nơi.",
-          {x - 20, yChu + 68, x + rongThe + 20, yChu + 112}, font.thuong, CHU_SANG, DT_CENTER | DT_WORDBREAK);
+          {x - 20, yChu + 68, x + rongThe + 20, yChu + 112}, font.thuong, Mau::CHU_TREN_TOI_MO, DT_CENTER | DT_WORDBREAK);
     RestoreDC(dc, luu);
 }

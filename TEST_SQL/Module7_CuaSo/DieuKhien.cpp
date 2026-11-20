@@ -520,11 +520,17 @@ void CuaSoNhaHang::veNut(const DRAWITEMSTRUCT* ve) {
     wchar_t icon = iconNut.count(h) ? iconNut[h] : 0;
     if (kieu == KieuNut::ThanhBen) {
         bool dangO = id == trangHienTai;
-        COLORREF nen = dangO ? Mau::CHINH : (re || nhan) ? Mau::THANH_BEN_RE : Mau::THANH_BEN;
-        COLORREF mau = (dangO || re) ? RGB(255,255,255) : Mau::CHU_THANH_BEN;
-        if (nen != Mau::THANH_BEN) veHinhBoGoc(dc, r, 10, nen);
+        // Muc dang chon: nen trang vien manh + vach nhan ben trai; re chuot: nen dam hon thanh ben mot bac.
+        COLORREF mau = (dangO || re) ? Mau::CHU : Mau::CHU_THANH_BEN;
+        if (dangO) {
+            veHinhBoGoc(dc, r, 10, Mau::THE, Mau::VIEN);
+            RECT vach = {r.left + 1, r.top + 8, r.left + 4, r.bottom - 8};
+            veHinhBoGoc(dc, vach, 1, Mau::CHINH);
+        } else if (re || nhan) {
+            veHinhBoGoc(dc, r, 10, Mau::THANH_BEN_RE);
+        }
         RECT oIcon = {r.left + 12, r.top, r.left + 40, r.bottom};
-        veIcon(dc, icon, oIcon, font.icon, mau);
+        veIcon(dc, icon, oIcon, font.icon, dangO ? Mau::CHINH : mau);
         RECT chuR = {r.left + 50, r.top, r.right - 10, r.bottom};
         veChu(dc, noiDung, chuR, dangO ? font.nut : font.thuong, mau);
         return;
