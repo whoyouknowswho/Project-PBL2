@@ -2,3 +2,7 @@
 *.exe
 # File tam cua Word/Excel
 ~$*
+
+# Anh chup kiem tra giao dien (tao lai bang TEST_SQL/KiemTra/chup_giao_dien.ps1)
+TEST_SQL/KiemTra/truoc*/
+TEST_SQL/KiemTra/sau*/
