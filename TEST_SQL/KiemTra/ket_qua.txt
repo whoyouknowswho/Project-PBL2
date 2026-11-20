@@ -1,2 +1,4 @@
 Thoi gian ve 60 lan cuon luoi mon (trung binh 3 lan, trang Thuc don, cua so mac dinh)
 truoc: 2341 ms
+sau Task 2-4 (bo 2 lop bong): 1952 ms
+sau bo dem anh thu nho + chi ve the trong vung can ve: 901 ms

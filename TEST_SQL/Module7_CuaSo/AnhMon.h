@@ -18,6 +18,11 @@ class KhoAnh {
     Gdiplus::Bitmap* cntt = nullptr;
     Gdiplus::Bitmap* minhHoa = nullptr;
     map<string, Gdiplus::Bitmap*> rieng; // nullptr: da thu nap va khong dung duoc
+    // Anh da thu nho + bo goc san theo dung kich thuoc o the, de cuon/re chuot khong phai noi suy lai.
+    // Moi mon chi giu mot ban; kich thuoc doi thi tao lai.
+    struct AnhThuNho { int rong = 0, cao = 0, banKinh = 0; Gdiplus::Bitmap* bmp = nullptr; };
+    map<string, AnhThuNho> demThuNho;
+    void xoaDemThuNho();
 
 public:
     KhoAnh() = default;

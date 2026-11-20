@@ -55,13 +55,12 @@ Gdiplus::Bitmap* taiTuTep(const wstring& duongDan) {
     return banSao(goc);
 }
 
-void veCat(HDC dc, Gdiplus::Bitmap* anh, Gdiplus::RectF nguon, RECT dich, int banKinh) {
+void veCat(Gdiplus::Graphics& g, Gdiplus::Bitmap* anh, Gdiplus::RectF nguon, RECT dich, int banKinh) {
     if (!anh || nguon.Width <= 0 || nguon.Height <= 0 || dich.right <= dich.left || dich.bottom <= dich.top) return;
     float dw = static_cast<float>(dich.right - dich.left), dh = static_cast<float>(dich.bottom - dich.top);
     float tiLe = max(dw / nguon.Width, dh / nguon.Height);
     float catW = dw / tiLe, catH = dh / tiLe;
     float sx = nguon.X + (nguon.Width - catW) / 2, sy = nguon.Y + (nguon.Height - catH) / 2;
-    Gdiplus::Graphics g(dc);
     g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
     g.SetInterpolationMode(Gdiplus::InterpolationModeHighQualityBicubic);
     g.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHalf);
@@ -101,6 +100,12 @@ void KhoAnh::giaiPhong() {
 void KhoAnh::xoaDemRieng() {
     for (auto& muc : rieng) delete muc.second;
     rieng.clear();
+    xoaDemThuNho();
+}
+
+void KhoAnh::xoaDemThuNho() {
+    for (auto& muc : demThuNho) delete muc.second.bmp;
+    demThuNho.clear();
 }
 
 void KhoAnh::veLogo(HDC dc, int maTaiNguyen, RECT vung) const {
@@ -131,17 +136,37 @@ void KhoAnh::veAnhMon(HDC dc, const string& ma, const string& loai, const string
         if (!bmp && maAnhHopLe(ma)) bmp = taiTuTep(L"DuLieu/AnhMon/" + rong(ma) + L".jpg");
         rieng[khoa] = bmp;
     }
-    Gdiplus::Bitmap* anh = rieng[khoa];
-    if (anh) {
-        veCat(dc, anh, Gdiplus::RectF(0, 0, static_cast<float>(anh->GetWidth()), static_cast<float>(anh->GetHeight())),
-              vung, banKinh);
-        return;
+    int rong = vung.right - vung.left, cao = vung.bottom - vung.top;
+    if (rong <= 0 || cao <= 0) return;
+    AnhThuNho& dem = demThuNho[khoa];
+    if (!dem.bmp || dem.rong != rong || dem.cao != cao || dem.banKinh != banKinh) {
+        Gdiplus::Bitmap* anh = rieng[khoa];
+        Gdiplus::RectF nguon;
+        if (anh) {
+            nguon = Gdiplus::RectF(0, 0, static_cast<float>(anh->GetWidth()), static_cast<float>(anh->GetHeight()));
+        } else if (minhHoa) {
+            // Anh minh hoa gom 6 o: 3 cot, hang tren cao 47,4%.
+            anh = minhHoa;
+            float w = static_cast<float>(minhHoa->GetWidth()), h = static_cast<float>(minhHoa->GetHeight());
+            int viTri = oAnhMinhHoa(loai, tenMon), cot = viTri % 3;
+            float catDoc = h * 474 / 1000;
+            nguon = Gdiplus::RectF(cot * w / 3, viTri < 3 ? 0 : catDoc, w / 3, viTri < 3 ? catDoc : h - catDoc);
+        } else {
+            return;
+        }
+        Gdiplus::Bitmap* moi = new Gdiplus::Bitmap(rong, cao, PixelFormat32bppPARGB);
+        if (moi->GetLastStatus() != Gdiplus::Ok) { delete moi; return; }
+        {
+            Gdiplus::Graphics g(moi);
+            g.Clear(Gdiplus::Color(0, 0, 0, 0));
+            veCat(g, anh, nguon, {0, 0, rong, cao}, banKinh);
+        }
+        delete dem.bmp;
+        dem = {rong, cao, banKinh, moi};
     }
-    if (!minhHoa) return;
-    // Anh minh hoa gom 6 o: 3 cot, hang tren cao 47,4%.
-    float w = static_cast<float>(minhHoa->GetWidth()), h = static_cast<float>(minhHoa->GetHeight());
-    int viTri = oAnhMinhHoa(loai, tenMon), cot = viTri % 3;
-    float catDoc = h * 474 / 1000;
-    Gdiplus::RectF nguon(cot * w / 3, viTri < 3 ? 0 : catDoc, w / 3, viTri < 3 ? catDoc : h - catDoc);
-    veCat(dc, minhHoa, nguon, vung, banKinh);
+    // Ve 1:1 tu ban da thu nho san: khong noi suy, chi tron alpha o goc bo.
+    Gdiplus::Graphics g(dc);
+    g.SetCompositingQuality(Gdiplus::CompositingQualityHighSpeed);
+    g.SetInterpolationMode(Gdiplus::InterpolationModeNearestNeighbor);
+    g.DrawImage(dem.bmp, static_cast<INT>(vung.left), static_cast<INT>(vung.top), rong, cao);
 }

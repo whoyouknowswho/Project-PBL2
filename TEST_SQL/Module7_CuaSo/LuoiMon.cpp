@@ -64,6 +64,14 @@ int timThe(HWND h, const TrangThaiLuoi& tt, int x, int y) {
     return -1;
 }
 
+// Chi ve lai mot the (re chuot), noi rong 3px de gom vien re.
+void veLaiThe(HWND h, const TrangThaiLuoi& tt, int i) {
+    if (i < 0 || i >= static_cast<int>(tt.the.size())) return;
+    RECT r = vungThe(tinhBoCuc(h, tt), i, tt.cuon);
+    InflateRect(&r, 3, 3);
+    InvalidateRect(h, &r, FALSE);
+}
+
 void baoCha(HWND h, int suKien) {
     SendMessageW(GetParent(h), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(h), suKien), reinterpret_cast<LPARAM>(h));
 }
@@ -86,7 +94,8 @@ void chonThe(HWND h, TrangThaiLuoi& tt, int i) {
     baoCha(h, LBN_SELCHANGE);
 }
 
-void veLuoi(HWND h, HDC dc, TrangThaiLuoi& tt) {
+// canVe: vung can ve lai (ps.rcPaint); the nam ngoai vung nay duoc bo qua.
+void veLuoi(HWND h, HDC dc, TrangThaiLuoi& tt, RECT canVe) {
     RECT r;
     GetClientRect(h, &r);
     toNen(dc, r, Mau::NEN);
@@ -100,6 +109,9 @@ void veLuoi(HWND h, HDC dc, TrangThaiLuoi& tt) {
     for (int i = 0; i < static_cast<int>(tt.the.size()); i++) {
         RECT o = vungThe(b, i, tt.cuon);
         if (o.bottom < r.top - 8 || o.top > r.bottom + 8) continue;
+        RECT ngoai = o, giao;
+        InflateRect(&ngoai, 8, 8);
+        if (!IntersectRect(&giao, &ngoai, &canVe)) continue;
         const TheMon& t = tt.the[i];
         bool chon = i == tt.chon, re = i == tt.re;
         veThe(dc, o, 14);
@@ -146,7 +158,7 @@ LRESULT CALLBACK thuTucLuoi(HWND h, UINT msg, WPARAM w, LPARAM l) {
             HDC boNho = CreateCompatibleDC(dc);
             HBITMAP anhDem = CreateCompatibleBitmap(dc, max(1, static_cast<int>(r.right)), max(1, static_cast<int>(r.bottom)));
             HGDIOBJ cu = SelectObject(boNho, anhDem);
-            if (tt) veLuoi(h, boNho, *tt);
+            if (tt) veLuoi(h, boNho, *tt, ps.rcPaint);
             BitBlt(dc, 0, 0, r.right, r.bottom, boNho, 0, 0, SRCCOPY);
             SelectObject(boNho, cu);
             DeleteObject(anhDem);
@@ -186,15 +198,16 @@ LRESULT CALLBACK thuTucLuoi(HWND h, UINT msg, WPARAM w, LPARAM l) {
             if (tt) {
                 int i = timThe(h, *tt, static_cast<short>(LOWORD(l)), static_cast<short>(HIWORD(l)));
                 if (i != tt->re) {
+                    veLaiThe(h, *tt, tt->re);
                     tt->re = i;
-                    InvalidateRect(h, nullptr, FALSE);
+                    veLaiThe(h, *tt, i);
                     TRACKMOUSEEVENT theoDoi = {sizeof(theoDoi), TME_LEAVE, h, 0};
                     TrackMouseEvent(&theoDoi);
                 }
             }
             return 0;
         case WM_MOUSELEAVE:
-            if (tt && tt->re != -1) { tt->re = -1; InvalidateRect(h, nullptr, FALSE); }
+            if (tt && tt->re != -1) { int cu = tt->re; tt->re = -1; veLaiThe(h, *tt, cu); }
             return 0;
         case WM_SETCURSOR:
             if (tt && LOWORD(l) == HTCLIENT && tt->re >= 0) { SetCursor(LoadCursor(nullptr, IDC_HAND)); return TRUE; }
