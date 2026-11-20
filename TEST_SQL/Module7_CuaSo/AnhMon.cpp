@@ -128,6 +128,7 @@ void KhoAnh::veAnhMon(HDC dc, const string& ma, const string& loai, const string
             if (p != wstring::npos) bmp = taiTuTep(L"DuLieu/AnhMon/" + w.substr(p + 1));
         }
         if (!bmp && maAnhHopLe(ma)) bmp = taiTuTep(L"DuLieu/AnhMon/" + rong(ma) + L".png");
+        if (!bmp && maAnhHopLe(ma)) bmp = taiTuTep(L"DuLieu/AnhMon/" + rong(ma) + L".jpg");
         rieng[khoa] = bmp;
     }
     Gdiplus::Bitmap* anh = rieng[khoa];
