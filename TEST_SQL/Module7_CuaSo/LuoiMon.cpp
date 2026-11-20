@@ -4,7 +4,9 @@
 using namespace std;
 
 namespace {
-const int RONG_TOI_THIEU = 200, CAO_THE = 236, CAO_THE_TOI_THIEU = 150, KHOANG = 16, DEM = 6;
+// The rong toi thieu 260px; anh giu ti le 4:3 theo chieu rong the, phan chu ben duoi cao 108px.
+const int RONG_TOI_THIEU = 260, CAO_THE_TOI_DA = 400, CAO_THE_TOI_THIEU = 150, CAO_PHAN_CHU = 108,
+          KHOANG = 16, DEM = 6;
 
 struct TrangThaiLuoi {
     vector<TheMon> the;
@@ -14,7 +16,7 @@ struct TrangThaiLuoi {
 };
 
 struct BoCucLuoi {
-    int soCot = 1, rongThe = RONG_TOI_THIEU, caoThe = CAO_THE, tongCao = 0;
+    int soCot = 1, rongThe = RONG_TOI_THIEU, caoThe = CAO_THE_TOI_DA, tongCao = 0;
 };
 
 TrangThaiLuoi* trangThai(HWND h) { return reinterpret_cast<TrangThaiLuoi*>(GetWindowLongPtrW(h, GWLP_USERDATA)); }
@@ -26,8 +28,10 @@ BoCucLuoi tinhBoCuc(HWND h, const TrangThaiLuoi& tt) {
     int rong = max(1, static_cast<int>(r.right) - 2 * DEM);
     b.soCot = max(1, (rong + KHOANG) / (RONG_TOI_THIEU + KHOANG));
     b.rongThe = max(80, (rong - (b.soCot - 1) * KHOANG) / b.soCot);
+    // Chieu cao theo chieu rong: anh (rong - 20) x 3/4 + phan chu.
+    int caoMongMuon = min(CAO_THE_TOI_DA, (b.rongThe - 20) * 3 / 4 + CAO_PHAN_CHU);
     // Luoi thap (cua so nho): thu gon phan anh de van thay tron mot the.
-    b.caoThe = max(CAO_THE_TOI_THIEU, min(CAO_THE, static_cast<int>(r.bottom) - 2 * DEM - 2));
+    b.caoThe = max(CAO_THE_TOI_THIEU, min(caoMongMuon, static_cast<int>(r.bottom) - 2 * DEM - 2));
     int soHang = (static_cast<int>(tt.the.size()) + b.soCot - 1) / b.soCot;
     b.tongCao = soHang > 0 ? soHang * (b.caoThe + KHOANG) - KHOANG + 2 * DEM : 0;
     return b;
