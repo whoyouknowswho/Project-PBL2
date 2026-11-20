@@ -75,9 +75,11 @@ Build tạo một bản chạy chính là `QuanLyNhaHangGUI.exe`. Thư viện C+
 - **Module3_BanHang:** hóa đơn, chi tiết món, tổng tiền và giảm giá.
 - **Module4_QuanLy:** danh sách trong bộ nhớ, tìm đối tượng theo mã và đọc dữ liệu.
 - **Module6_TaiKhoan:** tài khoản, mật khẩu băm và lưu tài khoản.
-- **Module7_CuaSo:** giao diện cửa sổ (tông màu ấm, vẽ bằng GDI/GDI+). `DichVuNhaHang` nối giao diện với các lớp nghiệp vụ và kiểm tra quyền.
+- **Module7_CuaSo:** giao diện cửa sổ theo phong cách Claude, vẽ bằng GDI/GDI+: nền ngà `#FAF9F5`, chữ gần đen `#141413`, một màu nhấn đất nung `#D97757`, tiêu đề trang dùng font Georgia, thanh bên sáng `#F0EEE6`, thẻ viền mảnh thay cho bóng đổ. `DichVuNhaHang` nối giao diện với các lớp nghiệp vụ và kiểm tra quyền.
   - `CuaSo.h/.cpp`: cửa sổ chính, chuyển trang, thanh bên, đầu trang, chân trang.
   - `ChuDe`: bảng màu, font, biểu tượng và các hàm vẽ thẻ, huy hiệu; `DieuKhien.cpp`: ô nhập, nút, hộp chọn, ô đánh dấu, bảng.
+  - `LuoiMon` + `AnhMon`: lưới thẻ món; ảnh được thu nhỏ một lần theo cỡ thẻ rồi dùng lại khi cuộn, rê chuột chỉ vẽ lại thẻ bị đổi.
+- **KiemTra:** script kiểm tra giao diện: `chup_giao_dien.ps1` (chụp 12 trang), `ghep_truoc_sau.ps1` (so sánh trước/sau), `kiem_tra_thanh_ben.ps1`, `kiem_tra_dieu_khien.ps1`, `kiem_tra_toc_do_luoi.ps1` (lấy mẫu điểm ảnh, đo tốc độ cuộn), `kiem_tra_tuong_phan.cpp`, `kiem_tra_font_so.cpp`. Các script tự mở và đóng app.
   - `LuoiMon`: lưới thẻ món có ảnh; `AnhMon`: logo và ảnh món; `TienIch`: định dạng tiền, ngày, tìm kiếm.
   - Các trang: `TrangDangNhap`, `TrangTongQuan` (kèm biểu đồ doanh thu), `TrangDanhSach`, `TrangThucDon`, `TrangBanHang`, `TrangDonDat`, `TrangBaoCao`, `TrangCaNhan`; `CuaSoHoaDon` là cửa sổ xem hóa đơn.
 - **KiemThu:** kiểm thử tự động (không biên dịch vào exe). `pwsh KiemThu/ChayTatCa.ps1` chạy toàn bộ trên các database kiểm thử riêng trong SQL Server Express.

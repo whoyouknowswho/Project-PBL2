@@ -44,9 +44,10 @@ BoFont taoBoFont() {
     f.thuong = taoFont(15, FW_NORMAL);
     f.nut = taoFont(15, FW_SEMIBOLD);
     f.dam = taoFont(17, FW_SEMIBOLD);
-    // Tieu de va so lieu lon dung chu co chan (Georgia co san tren Windows).
+    // Tieu de dung chu co chan (Georgia co san tren Windows). So lieu lon giu Segoe UI:
+    // chu so cua Georgia kieu "old-style" (cao thap khac nhau) lam so tien kho doc.
     f.tieuDe = taoFont(26, FW_SEMIBOLD, L"Georgia");
-    f.so = taoFont(24, FW_SEMIBOLD, L"Georgia");
+    f.so = taoFont(24, FW_SEMIBOLD);
     f.icon = taoFont(16, FW_NORMAL, L"Segoe MDL2 Assets");
     f.iconLon = taoFont(20, FW_NORMAL, L"Segoe MDL2 Assets");
     return f;
