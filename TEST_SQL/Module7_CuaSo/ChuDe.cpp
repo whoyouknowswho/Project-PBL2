@@ -44,8 +44,9 @@ BoFont taoBoFont() {
     f.thuong = taoFont(15, FW_NORMAL);
     f.nut = taoFont(15, FW_SEMIBOLD);
     f.dam = taoFont(17, FW_SEMIBOLD);
-    f.tieuDe = taoFont(26, FW_BOLD);
-    f.so = taoFont(24, FW_BOLD);
+    // Tieu de va so lieu lon dung chu co chan (Georgia co san tren Windows).
+    f.tieuDe = taoFont(26, FW_SEMIBOLD, L"Georgia");
+    f.so = taoFont(24, FW_SEMIBOLD, L"Georgia");
     f.icon = taoFont(16, FW_NORMAL, L"Segoe MDL2 Assets");
     f.iconLon = taoFont(20, FW_NORMAL, L"Segoe MDL2 Assets");
     return f;
@@ -143,17 +144,15 @@ void veThe(HDC dc, RECT r, int banKinh) {
     {
         Gdiplus::Graphics g(dc);
         chuanBi(g);
-        // Bong do mem: vai lop mo dan, lech xuong duoi.
-        const int lop[3][3] = {{1, 2, 14}, {3, 4, 8}, {6, 7, 4}};
-        for (const auto& l : lop) {
-            Gdiplus::GraphicsPath bong;
-            duongBoGoc(bong, Gdiplus::RectF(static_cast<float>(r.left - l[0] + 1), static_cast<float>(r.top - l[0] + l[1]),
-                                            static_cast<float>(r.right - r.left + 2 * l[0] - 2),
-                                            static_cast<float>(r.bottom - r.top + 2 * l[0] - l[1])),
-                       static_cast<float>(banKinh + l[0]));
-            Gdiplus::SolidBrush co(Gdiplus::Color(static_cast<BYTE>(l[2]), 70, 40, 20));
-            g.FillPath(&co, &bong);
-        }
+        // Bong rat nhe mot lop; ranh gioi the chu yeu do vien manh tao ra.
+        const int l[3] = {1, 2, 6};
+        Gdiplus::GraphicsPath bong;
+        duongBoGoc(bong, Gdiplus::RectF(static_cast<float>(r.left - l[0] + 1), static_cast<float>(r.top - l[0] + l[1]),
+                                        static_cast<float>(r.right - r.left + 2 * l[0] - 2),
+                                        static_cast<float>(r.bottom - r.top + 2 * l[0] - l[1])),
+                   static_cast<float>(banKinh + l[0]));
+        Gdiplus::SolidBrush co(Gdiplus::Color(static_cast<BYTE>(l[2]), 20, 20, 19));
+        g.FillPath(&co, &bong);
     }
     veHinhBoGoc(dc, r, banKinh, Mau::THE, Mau::VIEN, 1.0f);
 }
