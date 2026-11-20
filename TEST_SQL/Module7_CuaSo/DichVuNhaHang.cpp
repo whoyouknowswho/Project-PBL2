@@ -37,13 +37,135 @@ void kiemTraSo(double so, const string& ten) {
     }
 }
 
+void kiemTraKhoang(double so, double nhoNhat, double lonNhat, const string& ten, const string& khoang) {
+    if (!isfinite(so) || so < nhoNhat || so > lonNhat)
+        throw runtime_error(ten + " phải nằm trong khoảng " + khoang + ".");
+}
+
+string catKhoang(const string& s) {
+    size_t dau = s.find_first_not_of(" \t");
+    if (dau == string::npos) return "";
+    size_t cuoi = s.find_last_not_of(" \t");
+    return s.substr(dau, cuoi - dau + 1);
+}
+
+// So ky tu Unicode cua chuoi UTF-8 (khong dem cac byte noi tiep 10xxxxxx).
+size_t soKyTu(const string& s) {
+    size_t dem = 0;
+    for (unsigned char c : s) if ((c & 0xC0) != 0x80) dem++;
+    return dem;
+}
+
+string chuThuongAscii(string s) {
+    for (char& c : s) c = static_cast<char>(tolower(static_cast<unsigned char>(c)));
+    return s;
+}
+
+// So dien thoai Viet Nam: dung 10 chu so, bat dau bang 0.
 bool dienThoaiHopLe(const string& dienThoai) {
-    return dienThoai.size() >= 9 && dienThoai.size() <= 15 &&
+    return dienThoai.size() == 10 && dienThoai[0] == '0' &&
         all_of(dienThoai.begin(), dienThoai.end(), [](unsigned char c) { return c >= '0' && c <= '9'; });
 }
 
+// Email dang ten@mien.duoi: mot ky tu @, phan ten gom chu/so . _ % + -,
+// ten mien co it nhat mot dau cham, duoi tu 2 chu cai.
 bool emailHopLe(const string& email) {
-    return email.find('@') != string::npos;
+    if (email.size() < 6 || email.size() > 100) return false;
+    size_t a = email.find('@');
+    if (a == string::npos || a == 0 || email.find('@', a + 1) != string::npos) return false;
+    string ten = email.substr(0, a), mien = email.substr(a + 1);
+    if (ten.front() == '.' || ten.back() == '.' || ten.find("..") != string::npos) return false;
+    for (unsigned char c : ten) {
+        if (!isalnum(c) && c != '.' && c != '_' && c != '%' && c != '+' && c != '-') return false;
+    }
+    size_t cham = mien.rfind('.');
+    if (cham == string::npos || cham == 0 || mien.size() - cham - 1 < 2) return false;
+    if (mien.front() == '-' || mien.find("..") != string::npos || mien.find(".-") != string::npos ||
+        mien.find("-.") != string::npos) return false;
+    for (unsigned char c : mien) {
+        if (!isalnum(c) && c != '.' && c != '-') return false;
+    }
+    for (size_t i = cham + 1; i < mien.size(); i++) {
+        if (!isalpha(static_cast<unsigned char>(mien[i]))) return false;
+    }
+    return true;
+}
+
+// Ho ten: 2-50 ky tu, chi gom chu cai (co dau) va khoang trang.
+void kiemTraHoTen(const string& hoTen, const string& ten = "Họ và tên") {
+    kiemTraChuoi(hoTen, ten);
+    size_t n = soKyTu(hoTen);
+    if (n < 2 || n > 50) throw runtime_error(ten + " cần từ 2 đến 50 ký tự.");
+    for (unsigned char c : hoTen) {
+        if (c < 0x80 && !isalpha(c) && c != ' ')
+            throw runtime_error(ten + " chỉ gồm chữ cái và khoảng trắng (không chứa số hay ký hiệu).");
+    }
+    if (hoTen.find("  ") != string::npos) throw runtime_error(ten + " không có hai khoảng trắng liền nhau.");
+}
+
+void kiemTraGioiTinh(const string& gioiTinh) {
+    if (gioiTinh != "Nam" && gioiTinh != "Nữ" && gioiTinh != "Nu" && gioiTinh != "Khác")
+        throw runtime_error("Hãy chọn giới tính hợp lệ (Nam, Nữ hoặc Khác).");
+}
+
+void kiemTraChucVu(const string& chucVu) {
+    kiemTraChuoi(chucVu, "Chức vụ");
+    size_t n = soKyTu(chucVu);
+    if (n < 2 || n > 50) throw runtime_error("Chức vụ cần từ 2 đến 50 ký tự.");
+    for (unsigned char c : chucVu) {
+        if (c >= '0' && c <= '9') throw runtime_error("Chức vụ không được chứa chữ số.");
+    }
+}
+
+void kiemTraLuong(double luong, double phuCap) {
+    kiemTraKhoang(luong, 1000000, 100000000, "Lương cơ bản", "1.000.000 đến 100.000.000 đ");
+    kiemTraKhoang(phuCap, 0, 20000000, "Phụ cấp", "0 đến 20.000.000 đ");
+}
+
+// So sanh ngay dd/mm/yyyy theo thu tu yyyymmdd.
+long long khoaNgay(const string& ngay) {
+    return stoll(ngay.substr(6)) * 10000 + stoll(ngay.substr(3, 2)) * 100 + stoll(ngay.substr(0, 2));
+}
+
+// Kiem tra day du ho so khach hang; boQuaMa la ma cua chinh ho so dang sua.
+KhachHang chuanHoaKhach(const KhachHang& k, const vector<KhachHang>& ds, const string& boQuaMa,
+                        bool kiemTraDinhDangSdt) {
+    KhachHang sach(k.getMa(), catKhoang(k.getTen()), catKhoang(k.getSoDienThoai()), k.getGioiTinh(),
+                   k.getDiemTichLuy(), catKhoang(k.getEmail()));
+    kiemTraHoTen(sach.getTen());
+    kiemTraChuoi(sach.getSoDienThoai(), "Điện thoại");
+    if (kiemTraDinhDangSdt && !dienThoaiHopLe(sach.getSoDienThoai()))
+        throw runtime_error("Số điện thoại phải gồm đúng 10 chữ số và bắt đầu bằng 0.");
+    if (sach.getEmail().empty()) throw runtime_error("Email không được để trống.");
+    if (!emailHopLe(sach.getEmail())) throw runtime_error("Email không hợp lệ (ví dụ đúng: ten@gmail.com).");
+    kiemTraGioiTinh(sach.getGioiTinh());
+    kiemTraSo(sach.getDiemTichLuy(), "Điểm tích lũy");
+    for (const KhachHang& khac : ds) {
+        if (khac.getMa() == boQuaMa) continue;
+        if (khac.getSoDienThoai() == sach.getSoDienThoai())
+            throw runtime_error("Số điện thoại đã được khách hàng " + khac.getMa() + " sử dụng.");
+        if (chuThuongAscii(khac.getEmail()) == chuThuongAscii(sach.getEmail()))
+            throw runtime_error("Email đã được khách hàng " + khac.getMa() + " sử dụng.");
+    }
+    return sach;
+}
+
+NhanVien chuanHoaNhanVien(const NhanVien& n, const vector<NhanVien>& ds, const string& boQuaMa,
+                          bool kiemTraDinhDangSdt) {
+    NhanVien sach(n.getMa(), catKhoang(n.getTen()), catKhoang(n.getSoDienThoai()), n.getGioiTinh(),
+                  catKhoang(n.getChucVu()), n.getLuongCoBan(), n.getPhuCap());
+    kiemTraHoTen(sach.getTen());
+    kiemTraChuoi(sach.getSoDienThoai(), "Điện thoại");
+    if (kiemTraDinhDangSdt && !dienThoaiHopLe(sach.getSoDienThoai()))
+        throw runtime_error("Số điện thoại phải gồm đúng 10 chữ số và bắt đầu bằng 0.");
+    kiemTraGioiTinh(sach.getGioiTinh());
+    kiemTraChucVu(sach.getChucVu());
+    kiemTraLuong(sach.getLuongCoBan(), sach.getPhuCap());
+    for (const NhanVien& khac : ds) {
+        if (khac.getMa() != boQuaMa && khac.getSoDienThoai() == sach.getSoDienThoai())
+            throw runtime_error("Số điện thoại đã được nhân viên " + khac.getMa() + " sử dụng.");
+    }
+    return sach;
 }
 
 bool ngayHopLe(const string& ngay) {
@@ -91,7 +213,10 @@ bool DichVuNhaHang::khoiTao() {
     return canThietLap;
 }
 
-bool DichVuNhaHang::ngayDatHopLe(const string& ngay) const { return ngayHopLe(ngay); }
+// Ngay lap hoa don / dat mon phai ton tai tren lich va khong sau hom nay.
+bool DichVuNhaHang::ngayDatHopLe(const string& ngay) const {
+    return ngayHopLe(ngay) && khoaNgay(ngay) <= khoaNgay(homNay());
+}
 
 bool DichVuNhaHang::daDangNhap() const { return !duLieu.taiKhoanHienTai.tenDangNhap.empty(); }
 bool DichVuNhaHang::laQuanLy() const { return daDangNhap() && phien().vaiTro == "QUANLY"; }
@@ -153,6 +278,7 @@ void DichVuNhaHang::doiMatKhau(const string& cu, const string& moi, const string
     yeuCauDangNhap();
     if (!duLieu.quanLyTaiKhoan.kiemTraMatKhau(phien().tenDangNhap, cu)) throw runtime_error("Mật khẩu hiện tại chưa đúng.");
     if (moi != xacNhan) throw runtime_error("Hai mật khẩu mới không trùng nhau.");
+    if (moi == cu) throw runtime_error("Mật khẩu mới phải khác mật khẩu hiện tại.");
     duLieu.quanLyTaiKhoan.doiMatKhau(phien().tenDangNhap, moi);
 }
 
@@ -185,36 +311,26 @@ void DichVuNhaHang::luuThayDoi(bool kemTaiKhoan) {
 void DichVuNhaHang::luuKhachHang(const KhachHang& khach, bool themMoi) {
     yeuCauNhanSu();
     kiemTraChuoi(khach.getMa(), "Mã khách hàng", true);
-    kiemTraChuoi(khach.getTen(), "Họ tên");
     KhachHang* cu = duLieu.timKhach(khach.getMa());
-    kiemTraChuoi(khach.getSoDienThoai(), "Điện thoại");
-    if ((themMoi || !cu || cu->getSoDienThoai() != khach.getSoDienThoai()) &&
-        !dienThoaiHopLe(khach.getSoDienThoai())) throw runtime_error("Điện thoại cần có từ 9 đến 15 chữ số.");
-    if (!khach.getEmail().empty() && !emailHopLe(khach.getEmail())) throw runtime_error("Email cần có ký tự @.");
-    kiemTraChuoi(khach.getGioiTinh(), "Giới tính");
-    kiemTraSo(khach.getDiemTichLuy(), "Điểm tích lũy");
     if (themMoi && cu != nullptr) throw runtime_error("Mã khách hàng đã tồn tại.");
     if (!themMoi && cu == nullptr) throw runtime_error("Không tìm thấy khách hàng cần sửa.");
-    if (cu) *cu = khach;
-    else duLieu.dsKhachHang.push_back(khach);
+    // So dien thoai cu (du lieu truoc day) duoc giu nguyen neu nguoi dung khong sua.
+    bool doiSdt = !cu || cu->getSoDienThoai() != catKhoang(khach.getSoDienThoai());
+    KhachHang sach = chuanHoaKhach(khach, duLieu.dsKhachHang, khach.getMa(), doiSdt);
+    if (cu) *cu = sach;
+    else duLieu.dsKhachHang.push_back(sach);
     luuThayDoi();
 }
 void DichVuNhaHang::luuNhanVien(const NhanVien& nv, bool themMoi) {
     yeuCauQuanLy();
     kiemTraChuoi(nv.getMa(), "Mã nhân viên", true);
-    kiemTraChuoi(nv.getTen(), "Họ tên");
     NhanVien* cu = duLieu.timNhanVien(nv.getMa());
-    kiemTraChuoi(nv.getSoDienThoai(), "Điện thoại");
-    if ((themMoi || !cu || cu->getSoDienThoai() != nv.getSoDienThoai()) &&
-        !dienThoaiHopLe(nv.getSoDienThoai())) throw runtime_error("Điện thoại cần có từ 9 đến 15 chữ số.");
-    kiemTraChuoi(nv.getGioiTinh(), "Giới tính");
-    kiemTraChuoi(nv.getChucVu(), "Chức vụ");
-    kiemTraSo(nv.getLuongCoBan(), "Lương");
-    kiemTraSo(nv.getPhuCap(), "Phụ cấp");
     if (themMoi && cu) throw runtime_error("Mã nhân viên đã tồn tại.");
     if (!themMoi && !cu) throw runtime_error("Không tìm thấy nhân viên cần sửa.");
-    if (cu) *cu = nv;
-    else duLieu.dsNhanVien.push_back(nv);
+    bool doiSdt = !cu || cu->getSoDienThoai() != catKhoang(nv.getSoDienThoai());
+    NhanVien sach = chuanHoaNhanVien(nv, duLieu.dsNhanVien, nv.getMa(), doiSdt);
+    if (cu) *cu = sach;
+    else duLieu.dsNhanVien.push_back(sach);
     luuThayDoi();
 }
 string DichVuNhaHang::maMonMoi(const string& loai) const {
@@ -235,19 +351,28 @@ string DichVuNhaHang::maMonMoi(const string& loai) const {
 string DichVuNhaHang::luuMon(const DuLieuMon& mon, bool themMoi) {
     yeuCauQuanLy();
     string maLuu = themMoi ? maMonMoi(mon.loai) : mon.ma;
+    string tenMon = catKhoang(mon.ten);
     kiemTraChuoi(maLuu, "Mã món", true);
-    kiemTraChuoi(mon.ten, "Tên món");
-    kiemTraSo(mon.gia, "Giá");
-    kiemTraSo(mon.tonKho, "Tồn kho");
+    kiemTraChuoi(tenMon, "Tên món");
+    if (soKyTu(tenMon) < 2 || soKyTu(tenMon) > 100) throw runtime_error("Tên món cần từ 2 đến 100 ký tự.");
+    kiemTraKhoang(mon.gia, 1000, 10000000, "Giá", "1.000 đến 10.000.000 đ");
+    if (floor(mon.gia) != mon.gia) throw runtime_error("Giá phải là số nguyên (đơn vị đồng).");
+    kiemTraKhoang(mon.tonKho, 0, 100000, "Tồn kho", "0 đến 100.000");
     if (mon.hinhAnh.size() > 500) throw runtime_error("Đường dẫn hình ảnh quá dài (tối đa 500 ký tự).");
+    if (mon.loai != "Mon an" && mon.loai != "Nuoc uong") throw runtime_error("Loại món không hợp lệ.");
+    for (const auto& khac : duLieu.dsMon) {
+        if (khac->getMa() != maLuu && khac->getLoai() == mon.loai &&
+            chuThuongAscii(catKhoang(khac->getTen())) == chuThuongAscii(tenMon))
+            throw runtime_error("Tên món đã có trong thực đơn (" + khac->getMa() + ").");
+    }
     unique_ptr<Mon> moi;
     if (mon.loai == "Mon an") {
         if (mon.doCay < 0 || mon.doCay > 5) throw runtime_error("Độ cay phải từ 0 đến 5.");
-        moi = make_unique<MonAn>(maLuu, mon.ten, mon.gia, mon.tonKho, mon.doCay, mon.monChay);
-    } else if (mon.loai == "Nuoc uong") {
+        moi = make_unique<MonAn>(maLuu, tenMon, mon.gia, mon.tonKho, mon.doCay, mon.monChay);
+    } else {
         if (mon.sizeLy != "S" && mon.sizeLy != "M" && mon.sizeLy != "L") throw runtime_error("Size phải là S, M hoặc L.");
-        moi = make_unique<NuocUong>(maLuu, mon.ten, mon.gia, mon.tonKho, mon.sizeLy, mon.coDa);
-    } else throw runtime_error("Loại món không hợp lệ.");
+        moi = make_unique<NuocUong>(maLuu, tenMon, mon.gia, mon.tonKho, mon.sizeLy, mon.coDa);
+    }
     moi->setHinhAnh(luuAnhVaoThuMucDuLieu(mon.hinhAnh));
     bool timThay = false;
     for (unique_ptr<Mon>& cu : duLieu.dsMon) {
@@ -307,7 +432,8 @@ void DichVuNhaHang::nhapKho(const string& ma, int soLuong) {
     yeuCauQuanLy();
     Mon* mon = duLieu.timMon(ma);
     if (!mon) throw runtime_error("Chọn món cần nhập kho.");
-    if (soLuong < 1 || soLuong > 1000000000 - mon->getTonKho()) throw runtime_error("Số lượng nhập kho không hợp lệ.");
+    if (soLuong < 1 || soLuong > 100000 - mon->getTonKho())
+        throw runtime_error("Số lượng nhập phải từ 1 và tổng tồn kho sau khi nhập không vượt 100.000.");
     mon->congTonKho(soLuong);
     luuThayDoi();
 }
@@ -317,6 +443,7 @@ HoaDon DichVuNhaHang::xemTruocHoaDon(const string& ma, const string& ngay, const
     yeuCauNhanVien();
     kiemTraChuoi(ma, "Mã hóa đơn", true);
     if (!ngayHopLe(ngay)) throw runtime_error("Ngày phải có dạng dd/mm/yyyy và tồn tại trên lịch.");
+    if (!ngayDatHopLe(ngay)) throw runtime_error("Ngày lập hóa đơn không được sau hôm nay.");
     for (const HoaDon& hd : duLieu.dsHoaDon) {
         if (hd.getMa() == ma) throw runtime_error("Mã hóa đơn đã tồn tại.");
     }
@@ -458,12 +585,6 @@ string DichVuNhaHang::taoTaiKhoanNhanVien(const string& tenDangNhap, const strin
     yeuCauQuanLy();
     if (matKhau != xacNhan) throw runtime_error("Hai mật khẩu không trùng nhau.");
     if (tenDangNhap == "0") throw runtime_error("Tên đăng nhập không được là 0.");
-    kiemTraChuoi(hoTen, "Họ và tên");
-    if (!dienThoaiHopLe(dienThoai)) throw runtime_error("Số điện thoại cần có từ 9 đến 15 chữ số.");
-    kiemTraChuoi(gioiTinh, "Giới tính");
-    kiemTraChuoi(chucVu, "Chức vụ");
-    kiemTraSo(luong, "Lương");
-    kiemTraSo(phuCap, "Phụ cấp");
 
     string maMoi;
     for (int i = 1; i < 1000000; i++) {
@@ -472,11 +593,13 @@ string DichVuNhaHang::taoTaiKhoanNhanVien(const string& tenDangNhap, const strin
         string ungVien = ma.str();
         if (duLieu.timNhanVien(ungVien) == nullptr) { maMoi = ungVien; break; }
     }
+    NhanVien hoSo = chuanHoaNhanVien(NhanVien(maMoi, hoTen, dienThoai, gioiTinh, chucVu, luong, phuCap),
+                                     duLieu.dsNhanVien, maMoi, true);
     TaiKhoan taiKhoan = duLieu.quanLyTaiKhoan.chuanBi(tenDangNhap, matKhau, "NHANVIEN", maMoi);
     vector<NhanVien> nvCu = duLieu.dsNhanVien;
     vector<TaiKhoan> taiKhoanCu = duLieu.quanLyTaiKhoan.danhSach;
     try {
-        duLieu.dsNhanVien.push_back(NhanVien(maMoi, hoTen, dienThoai, gioiTinh, chucVu, luong, phuCap));
+        duLieu.dsNhanVien.push_back(hoSo);
         duLieu.quanLyTaiKhoan.danhSach.push_back(taiKhoan);
         luuThayDoi(true);
     } catch (...) {
@@ -492,16 +615,6 @@ string DichVuNhaHang::taoTaiKhoanKhachHang(const string& tenDangNhap, const stri
                                            const string& email) {
     if (matKhau != xacNhan) throw runtime_error("Hai mật khẩu không trùng nhau.");
     if (tenDangNhap == "0") throw runtime_error("Tên đăng nhập không được là 0.");
-    size_t dau = hoTen.find_first_not_of(" \t");
-    size_t cuoi = hoTen.find_last_not_of(" \t");
-    string tenSach;
-    if (dau != string::npos) tenSach = hoTen.substr(dau, cuoi - dau + 1);
-    kiemTraChuoi(tenSach, "Họ và tên");
-    if (!dienThoaiHopLe(dienThoai)) throw runtime_error("Số điện thoại cần có từ 9 đến 15 chữ số.");
-    if (!email.empty() && !emailHopLe(email)) throw runtime_error("Email cần có ký tự @ (ví dụ: ten@gmail.com).");
-    if (gioiTinh != "Nam" && gioiTinh != "Nữ" && gioiTinh != "Nu" && gioiTinh != "Khác") {
-        throw runtime_error("Hãy chọn giới tính hợp lệ.");
-    }
     string maMoi;
     for (int i = 1; i < 1000000; i++) {
         ostringstream ma;
@@ -509,11 +622,13 @@ string DichVuNhaHang::taoTaiKhoanKhachHang(const string& tenDangNhap, const stri
         string ungVien = ma.str();
         if (duLieu.timKhach(ungVien) == nullptr) { maMoi = ungVien; break; }
     }
+    KhachHang hoSo = chuanHoaKhach(KhachHang(maMoi, hoTen, dienThoai, gioiTinh, 0, email),
+                                   duLieu.dsKhachHang, maMoi, true);
     TaiKhoan taiKhoan = duLieu.quanLyTaiKhoan.chuanBi(tenDangNhap, matKhau, "KHACHHANG", maMoi);
     vector<KhachHang> khachCu = duLieu.dsKhachHang;
     vector<TaiKhoan> taiKhoanCu = duLieu.quanLyTaiKhoan.danhSach;
     try {
-        duLieu.dsKhachHang.push_back(KhachHang(maMoi, tenSach, dienThoai, gioiTinh, 0, email));
+        duLieu.dsKhachHang.push_back(hoSo);
         duLieu.quanLyTaiKhoan.danhSach.push_back(taiKhoan);
         luuThayDoi(true);
     } catch (...) {
@@ -529,7 +644,6 @@ string DichVuNhaHang::dangKyKhachHang(const string& hoTen, const string& dienTho
                                      const string& matKhau, const string& xacNhan) {
     if (canThietLap || duLieu.quanLyTaiKhoan.danhSach.empty()) throw runtime_error("Nhà hàng cần tạo tài khoản quản lý đầu tiên trước.");
     if (daDangNhap()) throw runtime_error("Hãy đăng xuất trước khi đăng ký tài khoản mới.");
-    if (!emailHopLe(email)) throw runtime_error("Email cần có ký tự @ (ví dụ: ten@gmail.com).");
     return taoTaiKhoanKhachHang(tenDangNhap, matKhau, xacNhan, hoTen, dienThoai, gioiTinh, email);
 }
 

@@ -19,7 +19,7 @@ void CuaSoNhaHang::trangTaiKhoan() {
 
     if (vaiTroTao == 0) {
         nhap(L"Họ và tên nhân viên", O_TEN, x, y + 220, w);
-        nhap(L"Số điện thoại (9–15 chữ số)", O_SDT, x, y + 292, nua);
+        nhap(L"Số điện thoại (10 số, đầu 0)", O_SDT, x, y + 292, nua);
         chon(L"Giới tính", O_GIOITINH, x + nua + 16, y + 292, w - nua - 16, {L"Nam", L"Nữ", L"Khác"});
         int ba = (w - 24) / 3;
         nhap(L"Chức vụ", O_CHUCVU, x, y + 364, ba);
@@ -29,7 +29,7 @@ void CuaSoNhaHang::trangTaiKhoan() {
         nhan(L"Mã nhân viên sẽ được cấp tự động (NV0001, NV0002...).", x, y + 508, w);
     } else if (vaiTroTao == 2) {
         nhap(L"Họ và tên khách hàng", O_TEN, x, y + 220, w);
-        nhap(L"Số điện thoại (9–15 chữ số)", O_SDT, x, y + 292, nua);
+        nhap(L"Số điện thoại (10 số, đầu 0)", O_SDT, x, y + 292, nua);
         chon(L"Giới tính", O_GIOITINH, x + nua + 16, y + 292, w - nua - 16, {L"Nam", L"Nữ", L"Khác"});
         nhap(L"Email", O_EMAIL, x, y + 364, w);
         nut(L"Tạo tài khoản & hồ sơ khách hàng", NUT_TAOTAIKHOAN, x, y + 452, w, KieuNut::Chinh, Icon::TAI_KHOAN, 44);

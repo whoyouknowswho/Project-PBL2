@@ -1,0 +1,44 @@
+﻿DANH SÁCH TÀI KHOẢN - QUẢN LÝ NHÀ HÀNG PBL2
+Database: QuanLyNhaHang_PBL2 (SQL Server .\SQLEXPRESS)
+Mật khẩu của tất cả tài khoản: 123456789
+Tổng: 31 tài khoản (1 quản lý, 10 nhân viên, 20 khách hàng)
+
+=== QUẢN LÝ ===
+Tên đăng nhập  | Mật khẩu
+QUANLY         | 123456789
+
+=== NHÂN VIÊN ===
+Tên đăng nhập  | Mật khẩu  | Mã NV  | Họ tên             | Chức vụ     | Điện thoại
+nhanvien01     | 123456789 | NV0001 | Lê Văn Tài         | Thu ngân    | 0795881745
+nhanvien02     | 123456789 | NV0002 | Trần Thị Mai       | Phục vụ     | 0912345602
+nhanvien03     | 123456789 | NV0003 | Nguyễn Hoàng Nam   | Đầu bếp     | 0912345603
+nhanvien04     | 123456789 | NV0004 | Phạm Thu Hà        | Pha chế     | 0912345604
+nhanvien05     | 123456789 | NV0005 | Võ Minh Khang      | Phụ bếp     | 0912345605
+nhanvien06     | 123456789 | NV0006 | Đặng Ngọc Lan      | Thu ngân    | 0912345606
+nhanvien07     | 123456789 | NV0007 | Bùi Quốc Bảo       | Phục vụ     | 0912345607
+nhanvien08     | 123456789 | NV0008 | Huỳnh Thị Thảo     | Phục vụ     | 0912345608
+nhanvien09     | 123456789 | NV0009 | Lý Gia Huy         | Giám sát ca | 0912345609
+nhanvien10     | 123456789 | NV0010 | Hồ Thanh Tâm       | Pha chế     | 0912345610
+
+=== KHÁCH HÀNG ===
+Tên đăng nhập  | Mật khẩu  | Mã KH  | Họ tên           | Điện thoại | Email
+khachhang01    | 123456789 | KH0001 | Tô Đông Phước    | 0905554790 | todongphuoc2008@gmail.com
+khachhang02    | 123456789 | KH0002 | Nguyễn Văn A     | 0905554798 | nguyenvana@gmail.com
+khachhang03    | 123456789 | KH0003 | Lê Thị Hồng      | 0935111203 | lethihong03@gmail.com
+khachhang04    | 123456789 | KH0004 | Trần Minh Đức    | 0935111204 | tranminhduc04@gmail.com
+khachhang05    | 123456789 | KH0005 | Phạm Ngọc Ánh    | 0935111205 | phamngocanh05@gmail.com
+khachhang06    | 123456789 | KH0006 | Ngô Văn Phúc     | 0935111206 | ngovanphuc06@gmail.com
+khachhang07    | 123456789 | KH0007 | Đỗ Thị Hạnh      | 0935111207 | dothihanh07@gmail.com
+khachhang08    | 123456789 | KH0008 | Hoàng Gia Bảo    | 0935111208 | hoanggiabao08@gmail.com
+khachhang09    | 123456789 | KH0009 | Vũ Thị Kim Chi   | 0935111209 | vuthikimchi09@gmail.com
+khachhang10    | 123456789 | KH0010 | Phan Thanh Sơn   | 0935111210 | phanthanhson10@gmail.com
+khachhang11    | 123456789 | KH0011 | Trịnh Mỹ Linh    | 0935111211 | trinhmylinh11@gmail.com
+khachhang12    | 123456789 | KH0012 | Mai Xuân Trường  | 0935111212 | maixuantruong12@gmail.com
+khachhang13    | 123456789 | KH0013 | Cao Thị Yến      | 0935111213 | caothiyen13@gmail.com
+khachhang14    | 123456789 | KH0014 | Dương Văn Lực    | 0935111214 | duongvanluc14@gmail.com
+khachhang15    | 123456789 | KH0015 | Lâm Bảo Ngọc     | 0935111215 | lambaongoc15@gmail.com
+khachhang16    | 123456789 | KH0016 | Tạ Quang Vinh    | 0935111216 | taquangvinh16@gmail.com
+khachhang17    | 123456789 | KH0017 | Châu Thị Diễm    | 0935111217 | chauthidiem17@gmail.com
+khachhang18    | 123456789 | KH0018 | La Hữu Thắng     | 0935111218 | lahuuthang18@gmail.com
+khachhang19    | 123456789 | KH0019 | Kiều Anh Thư     | 0935111219 | kieuanhthu19@gmail.com
+khachhang20    | 123456789 | KH0020 | Quách Tuấn Kiệt  | 0935111220 | quachtuankiet20@gmail.com

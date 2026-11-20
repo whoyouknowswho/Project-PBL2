@@ -44,7 +44,7 @@ void CuaSoNhaHang::trangDangKy() {
     nhan(L"Tạo tài khoản để tích điểm và xem hóa đơn của bạn.", x, y + 44, w);
     nhap(L"Họ và tên", O_TEN, x, y + 80, w);
     int nuaO = (w - 16) / 2;
-    nhap(L"Số điện thoại (9–15 chữ số)", O_SDT, x, y + 156, nuaO);
+    nhap(L"Số điện thoại (10 số, đầu 0)", O_SDT, x, y + 156, nuaO);
     chon(L"Giới tính", O_GIOITINH, x + nuaO + 16, y + 156, w - nuaO - 16, {L"Nam", L"Nữ", L"Khác"});
     chonMuc(O_GIOITINH, 2);
     nhap(L"Email", O_EMAIL, x, y + 232, w);

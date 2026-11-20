@@ -84,12 +84,36 @@ Build tạo một bản chạy chính là `QuanLyNhaHangGUI.exe`. Thư viện C+
 
 Chỉ giữ giao diện cửa sổ. Các menu, hàm nhập/xuất console và bản xem thử tạm đã được loại bỏ.
 
+## Dữ liệu mẫu và tài khoản
+
+`Module5_SQL/du_lieu_mau.sql` xóa toàn bộ tài khoản cũ rồi tạo lại: 1 quản lý (`QUANLY`), 10 nhân viên (`nhanvien01`–`nhanvien10`, gắn NV0001–NV0010) và 20 khách hàng (`khachhang01`–`khachhang20`, gắn KH0001–KH0020). Script cũng thêm 50 món ăn (MA0003–MA0052) và 50 nước uống (NU0001–NU0050). Mật khẩu chung là `123456789`. Chạy lại script nhiều lần vẫn cho cùng kết quả. Danh sách đầy đủ nằm trong [DanhSachTaiKhoan/TaiKhoan.txt](DanhSachTaiKhoan/TaiKhoan.txt).
+
+### Ràng buộc nhập liệu
+
+| Trường | Ràng buộc |
+| --- | --- |
+| Tên đăng nhập | 4–32 ký tự: chữ không dấu, chữ số, `_`, `-`; không trùng |
+| Mật khẩu | 6–128 ký tự, không chứa khoảng trắng; mật khẩu mới phải khác mật khẩu cũ |
+| Họ và tên | 2–50 ký tự, chỉ chữ cái (có dấu) và khoảng trắng |
+| Số điện thoại | Đúng 10 chữ số, bắt đầu bằng 0; không trùng trong cùng danh sách khách hàng/nhân viên |
+| Email khách hàng | Bắt buộc, dạng `ten@mien.duoi`, không trùng giữa các khách |
+| Giới tính | Nam, Nữ hoặc Khác |
+| Chức vụ | 2–50 ký tự, không chứa chữ số |
+| Lương cơ bản / phụ cấp | 1.000.000–100.000.000 đ / 0–20.000.000 đ |
+| Tên món | 2–100 ký tự, không trùng trong cùng nhóm thức ăn/nước uống |
+| Giá món | Số nguyên 1.000–10.000.000 đ |
+| Tồn kho | 0–100.000 (cả khi nhập kho) |
+| Ô nhập số | Chỉ chữ số (và một dấu `.` với số thập phân); không nhận `1e5`, `0x10`, số âm |
+| Ngày hóa đơn/đặt món | `dd/mm/yyyy`, có trên lịch và không sau hôm nay |
+
+Khoảng trắng thừa ở đầu và cuối họ tên, email, chức vụ, tên món được tự bỏ khi lưu.
+
 ## Tài khoản khách hàng
 
 Khách hàng mới có thể tự đăng ký ngay tại màn hình đăng nhập:
 
 1. Nhấn **Đăng ký khách hàng**.
-2. Nhập họ tên, số điện thoại gồm 9–15 chữ số, email hợp lệ, giới tính, tên đăng nhập và mật khẩu từ 8–128 ký tự; nhập lại mật khẩu để xác nhận.
+2. Nhập họ tên, số điện thoại gồm đúng 10 chữ số bắt đầu bằng 0, email hợp lệ, giới tính, tên đăng nhập 4–32 ký tự và mật khẩu 6–128 ký tự; nhập lại mật khẩu để xác nhận.
 3. Nhấn **Đăng ký**, sau đó đăng nhập bằng tài khoản vừa tạo.
 
 Chương trình tự tạo mã khách hàng và hồ sơ hạng **Thường**, bắt đầu với **0 điểm**. Tài khoản tự đăng ký chỉ có quyền khách hàng. Tên đăng nhập, email và số điện thoại không được trùng dữ liệu đã có. Email được lưu cùng hồ sơ trong bảng `KhachHang`. Thông tin xác thực nằm trong bảng `TaiKhoan`. Nếu đã có hồ sơ tại nhà hàng, liên hệ nhân viên hoặc quản lý để được cấp tài khoản liên kết đúng hồ sơ cũ.

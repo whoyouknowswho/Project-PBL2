@@ -261,13 +261,21 @@ void CuaSoNhaHang::datDanhDau(int id, bool giaTri) {
 
 double CuaSoNhaHang::soNhap(int id, const string& ten, bool nguyen) const {
     string chuoi = duLieu(id);
-    size_t daDoc = 0;
-    double giaTri;
-    try { giaTri = stod(chuoi, &daDoc); }
-    catch (...) { throw runtime_error(ten + ": vui lòng nhập số."); }
-    if (daDoc != chuoi.size() || !isfinite(giaTri) || giaTri < 0 || giaTri > 1000000000 ||
-        (nguyen && floor(giaTri) != giaTri))
-        throw runtime_error(ten + ": số không hợp lệ (0 đến 1.000.000.000).");
+    size_t dau = chuoi.find_first_not_of(" \t"), cuoi = chuoi.find_last_not_of(" \t");
+    chuoi = dau == string::npos ? "" : chuoi.substr(dau, cuoi - dau + 1);
+    if (chuoi.empty()) throw runtime_error(ten + ": không được để trống.");
+    // Chi nhan chu so (va mot dau cham thap phan neu khong phai so nguyen):
+    // chan cac dang stod van chap nhan nhu 1e5, 0x10, +5, -3, inf.
+    int soDauCham = 0;
+    for (char c : chuoi) {
+        if (c == '.') soDauCham++;
+        else if (c < '0' || c > '9') throw runtime_error(ten + ": chỉ được nhập chữ số.");
+    }
+    if (soDauCham > (nguyen ? 0 : 1) || chuoi.front() == '.' || chuoi.back() == '.')
+        throw runtime_error(nguyen ? ten + ": phải là số nguyên." : ten + ": số không hợp lệ.");
+    if (chuoi.size() > 15) throw runtime_error(ten + ": số quá lớn.");
+    double giaTri = stod(chuoi);
+    if (giaTri > 1000000000) throw runtime_error(ten + ": số không hợp lệ (0 đến 1.000.000.000).");
     return giaTri;
 }
 
