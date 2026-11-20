@@ -12,7 +12,7 @@ CREATE TABLE [dbo].[DonDat] (
 )
 GO
 SET IDENTITY_INSERT [dbo].[DonDat] ON
-INSERT INTO [dbo].[DonDat] ([thuTu], [noiDung]) VALUES (6, N'"XONG" "HD_DM1" "DM1|15/11/2026|KH0002||0.000000|MA0001,Mỳ cay ,3,10000" 1 "MA0001" 3 "" 0')
+INSERT INTO [dbo].[DonDat] ([thuTu], [noiDung]) VALUES (7, N'"XONG" "HD_DM1" "DM1|15/11/2026|KH0002||0.000000|MA0001,Mỳ cay ,3,10000" 1 "MA0001" 3 "" 0')
 SET IDENTITY_INSERT [dbo].[DonDat] OFF
 GO
 CREATE TABLE [dbo].[HoaDon] (
@@ -25,6 +25,7 @@ CREATE TABLE [dbo].[HoaDon] (
     PRIMARY KEY ([ma])
 )
 GO
+INSERT INTO [dbo].[HoaDon] ([ma], [ngay], [maKhach], [maNhanVien], [giamGia], [chiTiet]) VALUES (N'HD20261120-720211546', N'20/11/2026', N'KH0001', N'NV0001', 0.000000, N'MA0002,Mỳ Quảng ,3,30000;MA0001,Mỳ cay ,1,10000')
 INSERT INTO [dbo].[HoaDon] ([ma], [ngay], [maKhach], [maNhanVien], [giamGia], [chiTiet]) VALUES (N'HD_DM1', N'15/11/2026', N'KH0002', N'NV0001', 0.000000, N'MA0001,Mỳ cay ,3,10000')
 GO
 CREATE TABLE [dbo].[KhachHang] (
@@ -37,7 +38,7 @@ CREATE TABLE [dbo].[KhachHang] (
     PRIMARY KEY ([ma])
 )
 GO
-INSERT INTO [dbo].[KhachHang] ([ma], [ten], [dienThoai], [gioiTinh], [diem], [email]) VALUES (N'KH0001', N'Tô Đông Phước', N'0905554790', N'Nam', 0, N'todongphuoc2008@gmail.com ')
+INSERT INTO [dbo].[KhachHang] ([ma], [ten], [dienThoai], [gioiTinh], [diem], [email]) VALUES (N'KH0001', N'Tô Đông Phước', N'0905554790', N'Nam', 10, N'todongphuoc2008@gmail.com ')
 INSERT INTO [dbo].[KhachHang] ([ma], [ten], [dienThoai], [gioiTinh], [diem], [email]) VALUES (N'KH0002', N'Nguyễn Văn A', N'0905554798', N'Nam', 3, N'HAI@124')
 GO
 CREATE TABLE [dbo].[NhanVien] (
@@ -77,6 +78,6 @@ CREATE TABLE [dbo].[ThucDon] (
     PRIMARY KEY ([ma])
 )
 GO
-INSERT INTO [dbo].[ThucDon] ([loai], [ma], [ten], [gia], [tonKho], [doCayHoacSize], [monChayHoacCoDa], [hinhAnh]) VALUES (N'MONAN', N'MA0001', N'Mỳ cay ', 10000.000000, 38, N'5', 0, N'DuLieu/AnhMon/mi-kim-chi-thap-cam.png')
-INSERT INTO [dbo].[ThucDon] ([loai], [ma], [ten], [gia], [tonKho], [doCayHoacSize], [monChayHoacCoDa], [hinhAnh]) VALUES (N'MONAN', N'MA0002', N'Mỳ Quảng ', 30000.000000, 25, N'3', 0, N'DuLieu/AnhMon/55334-mi-quang-ba-lu-da-nang-1.jpg')
+INSERT INTO [dbo].[ThucDon] ([loai], [ma], [ten], [gia], [tonKho], [doCayHoacSize], [monChayHoacCoDa], [hinhAnh]) VALUES (N'MONAN', N'MA0001', N'Mỳ cay ', 10000.000000, 37, N'5', 0, N'DuLieu/AnhMon/mi-kim-chi-thap-cam.png')
+INSERT INTO [dbo].[ThucDon] ([loai], [ma], [ten], [gia], [tonKho], [doCayHoacSize], [monChayHoacCoDa], [hinhAnh]) VALUES (N'MONAN', N'MA0002', N'Mỳ Quảng ', 30000.000000, 22, N'3', 0, N'DuLieu/AnhMon/55334-mi-quang-ba-lu-da-nang-1.jpg')
 GO

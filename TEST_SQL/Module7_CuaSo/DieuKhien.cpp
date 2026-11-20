@@ -275,7 +275,7 @@ double CuaSoNhaHang::soNhap(int id, const string& ten, bool nguyen) const {
 
 HWND CuaSoNhaHang::tao(const wchar_t* lop, const wstring& noiDung, DWORD kieu,
                       int id, int x, int y, int w, int h, DWORD moRong) {
-    HWND dieuKhien = CreateWindowExW(moRong, lop, noiDung.c_str(), WS_CHILD | WS_VISIBLE | kieu,
+    HWND dieuKhien = CreateWindowExW(moRong, lop, noiDung.c_str(), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | kieu,
                                      x, y, w, h, cuaSo, reinterpret_cast<HMENU>(static_cast<INT_PTR>(id)),
                                      GetModuleHandleW(nullptr), nullptr);
     if (!dieuKhien) throw runtime_error("Không tạo được thành phần giao diện.");
@@ -606,10 +606,12 @@ void CuaSoNhaHang::veMucHop(const DRAWITEMSTRUCT* ve) {
     RECT r = ve->rcItem;
     bool chon = (ve->itemState & ODS_SELECTED) != 0;
     toNen(ve->hDC, r, chon ? Mau::PHU_NEN : Mau::THE);
-    int n = static_cast<int>(SendMessageW(ve->hwndItem, CB_GETLBTEXTLEN, ve->itemID, 0));
+    UINT msgLen = ve->CtlType == ODT_LISTBOX ? LB_GETTEXTLEN : CB_GETLBTEXTLEN;
+    UINT msgText = ve->CtlType == ODT_LISTBOX ? LB_GETTEXT : CB_GETLBTEXT;
+    int n = static_cast<int>(SendMessageW(ve->hwndItem, msgLen, ve->itemID, 0));
     if (n <= 0) return;
     wstring noiDung(static_cast<size_t>(n) + 1, L'\0');
-    SendMessageW(ve->hwndItem, CB_GETLBTEXT, ve->itemID, reinterpret_cast<LPARAM>(&noiDung[0]));
+    SendMessageW(ve->hwndItem, msgText, ve->itemID, reinterpret_cast<LPARAM>(&noiDung[0]));
     noiDung.resize(n);
     RECT chuR = {r.left + 12, r.top, r.right - 8, r.bottom};
     veChu(ve->hDC, noiDung, chuR, font.thuong, chon ? Mau::PHU_CHU : Mau::CHU);

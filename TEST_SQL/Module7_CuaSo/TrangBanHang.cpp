@@ -14,13 +14,120 @@ wstring chuThuong(wstring s) {
     if (!s.empty()) CharLowerBuffW(&s[0], static_cast<DWORD>(s.size()));
     return s;
 }
+
+wstring catKhoangTrang(wstring s) {
+    while (!s.empty() && (s.front() == L' ' || s.front() == L'\t')) s.erase(s.begin());
+    while (!s.empty() && (s.back() == L' ' || s.back() == L'\t')) s.pop_back();
+    return s;
+}
+
+const KhachHang* timKhachTheoTuKhoa(const vector<KhachHang>& ds, const wstring& nhap) {
+    wstring tk = chuThuong(catKhoangTrang(nhap));
+    if (tk.empty() || tk == L"khách lẻ" || tk == L"khach le") return nullptr;
+    for (const KhachHang& k : ds) {
+        wstring ma = chuThuong(rong(k.getMa()));
+        wstring ten = chuThuong(rong(k.getTen()));
+        if (tk == ma || tk == ten || tk == ma + L" - " + ten) return &k;
+    }
+    for (const KhachHang& k : ds) {
+        if (khopTuKhoa(k.getMa(), tk) || khopTuKhoa(k.getTen(), tk)) return &k;
+    }
+    return nullptr;
+}
 }
 
 string CuaSoNhaHang::khachDaChon() const {
     if (!o(O_KHACH)) return "";
-    int i = luaChon(O_KHACH) - 1;
-    if (i >= 0 && static_cast<size_t>(i) < dichVu.khachHang().size()) return dichVu.khachHang()[i].getMa();
-    return "";
+    const KhachHang* k = timKhachTheoTuKhoa(dichVu.khachHang(), chu(O_KHACH));
+    return k ? k->getMa() : "";
+}
+
+void CuaSoNhaHang::anGoiYKhach() {
+    HWND ds = o(GOI_Y_KHACH);
+    if (ds && IsWindowVisible(ds)) {
+        ShowWindow(ds, SW_HIDE);
+        RedrawWindow(cuaSo, nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN);
+    }
+}
+
+void CuaSoNhaHang::chonGoiYKhach() {
+    HWND ds = o(GOI_Y_KHACH);
+    if (!ds || !o(O_KHACH)) return;
+    int i = static_cast<int>(SendMessageW(ds, LB_GETCURSEL, 0, 0));
+    if (i < 0 || static_cast<size_t>(i) >= maKhachBanHang.size()) return;
+    string ma = maKhachBanHang[i];
+    wstring giaTri = L"Khách lẻ";
+    for (const KhachHang& k : dichVu.khachHang()) {
+        if (k.getMa() == ma) {
+            giaTri = rong(k.getMa() + " - " + k.getTen());
+            break;
+        }
+    }
+    dangChonGoiYKhach = true;
+    gan(O_KHACH, giaTri);
+    SetFocus(o(O_KHACH));
+    int n = GetWindowTextLengthW(o(O_KHACH));
+    SendMessageW(o(O_KHACH), EM_SETSEL, n, n);
+    dangChonGoiYKhach = false;
+    khachDon = hep(giaTri);
+    anGoiYKhach();
+    capNhatKhachBanHang(false);
+    napGio();
+}
+
+void CuaSoNhaHang::capNhatKhachBanHang(bool hienGoiY) {
+    HWND nhanKhach = o(NHAN_KHACH);
+    if (!nhanKhach || !o(O_KHACH)) return;
+    wstring tk = catKhoangTrang(chu(O_KHACH));
+    bool laKhachLe = chuThuong(tk) == L"khách lẻ" || chuThuong(tk) == L"khach le";
+    HWND ds = o(GOI_Y_KHACH);
+    if (ds) {
+        SendMessageW(ds, LB_RESETCONTENT, 0, 0);
+        maKhachBanHang.clear();
+        if (hienGoiY && GetFocus() == o(O_KHACH)) {
+            SendMessageW(ds, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(L"Khách lẻ"));
+            maKhachBanHang.push_back("");
+            for (const KhachHang& k : dichVu.khachHang()) {
+                wstring nhanMuc = rong(k.getMa() + " - " + k.getTen());
+                if (tk.empty() || laKhachLe || khopTuKhoa(k.getMa(), tk) || khopTuKhoa(k.getTen(), tk) ||
+                    khopTuKhoa(k.getMa() + " - " + k.getTen(), tk)) {
+                    wstring hienThi = nhanMuc + L" (" + tenHangVip(k.getHangVip()) + L")";
+                    SendMessageW(ds, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(hienThi.c_str()));
+                    maKhachBanHang.push_back(k.getMa());
+                }
+            }
+            RECT rKhung = khungNhap[O_KHACH];
+            int soDong = min(6, max(1, static_cast<int>(maKhachBanHang.size())));
+            int rongDs = max(static_cast<int>(rKhung.right - rKhung.left), 260);
+            int xDs = min(static_cast<int>(rKhung.left), phaiNoiDung() - rongDs);
+            SetWindowPos(ds, HWND_TOP, xDs, rKhung.bottom + 2, rongDs, soDong * 32 + 4,
+                         SWP_NOACTIVATE | SWP_SHOWWINDOW);
+            InvalidateRect(ds, nullptr, TRUE);
+        } else {
+            anGoiYKhach();
+        }
+    }
+
+    if (tk.empty() || laKhachLe) {
+        mauChuNhan[nhanKhach] = laKhachLe ? Mau::TOT : Mau::CHU_NHAN;
+        gan(NHAN_KHACH, laKhachLe ? L"KH: Khách lẻ" : L"Khách hàng");
+        InvalidateRect(nhanKhach, nullptr, TRUE);
+        if (laKhachLe) thanhCong(L"Đã chọn: Khách lẻ (không áp dụng giảm giá thành viên).");
+        return;
+    }
+    const KhachHang* k = timKhachTheoTuKhoa(dichVu.khachHang(), tk);
+    if (k) {
+        mauChuNhan[nhanKhach] = Mau::TOT;
+        gan(NHAN_KHACH, L"KH: " + rong(k->getMa() + " - " + k->getTen()));
+        InvalidateRect(nhanKhach, nullptr, TRUE);
+        thanhCong(L"Đã chọn khách hàng: " + rong(k->getMa() + " - " + k->getTen()) +
+                  L" · Hạng " + tenHangVip(k->getHangVip()) + L" (Giảm " + so(k->getPhanTramGiam()) + L"%)");
+    } else {
+        mauChuNhan[nhanKhach] = Mau::LOI;
+        gan(NHAN_KHACH, L"Khách hàng (không tìm thấy)");
+        InvalidateRect(nhanKhach, nullptr, TRUE);
+        thanhCong(L"Không tìm thấy khách hàng theo mã số hoặc tên đã nhập.");
+    }
 }
 
 string CuaSoNhaHang::nhanVienDaChon() const {
@@ -94,20 +201,20 @@ void CuaSoNhaHang::trangBanHang() {
     nhap(L"Mã hóa đơn (tự động)", O_MA, x + 24, y + 8, o4, rong(maHoaDon));
     SendMessageW(o(O_MA), EM_SETREADONLY, TRUE, 0);
     nhap(L"Ngày lập (dd/mm/yyyy)", O_NGAY, x + 24 + (o4 + 16), y + 8, o4, rong(ngayDon));
-    vector<wstring> kh = {L"Khách lẻ"};
-    int chonKhach = 0, i = 1;
-    for (const KhachHang& k : dichVu.khachHang()) {
-        kh.push_back(rong(k.getMa() + " - " + k.getTen()));
-        if (k.getMa() == khachDon) chonKhach = i;
-        i++;
-    }
-    chon(L"Khách hàng", O_KHACH, x + 24 + 2 * (o4 + 16), y + 8, o4, kh);
-    chonMuc(O_KHACH, chonKhach);
+    HWND nhanKhach = nhan(L"Khách hàng", x + 24 + 2 * (o4 + 16), y + 8, o4, false, NHAN_KHACH);
+    SendMessageW(nhanKhach, WM_SETFONT, reinterpret_cast<WPARAM>(font.nhoDam), TRUE);
+    mauChuNhan[nhanKhach] = Mau::CHU_NHAN;
+    nhap(L"", O_KHACH, x + 24 + 2 * (o4 + 16), y + 8, o4, rong(khachDon));
+    SendMessageW(o(O_KHACH), EM_SETCUEBANNER, TRUE, reinterpret_cast<LPARAM>(L"Nhập mã hoặc tên (Khách lẻ)"));
     nhap(L"Nhân viên bán hàng", O_NHANVIEN, x + 24 + 3 * (o4 + 16), y + 8, w - 48 - 3 * (o4 + 16),
          rong(nhanVienDaChon()));
     SendMessageW(o(O_NHANVIEN), EM_SETREADONLY, TRUE, 0);
     int top = y + 100;
     dungLuoiDatMon(x, top, phaiNoiDung() - RONG_GIO - BoCuc::KHOANG - x, dayNoiDung() - top);
+    HWND goiY = tao(L"LISTBOX", L"",
+                    WS_BORDER | WS_VSCROLL | LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT,
+                    GOI_Y_KHACH, x + 24 + 2 * (o4 + 16), y + 74, o4, 100);
+    ShowWindow(goiY, SW_HIDE);
 }
 
 void CuaSoNhaHang::trangDatMon() {
@@ -297,10 +404,15 @@ void CuaSoNhaHang::themVaoGio() {
 
 void CuaSoNhaHang::thanhToan() {
     string ma = duLieu(O_MA), ngay = duLieu(O_NGAY), kh = khachDaChon(), nv = nhanVienDaChon();
+    wstring tk = catKhoangTrang(chu(O_KHACH));
+    if (!tk.empty() && chuThuong(tk) != L"khách lẻ" && chuThuong(tk) != L"khach le" && kh.empty())
+        throw runtime_error("Không tìm thấy khách hàng theo mã số hoặc tên đã nhập. Hãy kiểm tra lại hoặc xóa trống cho Khách lẻ.");
     HoaDon truoc = dichVu.xemTruocHoaDon(ma, ngay, kh, nv, gioHang);
     if (!xacNhan(L"Xác nhận thanh toán " + tien(truoc.tongTien()) + L" và lưu hóa đơn?")) return;
     HoaDon daLuu = dichVu.thanhToan(ma, ngay, kh, nv, gioHang);
     gioHang.clear();
+    khachDon.clear();
+    if (o(O_KHACH)) gan(O_KHACH, L"");
     maHoaDon = maHoaDonMoi();
     gan(O_MA, rong(maHoaDon));
     hienTrang(BAN_HANG);

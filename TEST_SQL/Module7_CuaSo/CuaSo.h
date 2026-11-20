@@ -21,11 +21,11 @@ enum DieuKhien {
     DANH_SACH_THUCDON,
     O_MA = 300, O_TEN, O_SDT, O_GIOITINH, O_DIEM, O_CHUCVU, O_LUONG, O_PHUCAP,
     O_LOAI, O_GIA, O_TON, O_CAY, O_CHAY, O_SIZE, O_NHAPKHO, O_ANH,
-    O_NGAY = 330, O_KHACH, O_NHANVIEN, O_SOLUONG, O_TONG,
+    O_NGAY = 330, O_KHACH, O_NHANVIEN, O_SOLUONG, O_TONG, GOI_Y_KHACH,
     O_USER = 350, O_PASS, O_CONFIRM, O_ROLE, O_OLDPASS, O_EMAIL = 355,
     O_HANG = 360, O_UUDAI, NHAN_HOSO, NHAN_SIZE = 363,
     NHAN_KY_BAOCAO = 370,
-    NHAN_MON_CHON, NHAN_GIO_TRONG,
+    NHAN_MON_CHON, NHAN_GIO_TRONG, NHAN_KHACH,
     NUT_LUU = 400, NUT_MOI, NUT_XOA, NUT_NHAPKHO, NUT_THEM_GIO,
     NUT_XOA_GIO, NUT_HUY_GIO, NUT_THANHTOAN, NUT_BAOCAO, NUT_HOADON,
     NUT_DANGNHAP, NUT_TAOTAIKHOAN, NUT_DOIMATKHAU,
@@ -83,7 +83,9 @@ class CuaSoNhaHang {
 
     // Trang thai nghiep vu giu giua cac trang (nhu ban cu).
     int nhomDatMon = 0, nhomThucDon = 0, vaiTroTao = 0;
+    bool dangChonGoiYKhach = false;
     string maMonDangChon, maDangSua, anhDangChon, maHoaDon, ngayDon, khachDon, nhanVienDon;
+    vector<string> maKhachBanHang;
     vector<YeuCauMon> gioHang;
     vector<HoaDon> hoaDonBaoCao;
     vector<DonDatMon> donDatHienThi;
@@ -176,6 +178,9 @@ class CuaSoNhaHang {
 
     // TrangBanHang.cpp
     void trangBanHang();
+    void capNhatKhachBanHang(bool hienGoiY = false);
+    void chonGoiYKhach();
+    void anGoiYKhach();
     void trangDatMon();
     void dungLuoiDatMon(int x, int y, int w, int h);
     void napMonDat();

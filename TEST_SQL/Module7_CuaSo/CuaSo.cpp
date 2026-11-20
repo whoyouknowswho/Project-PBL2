@@ -75,14 +75,14 @@ void CuaSoNhaHang::thanhBen() {
                {HO_SO_CUA_TOI, L"Thông tin của tôi"}};
     } else {
         muc = {{TRANG_CHU, L"Tổng quan"}, {KHACH_HANG, L"Khách hàng"}};
-        if (dichVu.laQuanLy()) muc.push_back({NHAN_VIEN, L"Nhân viên"});
-        muc.push_back({THUC_DON, L"Thực đơn"});
-        if (!dichVu.laQuanLy()) {
-            muc.push_back({BAN_HANG, L"Bán hàng"});
-            muc.push_back({DON_DAT, L"Đơn khách đặt"});
-        } else {
+        if (dichVu.laQuanLy()) {
+            muc.push_back({NHAN_VIEN, L"Nhân viên"});
+            muc.push_back({THUC_DON, L"Thực đơn"});
             muc.push_back({BAO_CAO, L"Báo cáo"});
             muc.push_back({TAI_KHOAN, L"Tạo tài khoản"});
+        } else {
+            muc.push_back({BAN_HANG, L"Bán hàng"});
+            muc.push_back({DON_DAT, L"Đơn khách đặt"});
         }
         muc.push_back({MAT_KHAU, L"Đổi mật khẩu"});
     }
@@ -107,10 +107,12 @@ void CuaSoNhaHang::hienTrang(int trangMoi, bool giuNhap) {
     if (dichVu.daDangNhap() && !dichVu.laQuanLy() &&
         (trangMoi == NHAN_VIEN || trangMoi == BAO_CAO || trangMoi == TAI_KHOAN))
         throw runtime_error("Chức năng này chỉ dành cho quản lý.");
+    if (dichVu.daDangNhap() && !dichVu.laQuanLy() && !dichVu.laKhachHang() && trangMoi == THUC_DON)
+        throw runtime_error("Tài khoản nhân viên không sử dụng mục Thực đơn.");
     if (dichVu.daDangNhap() && trangHienTai == BAN_HANG && o(O_NGAY)) {
         maHoaDon = duLieu(O_MA);
         ngayDon = duLieu(O_NGAY);
-        khachDon = khachDaChon();
+        khachDon = duLieu(O_KHACH);
         nhanVienDon = nhanVienDaChon();
     }
     map<int, wstring> nhapCu;
@@ -118,10 +120,10 @@ void CuaSoNhaHang::hienTrang(int trangMoi, bool giuNhap) {
     map<int, bool> danhDauCu;
     if (giuNhap) {
         const vector<int> cacO = {TIM_KIEM, LOC_BAO_CAO, O_MA, O_TEN, O_SDT, O_DIEM, O_CHUCVU,
-            O_LUONG, O_PHUCAP, O_GIA, O_TON, O_CAY, O_NHAPKHO, O_ANH, O_NGAY, O_SOLUONG,
+            O_LUONG, O_PHUCAP, O_GIA, O_TON, O_CAY, O_NHAPKHO, O_ANH, O_NGAY, O_KHACH, O_SOLUONG,
             O_USER, O_PASS, O_CONFIRM, O_OLDPASS, O_EMAIL};
         for (int id : cacO) if (o(id)) nhapCu[id] = chu(id);
-        for (int id : {LOC_LOAI, SAP_XEP, O_GIOITINH, O_LOAI, O_SIZE, O_KHACH, O_NHANVIEN, O_ROLE})
+        for (int id : {LOC_LOAI, SAP_XEP, O_GIOITINH, O_LOAI, O_SIZE, O_NHANVIEN, O_ROLE})
             if (o(id) && !(trangHienTai == HO_SO_CUA_TOI && id == O_GIOITINH)) chonCu[id] = luaChon(id);
         danhDauCu = danhDauGiaTri;
     }
@@ -159,6 +161,7 @@ void CuaSoNhaHang::hienTrang(int trangMoi, bool giuNhap) {
         capNhatNutAnh();
     }
     if (dichVu.daDangNhap() && (trangHienTai == BAN_HANG || trangHienTai == DAT_MON)) {
+        if (trangHienTai == BAN_HANG) capNhatKhachBanHang();
         napMonDat();
         napGio();
     }
@@ -250,9 +253,17 @@ void CuaSoNhaHang::xuLyNut(int id, int suKien) {
         else napBang();
         return;
     }
+    if (suKien == EN_CHANGE && id == O_KHACH) {
+        if (trangHienTai == BAN_HANG && !dangChonGoiYKhach) { capNhatKhachBanHang(true); napGio(); }
+        return;
+    }
+    if (id == GOI_Y_KHACH && suKien == LBN_SELCHANGE) { chonGoiYKhach(); return; }
+    if (id == GOI_Y_KHACH && suKien == LBN_KILLFOCUS) {
+        if (GetFocus() != o(O_KHACH)) anGoiYKhach();
+        return;
+    }
     if (id == DANH_SACH_MON && suKien == LBN_SELCHANGE) { chonMonDat(); return; }
     if (id == DANH_SACH_MON && suKien == LBN_DBLCLK) { themVaoGio(); return; }
-    if (suKien == CBN_SELCHANGE && id == O_KHACH) { napGio(); return; }
     if (suKien == CBN_SELCHANGE && id == LOC_NAM_DOANHTHU) { napBieuDoDoanhThu(); return; }
     if (id == DANH_SACH_THUCDON && suKien == LBN_SELCHANGE) { chonDong(); return; }
     if (suKien == CBN_SELCHANGE && id == SAP_XEP) { napBang(); return; }
@@ -492,8 +503,14 @@ LRESULT CALLBACK CuaSoNhaHang::thuTuc(HWND h, UINT tin, WPARAM w, LPARAM l) {
                 int id = LOWORD(w), suKien = HIWORD(w);
                 HWND con = reinterpret_cast<HWND>(l);
                 if (con && app->khungNhap.count(id) && (suKien == EN_SETFOCUS || suKien == EN_KILLFOCUS)) {
-                    if (suKien == EN_SETFOCUS) app->oDangChon = id;
-                    else if (app->oDangChon == id) app->oDangChon = -1;
+                    if (suKien == EN_SETFOCUS) {
+                        app->oDangChon = id;
+                        if (id != O_KHACH) app->anGoiYKhach();
+                        else if (app->trangHienTai == BAN_HANG && !app->dangChonGoiYKhach) app->capNhatKhachBanHang(true);
+                    } else {
+                        if (app->oDangChon == id) app->oDangChon = -1;
+                        if (id == O_KHACH && GetFocus() != app->o(GOI_Y_KHACH)) app->anGoiYKhach();
+                    }
                     RECT r = app->khungNhap[id];
                     InflateRect(&r, 5, 5);
                     InvalidateRect(h, &r, FALSE);
@@ -509,7 +526,7 @@ LRESULT CALLBACK CuaSoNhaHang::thuTuc(HWND h, UINT tin, WPARAM w, LPARAM l) {
             }
             case WM_MEASUREITEM: {
                 MEASUREITEMSTRUCT* m = reinterpret_cast<MEASUREITEMSTRUCT*>(l);
-                if (m->CtlType == ODT_COMBOBOX) {
+                if (m->CtlType == ODT_COMBOBOX || m->CtlType == ODT_LISTBOX) {
                     m->itemHeight = m->itemID == static_cast<UINT>(-1) ? 34 : 32;
                     return TRUE;
                 }
@@ -517,7 +534,7 @@ LRESULT CALLBACK CuaSoNhaHang::thuTuc(HWND h, UINT tin, WPARAM w, LPARAM l) {
             }
             case WM_DRAWITEM: {
                 DRAWITEMSTRUCT* d = reinterpret_cast<DRAWITEMSTRUCT*>(l);
-                if (d->CtlType == ODT_COMBOBOX) app->veMucHop(d);
+                if (d->CtlType == ODT_COMBOBOX || d->CtlType == ODT_LISTBOX) app->veMucHop(d);
                 else if (d->CtlType == ODT_BUTTON) app->veNut(d);
                 return TRUE;
             }
@@ -553,6 +570,7 @@ LRESULT CALLBACK CuaSoNhaHang::thuTuc(HWND h, UINT tin, WPARAM w, LPARAM l) {
                 return reinterpret_cast<LRESULT>(app->coThe);
             }
             case WM_LBUTTONDOWN: {
+                app->anGoiYKhach();
                 POINT p = {static_cast<short>(LOWORD(l)), static_cast<short>(HIWORD(l))};
                 for (const auto& muc : app->khungNhap) {
                     HWND e = app->o(muc.first);

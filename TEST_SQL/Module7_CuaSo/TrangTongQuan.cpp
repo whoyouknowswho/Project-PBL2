@@ -46,7 +46,6 @@ void CuaSoNhaHang::trangChu() {
         return;
     }
     nut(L"Tạo đơn bán hàng", BAN_HANG, x, yNut, 210, KieuNut::Chinh, Icon::THEM, 44);
-    nut(L"Xem thực đơn", THUC_DON, x + 222, yNut, 180, KieuNut::Phu, Icon::THUC_DON, 44);
     themThe({x, y, phai, day});
     themDauThe(x + 24, y + 18, phai - x - 48, Icon::CANH_BAO, L"Tồn kho thấp", L"Cần kiểm tra và nhập thêm");
     bang(BANG_CHINH, x + 12, y + 72, phai - x - 24, day - y - 84,

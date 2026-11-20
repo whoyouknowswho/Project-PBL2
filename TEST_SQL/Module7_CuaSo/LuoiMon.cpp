@@ -247,7 +247,7 @@ HWND taoLuoiMon(HWND cha, int id, RECT vung, const BoFont* font, KhoAnh* anh) {
     TrangThaiLuoi* tt = new TrangThaiLuoi();
     tt->font = font;
     tt->anh = anh;
-    HWND h = CreateWindowExW(0, L"NhaHangLuoiMon", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_VSCROLL,
+    HWND h = CreateWindowExW(0, L"NhaHangLuoiMon", L"", WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_TABSTOP | WS_VSCROLL,
                              vung.left, vung.top, vung.right - vung.left, vung.bottom - vung.top, cha,
                              reinterpret_cast<HMENU>(static_cast<INT_PTR>(id)), GetModuleHandleW(nullptr), tt);
     if (!h) delete tt;
