@@ -81,7 +81,7 @@ LRESULT CALLBACK thuTucTieuDe(HWND h, UINT msg, WPARAM w, LPARAM l, UINT_PTR id,
             GetClientRect(h, &r);
             {
                 BoDem dem(dc, r);
-                toNen(dem.dc, r, Mau::O_CHI_DOC);
+                toNen(dem.dc, r, Mau::THANH_BEN);
                 int n = Header_GetItemCount(h);
                 for (int i = 0; i < n; i++) {
                     RECT o;
@@ -179,9 +179,9 @@ LRESULT veDongBang(NMLVCUSTOMDRAW* ve, const BoFont& font, const VeOTuyChinh& ve
     RECT hang;
     if (!ListView_GetItemRect(lv, dong, &hang, LVIR_BOUNDS)) return CDRF_DODEFAULT;
     bool daChon = (ListView_GetItemState(lv, dong, LVIS_SELECTED) & LVIS_SELECTED) != 0;
-    toNen(dc, hang, daChon ? Mau::PHU_NEN : (dong % 2 ? Mau::DONG_XEN : Mau::THE));
+    toNen(dc, hang, daChon ? Mau::CHINH_NHAT : (dong % 2 ? Mau::DONG_XEN : Mau::THE));
     RECT ke = {hang.left, hang.bottom - 1, hang.right, hang.bottom};
-    toNen(dc, ke, RGB(244,238,231));
+    toNen(dc, ke, Mau::VIEN);
     if (daChon) {
         RECT vach = {hang.left, hang.top, hang.left + 3, hang.bottom};
         toNen(dc, vach, Mau::CHINH);
@@ -470,9 +470,9 @@ void CuaSoNhaHang::veKhungNhap(HDC dc) {
         if (tieuDiem) {
             RECT ngoai = r;
             InflateRect(&ngoai, 3, 3);
-            veVienBoGoc(dc, ngoai, 13, Mau::CHINH, 3.0f, 45);
+            veVienBoGoc(dc, ngoai, 11, Mau::CHINH, 3.0f, 45);
         }
-        veHinhBoGoc(dc, r, 10, chiDoc ? Mau::O_CHI_DOC : Mau::THE, tieuDiem ? Mau::CHINH : Mau::VIEN_O,
+        veHinhBoGoc(dc, r, 8, chiDoc ? Mau::O_CHI_DOC : Mau::THE, tieuDiem ? Mau::CHINH : Mau::VIEN_O,
                     tieuDiem ? 1.6f : 1.0f);
         if (muc.first == TIM_KIEM)
             veIcon(dc, Icon::TIM, {r.left + 10, r.top, r.left + 34, r.bottom}, font.icon,
@@ -537,7 +537,7 @@ void CuaSoNhaHang::veNut(const DRAWITEMSTRUCT* ve) {
     }
 
     COLORREF nen = Mau::PHU_NEN, mau = Mau::PHU_CHU, vien = CLR_INVALID;
-    int banKinh = 10;
+    int banKinh = 8;
     switch (kieu) {
         case KieuNut::Chinh:
             nen = nhan ? Mau::CHINH_NHAN : re ? Mau::CHINH_RE : Mau::CHINH;
@@ -550,15 +550,17 @@ void CuaSoNhaHang::veNut(const DRAWITEMSTRUCT* ve) {
         case KieuNut::Tab: case KieuNut::Chip:
             nen = re || nhan ? Mau::O_CHI_DOC : Mau::THE;
             mau = Mau::CHU_NHAN;
-            vien = re ? Mau::CHINH : Mau::VIEN_O;
+            vien = re ? Mau::CHU_MO : Mau::VIEN_O;
             break;
         case KieuNut::TabChon: case KieuNut::ChipChon:
             nen = re || nhan ? Mau::CHINH_RE : Mau::CHINH;
             mau = RGB(255,255,255);
             break;
         default:
-            nen = nhan ? Mau::PHU_NHAN : re ? Mau::PHU_RE : Mau::PHU_NEN;
-            mau = Mau::PHU_CHU;
+            // Nut phu: nen trang vien manh, chu gan den; re/nhan sam dan theo tong nga.
+            nen = nhan ? Mau::THANH_BEN_RE : re ? Mau::THANH_BEN : Mau::THE;
+            mau = Mau::CHU;
+            vien = Mau::VIEN_O;
             break;
     }
     if (kieu == KieuNut::Chip || kieu == KieuNut::ChipChon) banKinh = (r.bottom - r.top) / 2;
@@ -591,9 +593,9 @@ void CuaSoNhaHang::veHopChon(HWND hop, HDC dc) {
     bool tieuDiem = GetFocus() == hop || SendMessageW(hop, CB_GETDROPPEDSTATE, 0, 0);
     if (tieuDiem && bat) {
         RECT trong = r;
-        veHinhBoGoc(dc, trong, 10, Mau::THE, Mau::CHINH, 1.6f);
+        veHinhBoGoc(dc, trong, 8, Mau::THE, Mau::CHINH, 1.6f);
     } else {
-        veHinhBoGoc(dc, r, 10, bat ? Mau::THE : Mau::O_CHI_DOC, Mau::VIEN_O, 1.0f);
+        veHinhBoGoc(dc, r, 8, bat ? Mau::THE : Mau::O_CHI_DOC, Mau::VIEN_O, 1.0f);
     }
     int i = static_cast<int>(SendMessageW(hop, CB_GETCURSEL, 0, 0));
     wstring noiDung;
