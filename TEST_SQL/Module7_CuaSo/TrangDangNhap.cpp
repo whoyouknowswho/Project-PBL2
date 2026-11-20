@@ -56,7 +56,7 @@ void CuaSoNhaHang::veManDangNhap(HDC dc) {
     RECT trai = {0, 0, nua, caoCuaSo};
     int luu = SaveDC(dc);
     IntersectClipRect(dc, 0, 0, nua, caoCuaSo);
-    veChuyenSac(dc, trai, Mau::NEN_TOI, Mau::CHINH_NHAN);
+    veChuyenSac(dc, trai, Mau::NEN_TOI, Mau::NEN_TOI_CUOI);
     veVongTron(dc, nua - 30, 70, 180, Mau::CHINH, 40);
     veVongTron(dc, 30, caoCuaSo - 40, 140, RGB(255,255,255), 12);
     veVongTron(dc, nua - 110, caoCuaSo - 150, 56, Mau::CHINH, 26);

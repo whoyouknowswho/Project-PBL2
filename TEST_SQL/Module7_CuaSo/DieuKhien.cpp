@@ -179,7 +179,7 @@ LRESULT veDongBang(NMLVCUSTOMDRAW* ve, const BoFont& font, const VeOTuyChinh& ve
     RECT hang;
     if (!ListView_GetItemRect(lv, dong, &hang, LVIR_BOUNDS)) return CDRF_DODEFAULT;
     bool daChon = (ListView_GetItemState(lv, dong, LVIS_SELECTED) & LVIS_SELECTED) != 0;
-    toNen(dc, hang, daChon ? Mau::CHINH_NHAT : (dong % 2 ? Mau::DONG_XEN : Mau::THE));
+    toNen(dc, hang, daChon ? Mau::PHU_NEN : (dong % 2 ? Mau::DONG_XEN : Mau::THE));
     RECT ke = {hang.left, hang.bottom - 1, hang.right, hang.bottom};
     toNen(dc, ke, Mau::VIEN);
     if (daChon) {

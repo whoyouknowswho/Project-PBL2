@@ -40,6 +40,10 @@ int main() {
     can("CANH_BAO / CANH_BAO_NEN", Mau::CANH_BAO, Mau::CANH_BAO_NEN, 3.0);
     can("CHU_TREN_TOI / NEN_TOI", Mau::CHU_TREN_TOI, Mau::NEN_TOI, 7.0);
     can("CHU_TREN_TOI_MO / NEN_TOI", Mau::CHU_TREN_TOI_MO, Mau::NEN_TOI, 4.5);
+    // Khoi toi chuyen sac (man dang nhap, banner chao khach) ket thuc o NEN_TOI_CUOI:
+    // chu phu nam o doan gan cuoi nen phai doc duoc ca o mau cuoi.
+    can("CHU_TREN_TOI_MO / NEN_TOI_CUOI", Mau::CHU_TREN_TOI_MO, Mau::NEN_TOI_CUOI, 4.5);
+    can("CHU_TREN_TOI / NEN_TOI_CUOI", Mau::CHU_TREN_TOI, Mau::NEN_TOI_CUOI, 7.0);
     std::printf("%s (%d loi)\n", loi ? "THAT BAI" : "DAT", loi);
     return loi != 0;
 }

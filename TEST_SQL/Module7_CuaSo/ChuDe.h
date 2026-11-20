@@ -38,6 +38,7 @@ const COLORREF NUT_KHOA = RGB(238,236,229);
 const COLORREF DONG_XEN = RGB(251,250,247);
 // Khoi nen toi con giu lai (panel man dang nhap, banner chao khach, hop so lieu bieu do).
 const COLORREF NEN_TOI = RGB(38,37,34);
+const COLORREF NEN_TOI_CUOI = RGB(96,46,28); // dau cuoi chuyen sac (dat nung tram), chu sang van doc duoc
 const COLORREF CHU_TREN_TOI = RGB(240,238,230);
 const COLORREF CHU_TREN_TOI_MO = RGB(176,174,165);
 }

@@ -94,7 +94,7 @@ void CuaSoNhaHang::veThongKeTongQuan(HDC dc) {
         veHinhBoGoc(dc, chao, 16, Mau::NEN_TOI);
         HRGN vung = CreateRoundRectRgn(chao.left, chao.top, chao.right + 1, chao.bottom + 1, 32, 32);
         SelectClipRgn(dc, vung);
-        veChuyenSac(dc, chao, Mau::NEN_TOI, Mau::CHINH_NHAN, true);
+        veChuyenSac(dc, chao, Mau::NEN_TOI, Mau::NEN_TOI_CUOI, true);
         veVongTron(dc, chao.right - 60, chao.top + 10, 90, Mau::CHINH, 60);
         veVongTron(dc, chao.right - 190, chao.bottom + 10, 50, RGB(255,255,255), 18);
         RestoreDC(dc, luu);

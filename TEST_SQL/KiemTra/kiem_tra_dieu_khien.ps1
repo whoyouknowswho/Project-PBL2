@@ -45,6 +45,17 @@ $v = VungClient $h $tieuDe
 $m = MauTrungBinh $b ($v[2] - 14) ($v[1] + 4) ($v[2] - 4) ($v[1] + 10)
 Can 'Tieu de cot: nen nga thanh ben' (Gan $m @(240, 238, 230) 3) "mau TB = $($m -join ',')"
 $b.Dispose()
+
+# Dong dang chon (chon dong dau bang phim mui ten): nen PHU_NEN (245,233,226) de thay ro ca o mep phai.
+[KiemTraW]::SendMessage($bang, 0x0100, [IntPtr]0x28, [IntPtr]::Zero) | Out-Null  # WM_KEYDOWN, VK_DOWN
+[KiemTraW]::SendMessage($bang, 0x0101, [IntPtr]0x28, [IntPtr]::Zero) | Out-Null  # WM_KEYUP
+$b = Chup-Client $h
+$vb = VungClient $h $bang
+$y = $v[3] + 20   # giua dong dau (dong cao 40px, ngay duoi tieu de cot)
+# Khoang trong giua cot "Gioi tinh" va "Diem" (cach mep trai bang ~385px, xa vach nhan va chu).
+$m = MauTrungBinh $b ($vb[0] + 385) ($y - 3) ($vb[0] + 405) ($y + 3)
+Can 'Dong dang chon: nen PHU_NEN ro rang' (Gan $m @(245, 233, 226) 3) "mau TB = $($m -join ',')"
+$b.Dispose()
 Stop-Process -Id $p.Id -Force
 
 if ($loi) { "THAT BAI ($loi loi)"; exit 1 } else { 'DAT (0 loi)' }
