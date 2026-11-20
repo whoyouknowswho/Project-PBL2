@@ -146,6 +146,6 @@ Khách có các trang **Tổng quan**, **Thực đơn**, **Đặt món**, **Đơ
 
 Ảnh minh họa cơm gà, rau xào, mì tôm, trà đào và nước cam được tạo bằng công cụ imagegen, lưu ở `Module7_CuaSo/Anh/anh_mon_an.png` và nhúng trong exe. Món chưa có ảnh riêng dùng ảnh đĩa/bộ đồ ăn trung tính.
 
-Có thể dùng ảnh thật của nhà hàng bằng cách đặt tệp PNG hoặc JPG tại `DuLieu/AnhMon/<ma_mon>.png` / `.jpg`, ví dụ `DuLieu/AnhMon/MA0003.jpg`. 99 món mẫu (MA0003–MA0052, NU0001–NU0050, trừ MA0044) đã có ảnh thật lấy từ Wikimedia Commons, cắt về 480×360; tác giả và giấy phép từng ảnh ghi trong `DuLieu/AnhMon/NGUON_ANH.txt`. Ảnh riêng được ưu tiên; đóng rồi mở lại chương trình sau khi thay ảnh. Ảnh thiếu hoặc không đọc được sẽ dùng ảnh minh họa có sẵn. Cả phần hiển thị ảnh và giao diện đều dùng C++/Win32/GDI+, không cần trình duyệt hay thư viện giao diện mới.
+Có thể dùng ảnh thật của nhà hàng bằng cách đặt tệp PNG hoặc JPG tại `DuLieu/AnhMon/<ma_mon>.png` / `.jpg`, ví dụ `DuLieu/AnhMon/MA0003.jpg`. Toàn bộ 100 món mẫu (MA0003–MA0052, NU0001–NU0050) đã có ảnh thật lấy từ Wikimedia Commons, cắt về 480×360; tác giả và giấy phép từng ảnh ghi trong `DuLieu/AnhMon/NGUON_ANH.txt`. Ảnh riêng được ưu tiên; đóng rồi mở lại chương trình sau khi thay ảnh. Ảnh thiếu hoặc không đọc được sẽ dùng ảnh minh họa có sẵn. Cả phần hiển thị ảnh và giao diện đều dùng C++/Win32/GDI+, không cần trình duyệt hay thư viện giao diện mới.
 
 Thư mục `.build` chỉ chứa tệp biên dịch tạm. Dữ liệu thực và tài khoản nằm trong database `QuanLyNhaHang_PBL2`.
