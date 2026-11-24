@@ -482,7 +482,7 @@ DoanhThuNam DichVuNhaHang::doanhThuTheoNam(int nam) const {
         kq.tongTien += tien;
         kq.soHoaDon++;
     }
-    sort(kq.cacNam.rbegin(), kq.cacNam.rend());
+    quickSort(kq.cacNam, [](int a, int b) { return a > b; });
     kq.cacNam.erase(unique(kq.cacNam.begin(), kq.cacNam.end()), kq.cacNam.end());
     return kq;
 }

@@ -141,10 +141,13 @@ void CuaSoNhaHang::napThucDonAnh() {
         ketQua.push_back(static_cast<int>(i));
     }
     int cach = luaChon(SAP_XEP);
-    if (cach > 0) stable_sort(ketQua.begin(), ketQua.end(), [&](int a, int b) {
-        if (cach == 1) return chuTim(menu[a]->getTen()) < chuTim(menu[b]->getTen());
-        if (cach == 2) return menu[a]->getGia() < menu[b]->getGia();
-        return menu[a]->getGia() > menu[b]->getGia();
+    if (cach > 0) quickSort(ketQua, [&](int a, int b) {
+        if (cach == 1) {
+            wstring ta = chuTim(menu[a]->getTen()), tb = chuTim(menu[b]->getTen());
+            return ta != tb ? ta < tb : a < b;
+        }
+        double ga = menu[a]->getGia(), gb = menu[b]->getGia();
+        return ga != gb ? (cach == 2 ? ga < gb : ga > gb) : a < b;
     });
     vector<TheMon> cacThe;
     int chon = -1;

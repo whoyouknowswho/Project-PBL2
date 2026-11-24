@@ -152,7 +152,7 @@ void CuaSoNhaHang::trangBieuDoDoanhThu() {
     doanhThuNam = dichVu.doanhThuTheoNam(namBieuDo);
     vector<int> nam = doanhThuNam.cacNam;
     if (find(nam.begin(), nam.end(), namHienTai) == nam.end()) nam.push_back(namHienTai);
-    sort(nam.rbegin(), nam.rend());
+    quickSort(nam, [](int a, int b) { return a > b; });
     vector<wstring> luaChon;
     int chonNam = 0;
     for (size_t i = 0; i < nam.size(); i++) {

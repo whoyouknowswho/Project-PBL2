@@ -10,7 +10,7 @@ struct TaiKhoan {
     string tenDangNhap;
     string matKhau;
     string vaiTro;    // QUANLY, NHANVIEN hoac KHACHHANG
-    string maLienKet; // Ma nhan vien (NV01...) hoac Ma khach hang (KH0001...)
+    string maLienKet; // Ma nhan vien (NV...) hoac Ma khach hang (KH...)
 };
 
 class QuanLyTaiKhoan {

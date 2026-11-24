@@ -10,11 +10,11 @@
 #include "../Module6_TaiKhoan/TaiKhoan.h"
 
 using namespace std;
+
 class QuanLy {
     friend class DichVuNhaHang;
     vector<KhachHang> dsKhachHang;
     vector<NhanVien> dsNhanVien;
-    // unique_ptr tu giai phong mon; MonAn va NuocUong dung chung lop cha Mon.
     vector<unique_ptr<Mon>> dsMon;
     vector<HoaDon> dsHoaDon;
     QuanLyTaiKhoan quanLyTaiKhoan;
@@ -22,7 +22,5 @@ class QuanLy {
     KhachHang* timKhach(const string& maCanTim);
     NhanVien* timNhanVien(const string& maCanTim);
     Mon* timMon(const string& maCanTim);
-
-
 };
 #endif
