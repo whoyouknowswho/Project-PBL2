@@ -29,7 +29,7 @@ const char* TAO_BANG =
     "CREATE TABLE IF NOT EXISTS KhachHang (ma TEXT PRIMARY KEY, ten TEXT, dienThoai TEXT, gioiTinh TEXT, diem INTEGER, email TEXT);"
     "CREATE TABLE IF NOT EXISTS NhanVien (ma TEXT PRIMARY KEY, ten TEXT, dienThoai TEXT, gioiTinh TEXT, chucVu TEXT, luong REAL, phuCap REAL);"
     "CREATE TABLE IF NOT EXISTS HoaDon (ma TEXT PRIMARY KEY, ngay TEXT, maKhach TEXT, maNhanVien TEXT, giamGia REAL, chiTiet TEXT);"
-    "CREATE TABLE IF NOT EXISTS DonDat (thuTu INTEGER PRIMARY KEY AUTOINCREMENT, noiDung TEXT);"
+    "CREATE TABLE IF NOT EXISTS DonDat (thuTu INTEGER PRIMARY KEY, noiDung TEXT);"
     "CREATE TABLE IF NOT EXISTS TaiKhoan (tenDangNhap TEXT PRIMARY KEY, matKhau TEXT, vaiTro TEXT, maLienKet TEXT);";
 
 struct Lenh {
