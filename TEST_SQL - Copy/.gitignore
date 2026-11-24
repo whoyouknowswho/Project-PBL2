@@ -1,0 +1,9 @@
+.build/
+*.exe
+*.o
+*.obj
+*.db-journal
+*.db-wal
+*.db-shm
+*.bak
+*.tmp
