@@ -1,0 +1,100 @@
+MONAN|MA0003|Phở bò tái|45000|40|0|0|DuLieu/AnhMon/MA0003.jpg
+MONAN|MA0004|Phở gà|40000|40|0|0|DuLieu/AnhMon/MA0004.jpg
+MONAN|MA0005|Bún bò Huế|45000|35|3|0|DuLieu/AnhMon/MA0005.jpg
+MONAN|MA0006|Bún chả Hà Nội|45000|30|1|0|DuLieu/AnhMon/MA0006.jpg
+MONAN|MA0007|Bún riêu cua|40000|30|1|0|DuLieu/AnhMon/MA0007.jpg
+MONAN|MA0008|Bún thịt nướng|40000|30|0|0|DuLieu/AnhMon/MA0008.jpg
+MONAN|MA0009|Bún mắm nêm|40000|25|2|0|DuLieu/AnhMon/MA0009.jpg
+MONAN|MA0010|Hủ tiếu Nam Vang|45000|30|0|0|DuLieu/AnhMon/MA0010.jpg
+MONAN|MA0011|Mì xào hải sản|55000|25|1|0|DuLieu/AnhMon/MA0011.jpg
+MONAN|MA0012|Mì Quảng gà|40000|30|1|0|DuLieu/AnhMon/MA0012.jpg
+MONAN|MA0013|Cao lầu|45000|20|0|0|DuLieu/AnhMon/MA0013.jpg
+MONAN|MA0014|Cơm tấm sườn bì chả|50000|40|0|0|DuLieu/AnhMon/MA0014.jpg
+MONAN|MA0015|Cơm gà xối mỡ|45000|35|0|0|DuLieu/AnhMon/MA0015.jpg
+MONAN|MA0016|Cơm chiên dương châu|40000|35|0|0|DuLieu/AnhMon/MA0016.jpg
+MONAN|MA0017|Cơm chiên hải sản|55000|25|0|0|DuLieu/AnhMon/MA0017.jpg
+MONAN|MA0018|Cơm sườn rim|45000|30|0|0|DuLieu/AnhMon/MA0018.jpg
+MONAN|MA0019|Cơm bò lúc lắc|65000|20|1|0|DuLieu/AnhMon/MA0019.jpg
+MONAN|MA0020|Cơm chay thập cẩm|35000|25|0|1|DuLieu/AnhMon/MA0020.jpg
+MONAN|MA0021|Bánh mì thịt nướng|25000|50|1|0|DuLieu/AnhMon/MA0021.jpg
+MONAN|MA0022|Bánh mì ốp la|20000|50|0|0|DuLieu/AnhMon/MA0022.jpg
+MONAN|MA0023|Bánh xèo miền Tây|40000|25|0|0|DuLieu/AnhMon/MA0023.jpg
+MONAN|MA0024|Bánh cuốn nóng|35000|30|0|0|DuLieu/AnhMon/MA0024.jpg
+MONAN|MA0025|Bánh canh cua|50000|25|1|0|DuLieu/AnhMon/MA0025.jpg
+MONAN|MA0026|Bánh bèo chén|30000|30|1|0|DuLieu/AnhMon/MA0026.jpg
+MONAN|MA0027|Gỏi cuốn tôm thịt|30000|40|0|0|DuLieu/AnhMon/MA0027.jpg
+MONAN|MA0028|Gỏi cuốn chay|25000|30|0|1|DuLieu/AnhMon/MA0028.jpg
+MONAN|MA0029|Chả giò rế|35000|40|0|0|DuLieu/AnhMon/MA0029.jpg
+MONAN|MA0030|Nem lụi Huế|45000|25|1|0|DuLieu/AnhMon/MA0030.jpg
+MONAN|MA0031|Gỏi ngó sen tôm thịt|60000|20|2|0|DuLieu/AnhMon/MA0031.jpg
+MONAN|MA0032|Gỏi gà xé phay|55000|20|2|0|DuLieu/AnhMon/MA0032.jpg
+MONAN|MA0033|Lẩu thái hải sản|250000|15|4|0|DuLieu/AnhMon/MA0033.jpg
+MONAN|MA0034|Lẩu gà lá é|220000|15|2|0|DuLieu/AnhMon/MA0034.jpg
+MONAN|MA0035|Lẩu nấm chay|180000|15|0|1|DuLieu/AnhMon/MA0035.jpg
+MONAN|MA0036|Cá kho tộ|60000|20|1|0|DuLieu/AnhMon/MA0036.jpg
+MONAN|MA0037|Thịt kho trứng|55000|25|0|0|DuLieu/AnhMon/MA0037.jpg
+MONAN|MA0038|Canh chua cá lóc|60000|20|1|0|DuLieu/AnhMon/MA0038.jpg
+MONAN|MA0039|Gà nướng muối ớt|120000|15|3|0|DuLieu/AnhMon/MA0039.jpg
+MONAN|MA0040|Sườn nướng mật ong|90000|20|0|0|DuLieu/AnhMon/MA0040.jpg
+MONAN|MA0041|Bò nướng lá lốt|70000|25|1|0|DuLieu/AnhMon/MA0041.jpg
+MONAN|MA0042|Mực xào sa tế|85000|20|4|0|DuLieu/AnhMon/MA0042.jpg
+MONAN|MA0043|Tôm rang muối|95000|20|2|0|DuLieu/AnhMon/MA0043.jpg
+MONAN|MA0044|Ốc len xào dừa|65000|20|2|0|DuLieu/AnhMon/MA0044.jpg
+MONAN|MA0045|Rau muống xào tỏi|35000|40|0|1|DuLieu/AnhMon/MA0045.jpg
+MONAN|MA0046|Đậu hũ sốt cà chua|35000|30|0|1|DuLieu/AnhMon/MA0046.jpg
+MONAN|MA0047|Đậu hũ tứ xuyên|45000|25|5|1|DuLieu/AnhMon/MA0047.jpg
+MONAN|MA0048|Cháo lòng|35000|25|0|0|DuLieu/AnhMon/MA0048.jpg
+MONAN|MA0049|Cháo gà hành|35000|25|0|0|DuLieu/AnhMon/MA0049.jpg
+MONAN|MA0050|Xôi gà|30000|30|0|0|DuLieu/AnhMon/MA0050.jpg
+MONAN|MA0051|Mì cay hải sản|55000|30|5|0|DuLieu/AnhMon/MA0051.jpg
+MONAN|MA0052|Khoai tây chiên|30000|50|0|1|DuLieu/AnhMon/MA0052.jpg
+NUOC|NU0001|Cà phê đen đá|20000|80|M|1|DuLieu/AnhMon/NU0001.jpg
+NUOC|NU0002|Cà phê sữa đá|25000|80|M|1|DuLieu/AnhMon/NU0002.jpg
+NUOC|NU0003|Bạc xỉu|28000|60|M|1|DuLieu/AnhMon/NU0003.jpg
+NUOC|NU0004|Cà phê muối|32000|50|M|1|DuLieu/AnhMon/NU0004.jpg
+NUOC|NU0005|Cà phê cốt dừa|35000|40|L|1|DuLieu/AnhMon/NU0005.jpg
+NUOC|NU0006|Espresso|30000|40|S|0|DuLieu/AnhMon/NU0006.jpg
+NUOC|NU0007|Cappuccino|40000|40|M|0|DuLieu/AnhMon/NU0007.jpg
+NUOC|NU0008|Latte|42000|40|M|0|DuLieu/AnhMon/NU0008.jpg
+NUOC|NU0009|Americano|35000|40|L|1|DuLieu/AnhMon/NU0009.jpg
+NUOC|NU0010|Mocha|45000|30|M|0|DuLieu/AnhMon/NU0010.jpg
+NUOC|NU0011|Trà đào cam sả|35000|60|L|1|DuLieu/AnhMon/NU0011.jpg
+NUOC|NU0012|Trà vải|35000|50|L|1|DuLieu/AnhMon/NU0012.jpg
+NUOC|NU0013|Trà chanh|15000|80|L|1|DuLieu/AnhMon/NU0013.jpg
+NUOC|NU0014|Trà tắc|15000|80|L|1|DuLieu/AnhMon/NU0014.jpg
+NUOC|NU0015|Trà sữa trân châu|30000|60|M|1|DuLieu/AnhMon/NU0015.jpg
+NUOC|NU0016|Trà sữa matcha|35000|50|M|1|DuLieu/AnhMon/NU0016.jpg
+NUOC|NU0017|Trà sữa khoai môn|35000|40|M|1|DuLieu/AnhMon/NU0017.jpg
+NUOC|NU0018|Hồng trà sữa|30000|50|M|1|DuLieu/AnhMon/NU0018.jpg
+NUOC|NU0019|Trà xanh nhài|20000|50|M|1|DuLieu/AnhMon/NU0019.jpg
+NUOC|NU0020|Trà ô long|25000|40|M|0|DuLieu/AnhMon/NU0020.jpg
+NUOC|NU0021|Nước cam ép|30000|40|M|1|DuLieu/AnhMon/NU0021.jpg
+NUOC|NU0022|Nước ép dưa hấu|30000|40|M|1|DuLieu/AnhMon/NU0022.jpg
+NUOC|NU0023|Nước ép táo|35000|30|M|1|DuLieu/AnhMon/NU0023.jpg
+NUOC|NU0024|Nước ép ổi|30000|30|M|1|DuLieu/AnhMon/NU0024.jpg
+NUOC|NU0025|Nước ép cà rốt|30000|30|M|1|DuLieu/AnhMon/NU0025.jpg
+NUOC|NU0026|Nước ép thơm|30000|30|M|1|DuLieu/AnhMon/NU0026.jpg
+NUOC|NU0027|Sinh tố bơ|40000|30|L|1|DuLieu/AnhMon/NU0027.jpg
+NUOC|NU0028|Sinh tố xoài|35000|30|L|1|DuLieu/AnhMon/NU0028.jpg
+NUOC|NU0029|Sinh tố dâu|40000|30|L|1|DuLieu/AnhMon/NU0029.jpg
+NUOC|NU0030|Sinh tố mãng cầu|40000|25|L|1|DuLieu/AnhMon/NU0030.jpg
+NUOC|NU0031|Sinh tố sapoche|35000|25|L|1|DuLieu/AnhMon/NU0031.jpg
+NUOC|NU0032|Nước dừa tươi|25000|40|L|0|DuLieu/AnhMon/NU0032.jpg
+NUOC|NU0033|Nước mía|15000|60|L|1|DuLieu/AnhMon/NU0033.jpg
+NUOC|NU0034|Rau má đậu xanh|25000|40|L|1|DuLieu/AnhMon/NU0034.jpg
+NUOC|NU0035|Sâm bí đao|15000|50|L|1|DuLieu/AnhMon/NU0035.jpg
+NUOC|NU0036|Chanh dây|25000|40|M|1|DuLieu/AnhMon/NU0036.jpg
+NUOC|NU0037|Soda chanh|25000|40|M|1|DuLieu/AnhMon/NU0037.jpg
+NUOC|NU0038|Soda việt quất|35000|30|M|1|DuLieu/AnhMon/NU0038.jpg
+NUOC|NU0039|Sữa chua đá|25000|40|M|1|DuLieu/AnhMon/NU0039.jpg
+NUOC|NU0040|Yaourt trái cây|35000|30|M|1|DuLieu/AnhMon/NU0040.jpg
+NUOC|NU0041|Cacao đá|30000|40|M|1|DuLieu/AnhMon/NU0041.jpg
+NUOC|NU0042|Socola nóng|35000|30|M|0|DuLieu/AnhMon/NU0042.jpg
+NUOC|NU0043|Matcha đá xay|45000|30|L|1|DuLieu/AnhMon/NU0043.jpg
+NUOC|NU0044|Cookie đá xay|45000|30|L|1|DuLieu/AnhMon/NU0044.jpg
+NUOC|NU0045|Nước suối|10000|100|S|0|DuLieu/AnhMon/NU0045.jpg
+NUOC|NU0046|Coca-Cola|15000|100|S|1|DuLieu/AnhMon/NU0046.jpg
+NUOC|NU0047|Pepsi|15000|100|S|1|DuLieu/AnhMon/NU0047.jpg
+NUOC|NU0048|7Up|15000|100|S|1|DuLieu/AnhMon/NU0048.jpg
+NUOC|NU0049|Bia Huda|20000|100|S|1|DuLieu/AnhMon/NU0049.jpg
+NUOC|NU0050|Bia Saigon|20000|100|S|1|DuLieu/AnhMon/NU0050.jpg

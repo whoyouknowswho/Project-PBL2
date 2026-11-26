@@ -1,0 +1,20 @@
+KH0001|Tô Đông Phước|0905554790|Nam|10|todongphuoc2008@gmail.com
+KH0002|Nguyễn Văn A|0905554798|Nam|3|nguyenvana@gmail.com
+KH0003|Lê Thị Hồng|0935111203|Nữ|120|lethihong03@gmail.com
+KH0004|Trần Minh Đức|0935111204|Nam|250|tranminhduc04@gmail.com
+KH0005|Phạm Ngọc Ánh|0935111205|Nữ|40|phamngocanh05@gmail.com
+KH0006|Ngô Văn Phúc|0935111206|Nam|560|ngovanphuc06@gmail.com
+KH0007|Đỗ Thị Hạnh|0935111207|Nữ|0|dothihanh07@gmail.com
+KH0008|Hoàng Gia Bảo|0935111208|Nam|1050|hoanggiabao08@gmail.com
+KH0009|Vũ Thị Kim Chi|0935111209|Nữ|75|vuthikimchi09@gmail.com
+KH0010|Phan Thanh Sơn|0935111210|Nam|210|phanthanhson10@gmail.com
+KH0011|Trịnh Mỹ Linh|0935111211|Nữ|15|trinhmylinh11@gmail.com
+KH0012|Mai Xuân Trường|0935111212|Nam|330|maixuantruong12@gmail.com
+KH0013|Cao Thị Yến|0935111213|Nữ|0|caothiyen13@gmail.com
+KH0014|Dương Văn Lực|0935111214|Nam|640|duongvanluc14@gmail.com
+KH0015|Lâm Bảo Ngọc|0935111215|Nữ|90|lambaongoc15@gmail.com
+KH0016|Tạ Quang Vinh|0935111216|Nam|5|taquangvinh16@gmail.com
+KH0017|Châu Thị Diễm|0935111217|Nữ|205|chauthidiem17@gmail.com
+KH0018|La Hữu Thắng|0935111218|Nam|1200|lahuuthang18@gmail.com
+KH0019|Kiều Anh Thư|0935111219|Nữ|60|kieuanhthu19@gmail.com
+KH0020|Quách Tuấn Kiệt|0935111220|Nam|0|quachtuankiet20@gmail.com
